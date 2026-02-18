@@ -112,9 +112,9 @@ export default function Spaces() {
   };
 
   const statusColors: Record<string, string> = {
-    ativo: "bg-green-100 text-green-700",
-    manutencao: "bg-yellow-100 text-yellow-700",
-    inativo: "bg-gray-100 text-gray-700",
+    ativo: "bg-primary/15 text-primary",
+    manutencao: "bg-accent/15 text-accent",
+    inativo: "bg-muted text-muted-foreground",
   };
 
   const tipoLabels: Record<string, string> = {
@@ -127,7 +127,7 @@ export default function Spaces() {
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-gray-800">Espaços</h1>
+        <h1 className="text-2xl text-foreground">Espaços</h1>
         <Button onClick={openNew}>
           <Plus className="w-4 h-4 mr-2" /> Novo Espaço
         </Button>
@@ -135,28 +135,28 @@ export default function Spaces() {
 
       {loading ? (
         <div className="flex items-center justify-center h-32">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600" />
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
         </div>
       ) : spaces.length === 0 ? (
-        <div className="text-center py-12 text-gray-500">
+        <div className="text-center py-12 text-muted-foreground">
           <Home className="w-12 h-12 mx-auto mb-3 opacity-50" />
           <p>Nenhum espaço cadastrado.</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {spaces.map((s) => (
-            <div key={s.id} className="bg-white rounded-xl border p-5">
+            <div key={s.id} className="bg-card rounded-xl border border-border p-5">
               <div className="flex items-start justify-between">
                 <div>
-                  <h3 className="font-semibold text-gray-800">{s.nome}</h3>
-                  <p className="text-sm text-gray-500">{s.slug}</p>
+                  <h3 className="font-semibold text-foreground">{s.nome}</h3>
+                  <p className="text-sm text-muted-foreground">{s.slug}</p>
                 </div>
                 <div className="flex gap-1">
-                  <button onClick={() => openEdit(s)} className="p-1.5 rounded-lg hover:bg-gray-100">
-                    <Pencil className="w-4 h-4 text-gray-500" />
+                  <button onClick={() => openEdit(s)} className="p-1.5 rounded-lg hover:bg-secondary">
+                    <Pencil className="w-4 h-4 text-muted-foreground" />
                   </button>
-                  <button onClick={() => remove(s.slug)} className="p-1.5 rounded-lg hover:bg-gray-100">
-                    <Trash2 className="w-4 h-4 text-red-500" />
+                  <button onClick={() => remove(s.slug)} className="p-1.5 rounded-lg hover:bg-secondary">
+                    <Trash2 className="w-4 h-4 text-destructive" />
                   </button>
                 </div>
               </div>
@@ -165,16 +165,16 @@ export default function Spaces() {
                   {s.status}
                 </span>
                 {s.tipo && (
-                  <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700">
+                  <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-secondary text-secondary-foreground">
                     {tipoLabels[s.tipo] || s.tipo}
                   </span>
                 )}
               </div>
               {s.capacidade && (
-                <p className="text-sm text-gray-500 mt-2">Capacidade: {s.capacidade} pessoas</p>
+                <p className="text-sm text-muted-foreground mt-2">Capacidade: {s.capacidade} pessoas</p>
               )}
               {s.area_m2 && (
-                <p className="text-sm text-gray-500">Área: {s.area_m2} m²</p>
+                <p className="text-sm text-muted-foreground">Área: {s.area_m2} m²</p>
               )}
             </div>
           ))}
@@ -189,7 +189,7 @@ export default function Spaces() {
               {editing ? "Atualize as informações do espaço." : "Cadastre um novo espaço na comunidade."}
             </DialogDescription>
           </DialogHeader>
-          {error && <p className="text-sm text-red-600">{error}</p>}
+          {error && <p className="text-sm text-destructive">{error}</p>}
           <div className="space-y-4 max-h-96 overflow-y-auto">
             <div>
               <Label>Slug *</Label>

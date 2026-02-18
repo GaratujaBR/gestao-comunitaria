@@ -114,17 +114,17 @@ export default function Wiki() {
   };
 
   const catColors: Record<string, string> = {
-    bioconstrucao: "bg-green-100 text-green-700",
-    regras: "bg-blue-100 text-blue-700",
-    sistemas: "bg-purple-100 text-purple-700",
-    manutencao: "bg-orange-100 text-orange-700",
-    historia: "bg-amber-100 text-amber-700",
+    bioconstrucao: "bg-primary/15 text-primary",
+    regras: "bg-secondary text-secondary-foreground",
+    sistemas: "bg-accent/15 text-accent",
+    manutencao: "bg-accent/20 text-accent",
+    historia: "bg-muted text-muted-foreground",
   };
 
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-gray-800">Wiki</h1>
+        <h1 className="text-2xl text-foreground">Wiki</h1>
         <Button onClick={openNew}>
           <Plus className="w-4 h-4 mr-2" /> Novo Artigo
         </Button>
@@ -133,7 +133,7 @@ export default function Wiki() {
       <div className="flex gap-2 mb-4 flex-wrap">
         <button
           onClick={() => setCatFilter("")}
-          className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${!catFilter ? "bg-green-600 text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}
+          className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${!catFilter ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground hover:bg-muted"}`}
         >
           Todos
         </button>
@@ -141,7 +141,7 @@ export default function Wiki() {
           <button
             key={c}
             onClick={() => setCatFilter(c)}
-            className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${catFilter === c ? "bg-green-600 text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}
+            className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${catFilter === c ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground hover:bg-muted"}`}
           >
             {c}
           </button>
@@ -150,31 +150,31 @@ export default function Wiki() {
 
       {loading ? (
         <div className="flex items-center justify-center h-32">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600" />
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
         </div>
       ) : articles.length === 0 ? (
-        <div className="text-center py-12 text-gray-500">
+        <div className="text-center py-12 text-muted-foreground">
           <BookOpen className="w-12 h-12 mx-auto mb-3 opacity-50" />
           <p>Nenhum artigo encontrado.</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {articles.map((a) => (
-            <div key={a.id} className="bg-white rounded-xl border p-5">
+            <div key={a.id} className="bg-card rounded-xl border border-border p-5">
               <div className="flex items-start justify-between">
                 <div className="flex-1">
-                  <h3 className="font-semibold text-gray-800">{a.titulo}</h3>
-                  <p className="text-sm text-gray-500 mt-1">{a.conteudo.slice(0, 120)}...</p>
+                  <h3 className="font-semibold text-foreground">{a.titulo}</h3>
+                  <p className="text-sm text-muted-foreground mt-1">{a.conteudo.slice(0, 120)}...</p>
                 </div>
                 <div className="flex gap-1 ml-2">
-                  <button onClick={() => setViewing(a)} className="p-1.5 rounded-lg hover:bg-gray-100">
-                    <Eye className="w-4 h-4 text-gray-500" />
+                  <button onClick={() => setViewing(a)} className="p-1.5 rounded-lg hover:bg-secondary">
+                    <Eye className="w-4 h-4 text-muted-foreground" />
                   </button>
-                  <button onClick={() => openEdit(a)} className="p-1.5 rounded-lg hover:bg-gray-100">
-                    <Pencil className="w-4 h-4 text-gray-500" />
+                  <button onClick={() => openEdit(a)} className="p-1.5 rounded-lg hover:bg-secondary">
+                    <Pencil className="w-4 h-4 text-muted-foreground" />
                   </button>
-                  <button onClick={() => remove(a.slug)} className="p-1.5 rounded-lg hover:bg-gray-100">
-                    <Trash2 className="w-4 h-4 text-red-500" />
+                  <button onClick={() => remove(a.slug)} className="p-1.5 rounded-lg hover:bg-secondary">
+                    <Trash2 className="w-4 h-4 text-destructive" />
                   </button>
                 </div>
               </div>
@@ -185,18 +185,18 @@ export default function Wiki() {
                   </span>
                 )}
                 {a.dificuldade && (
-                  <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
+                  <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-muted text-muted-foreground">
                     Dificuldade: {a.dificuldade}/5
                   </span>
                 )}
                 {a.validado && (
-                  <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700">
+                  <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-primary/15 text-primary">
                     Validado
                   </span>
                 )}
               </div>
               {a.autor_slug && (
-                <p className="text-xs text-gray-400 mt-2">Por @{a.autor_slug}</p>
+                <p className="text-xs text-muted-foreground mt-2">Por @{a.autor_slug}</p>
               )}
             </div>
           ))}
@@ -229,7 +229,7 @@ export default function Wiki() {
               {editing ? "Atualize o conteúdo do artigo." : "Crie um novo artigo na base de conhecimento."}
             </DialogDescription>
           </DialogHeader>
-          {error && <p className="text-sm text-red-600">{error}</p>}
+          {error && <p className="text-sm text-destructive">{error}</p>}
           <div className="space-y-4 max-h-96 overflow-y-auto">
             <div className="grid grid-cols-2 gap-4">
               <div>

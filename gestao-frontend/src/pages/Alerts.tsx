@@ -88,15 +88,15 @@ export default function Alerts() {
   };
 
   const tipoColors: Record<string, string> = {
-    manutencao: "bg-orange-100 text-orange-700",
-    reserva: "bg-blue-100 text-blue-700",
-    sistema: "bg-purple-100 text-purple-700",
+    manutencao: "bg-accent/15 text-accent",
+    reserva: "bg-primary/15 text-primary",
+    sistema: "bg-secondary text-secondary-foreground",
   };
 
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-gray-800">Alertas</h1>
+        <h1 className="text-2xl text-foreground">Alertas</h1>
         <div className="flex gap-2">
           <Button variant="outline" onClick={() => setShowRead(!showRead)}>
             {showRead ? "Apenas Pendentes" : "Mostrar Todos"}
@@ -109,10 +109,10 @@ export default function Alerts() {
 
       {loading ? (
         <div className="flex items-center justify-center h-32">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600" />
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
         </div>
       ) : alerts.length === 0 ? (
-        <div className="text-center py-12 text-gray-500">
+        <div className="text-center py-12 text-muted-foreground">
           <Bell className="w-12 h-12 mx-auto mb-3 opacity-50" />
           <p>Nenhum alerta encontrado.</p>
         </div>
@@ -121,22 +121,22 @@ export default function Alerts() {
           {alerts.map((a) => (
             <div
               key={a.id}
-              className={`bg-white rounded-xl border p-5 flex items-start gap-4 ${a.lido ? "opacity-60" : ""}`}
+              className={`bg-card rounded-xl border border-border p-5 flex items-start gap-4 ${a.lido ? "opacity-60" : ""}`}
             >
-              <div className={`p-2 rounded-lg ${a.tipo ? tipoColors[a.tipo] || "bg-gray-100" : "bg-gray-100"}`}>
+              <div className={`p-2 rounded-lg ${a.tipo ? tipoColors[a.tipo] || "bg-muted" : "bg-muted"}`}>
                 <Bell className="w-5 h-5" />
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
-                  <h3 className="font-semibold text-gray-800">{a.titulo}</h3>
+                  <h3 className="font-semibold text-foreground">{a.titulo}</h3>
                   {a.tipo && (
                     <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${tipoColors[a.tipo] || ""}`}>
                       {a.tipo}
                     </span>
                   )}
                 </div>
-                {a.mensagem && <p className="text-sm text-gray-600 mt-1">{a.mensagem}</p>}
-                <div className="flex gap-3 mt-2 text-xs text-gray-400">
+                {a.mensagem && <p className="text-sm text-muted-foreground mt-1">{a.mensagem}</p>}
+                <div className="flex gap-3 mt-2 text-xs text-muted-foreground">
                   {a.profile_slug && <span>Para: @{a.profile_slug}</span>}
                   <span>{new Date(a.created_at).toLocaleString("pt-BR")}</span>
                   {a.data_acao && (
@@ -146,12 +146,12 @@ export default function Alerts() {
               </div>
               <div className="flex gap-1">
                 {!a.lido && (
-                  <button onClick={() => markRead(a.id)} className="p-1.5 rounded-lg hover:bg-gray-100" title="Marcar como lido">
-                    <Check className="w-4 h-4 text-green-600" />
+                  <button onClick={() => markRead(a.id)} className="p-1.5 rounded-lg hover:bg-secondary" title="Marcar como lido">
+                    <Check className="w-4 h-4 text-primary" />
                   </button>
                 )}
-                <button onClick={() => remove(a.id)} className="p-1.5 rounded-lg hover:bg-gray-100" title="Remover">
-                  <Trash2 className="w-4 h-4 text-red-500" />
+                <button onClick={() => remove(a.id)} className="p-1.5 rounded-lg hover:bg-secondary" title="Remover">
+                  <Trash2 className="w-4 h-4 text-destructive" />
                 </button>
               </div>
             </div>
@@ -165,7 +165,7 @@ export default function Alerts() {
             <DialogTitle>Novo Alerta</DialogTitle>
             <DialogDescription>Crie uma nova notificação.</DialogDescription>
           </DialogHeader>
-          {error && <p className="text-sm text-red-600">{error}</p>}
+          {error && <p className="text-sm text-destructive">{error}</p>}
           <div className="space-y-4">
             <div>
               <Label>Título *</Label>

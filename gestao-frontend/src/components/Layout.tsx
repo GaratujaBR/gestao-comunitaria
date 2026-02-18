@@ -10,6 +10,7 @@ import {
   LayoutDashboard,
   Menu,
   X,
+  Leaf,
 } from "lucide-react";
 import { useState } from "react";
 
@@ -28,17 +29,17 @@ export default function Layout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className="flex h-screen bg-background">
       <aside
-        className={`fixed inset-y-0 left-0 z-30 w-64 transform bg-white border-r shadow-sm transition-transform duration-200 lg:relative lg:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-30 w-64 transform bg-card border-r border-border shadow-sm transition-transform duration-200 lg:relative lg:translate-x-0 ${
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
-        <div className="flex items-center gap-2 px-6 py-5 border-b">
-          <div className="w-8 h-8 rounded-lg bg-green-600 flex items-center justify-center">
-            <Home className="w-5 h-5 text-white" />
+        <div className="flex items-center gap-2.5 px-6 py-5 border-b border-border">
+          <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
+            <Leaf className="w-5 h-5 text-primary-foreground" />
           </div>
-          <span className="text-lg font-bold text-gray-800">Comunidade</span>
+          <span className="text-lg text-foreground">Comunidade</span>
         </div>
         <nav className="p-4 space-y-1">
           {navItems.map((item) => (
@@ -49,8 +50,8 @@ export default function Layout() {
               className={({ isActive }) =>
                 `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
                   isActive
-                    ? "bg-green-50 text-green-700"
-                    : "text-gray-600 hover:bg-gray-100"
+                    ? "bg-primary/10 text-primary"
+                    : "text-muted-foreground hover:bg-secondary"
                 }`
               }
               end={item.to === "/"}
@@ -64,17 +65,17 @@ export default function Layout() {
 
       {sidebarOpen && (
         <div
-          className="fixed inset-0 z-20 bg-black/30 lg:hidden"
+          className="fixed inset-0 z-20 bg-black/20 lg:hidden"
           onClick={() => setSidebarOpen(false)}
         />
       )}
 
       <div className="flex-1 flex flex-col min-w-0">
-        <header className="flex items-center gap-4 px-6 py-4 bg-white border-b lg:hidden">
+        <header className="flex items-center gap-4 px-6 py-4 bg-card border-b border-border lg:hidden">
           <button onClick={() => setSidebarOpen(!sidebarOpen)}>
             {sidebarOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
           </button>
-          <span className="font-bold text-gray-800">Comunidade</span>
+          <span className="text-foreground">Comunidade</span>
         </header>
         <main className="flex-1 overflow-auto p-6">
           <Outlet />
