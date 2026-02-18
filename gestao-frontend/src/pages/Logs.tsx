@@ -87,17 +87,17 @@ export default function Logs() {
   };
 
   const acaoColors: Record<string, string> = {
-    retirou: "bg-blue-100 text-blue-700",
-    devolveu: "bg-green-100 text-green-700",
-    danificou: "bg-red-100 text-red-700",
-    manutencao_realizada: "bg-purple-100 text-purple-700",
-    perda: "bg-red-200 text-red-800",
+    retirou: "bg-secondary text-secondary-foreground",
+    devolveu: "bg-primary/15 text-primary",
+    danificou: "bg-destructive/15 text-destructive",
+    manutencao_realizada: "bg-accent/15 text-accent",
+    perda: "bg-destructive/20 text-destructive",
   };
 
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-gray-800">Logs de Uso</h1>
+        <h1 className="text-2xl text-foreground">Logs de Uso</h1>
         <Button onClick={openNew}>
           <Plus className="w-4 h-4 mr-2" /> Novo Log
         </Button>
@@ -106,7 +106,7 @@ export default function Logs() {
       <div className="flex gap-2 mb-4 flex-wrap">
         <button
           onClick={() => setAcaoFilter("")}
-          className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${!acaoFilter ? "bg-green-600 text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}
+          className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${!acaoFilter ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground hover:bg-muted"}`}
         >
           Todos
         </button>
@@ -114,7 +114,7 @@ export default function Logs() {
           <button
             key={a}
             onClick={() => setAcaoFilter(a)}
-            className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${acaoFilter === a ? "bg-green-600 text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}
+            className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${acaoFilter === a ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground hover:bg-muted"}`}
           >
             {a}
           </button>
@@ -123,18 +123,18 @@ export default function Logs() {
 
       {loading ? (
         <div className="flex items-center justify-center h-32">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600" />
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
         </div>
       ) : logs.length === 0 ? (
-        <div className="text-center py-12 text-gray-500">
+        <div className="text-center py-12 text-muted-foreground">
           <ClipboardList className="w-12 h-12 mx-auto mb-3 opacity-50" />
           <p>Nenhum log encontrado.</p>
         </div>
       ) : (
-        <div className="bg-white rounded-xl border overflow-hidden">
+        <div className="bg-card rounded-xl border border-border overflow-hidden">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b bg-gray-50 text-left text-gray-500">
+              <tr className="border-b border-border bg-secondary/50 text-left text-muted-foreground">
                 <th className="px-4 py-3 font-medium">Data/Hora</th>
                 <th className="px-4 py-3 font-medium">Ação</th>
                 <th className="px-4 py-3 font-medium">Item</th>
@@ -145,7 +145,7 @@ export default function Logs() {
             </thead>
             <tbody>
               {logs.map((log) => (
-                <tr key={log.id} className="border-b last:border-0 hover:bg-gray-50">
+                <tr key={log.id} className="border-b border-border last:border-0 hover:bg-secondary/30">
                   <td className="px-4 py-3 text-xs">
                     {new Date(log.timestamp).toLocaleString("pt-BR")}
                   </td>
@@ -171,7 +171,7 @@ export default function Logs() {
             <DialogTitle>Novo Log de Uso</DialogTitle>
             <DialogDescription>Registre uma ação de uso de item.</DialogDescription>
           </DialogHeader>
-          {error && <p className="text-sm text-red-600">{error}</p>}
+          {error && <p className="text-sm text-destructive">{error}</p>}
           <div className="space-y-4 max-h-96 overflow-y-auto">
             <div>
               <Label>Ação *</Label>

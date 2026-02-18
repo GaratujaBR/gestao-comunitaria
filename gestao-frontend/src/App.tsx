@@ -12,6 +12,7 @@ import Alerts from "@/pages/Alerts";
 function App() {
   return (
     <BrowserRouter>
+      <div className="analog-grain" />
       <Routes>
         <Route element={<Layout />}>
           <Route path="/" element={<Dashboard />} />

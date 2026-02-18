@@ -117,17 +117,17 @@ export default function Items() {
   };
 
   const estadoColors: Record<string, string> = {
-    novo: "bg-green-100 text-green-700",
-    bom: "bg-blue-100 text-blue-700",
-    regular: "bg-yellow-100 text-yellow-700",
-    manutencao: "bg-orange-100 text-orange-700",
-    indisponivel: "bg-red-100 text-red-700",
+    novo: "bg-primary/15 text-primary",
+    bom: "bg-secondary text-secondary-foreground",
+    regular: "bg-accent/15 text-accent",
+    manutencao: "bg-accent/20 text-accent",
+    indisponivel: "bg-destructive/15 text-destructive",
   };
 
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-gray-800">Acervo</h1>
+        <h1 className="text-2xl text-foreground">Acervo</h1>
         <Button onClick={openNew}>
           <Plus className="w-4 h-4 mr-2" /> Novo Item
         </Button>
@@ -136,7 +136,7 @@ export default function Items() {
       <div className="flex gap-2 mb-4 flex-wrap">
         <button
           onClick={() => setFilter("")}
-          className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${!filter ? "bg-green-600 text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}
+          className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${!filter ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground hover:bg-muted"}`}
         >
           Todos
         </button>
@@ -144,7 +144,7 @@ export default function Items() {
           <button
             key={c}
             onClick={() => setFilter(c)}
-            className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${filter === c ? "bg-green-600 text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}
+            className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${filter === c ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground hover:bg-muted"}`}
           >
             {c}
           </button>
@@ -153,18 +153,18 @@ export default function Items() {
 
       {loading ? (
         <div className="flex items-center justify-center h-32">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600" />
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
         </div>
       ) : items.length === 0 ? (
-        <div className="text-center py-12 text-gray-500">
+        <div className="text-center py-12 text-muted-foreground">
           <Package className="w-12 h-12 mx-auto mb-3 opacity-50" />
           <p>Nenhum item encontrado.</p>
         </div>
       ) : (
-        <div className="bg-white rounded-xl border overflow-hidden">
+        <div className="bg-card rounded-xl border border-border overflow-hidden">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b bg-gray-50 text-left text-gray-500">
+              <tr className="border-b border-border bg-secondary/50 text-left text-muted-foreground">
                 <th className="px-4 py-3 font-medium">Código</th>
                 <th className="px-4 py-3 font-medium">Nome</th>
                 <th className="px-4 py-3 font-medium">Categoria</th>
@@ -176,7 +176,7 @@ export default function Items() {
             </thead>
             <tbody>
               {items.map((item) => (
-                <tr key={item.id} className="border-b last:border-0 hover:bg-gray-50">
+                <tr key={item.id} className="border-b border-border last:border-0 hover:bg-secondary/30">
                   <td className="px-4 py-3 font-mono text-xs">{item.codigo}</td>
                   <td className="px-4 py-3 font-medium">{item.nome}</td>
                   <td className="px-4 py-3">{item.categoria || "-"}</td>
@@ -189,11 +189,11 @@ export default function Items() {
                   <td className="px-4 py-3">{item.vezes_usado}</td>
                   <td className="px-4 py-3">
                     <div className="flex gap-1">
-                      <button onClick={() => openEdit(item)} className="p-1 rounded hover:bg-gray-100">
-                        <Pencil className="w-4 h-4 text-gray-500" />
+                      <button onClick={() => openEdit(item)} className="p-1 rounded hover:bg-secondary">
+                        <Pencil className="w-4 h-4 text-muted-foreground" />
                       </button>
-                      <button onClick={() => remove(item.codigo)} className="p-1 rounded hover:bg-gray-100">
-                        <Trash2 className="w-4 h-4 text-red-500" />
+                      <button onClick={() => remove(item.codigo)} className="p-1 rounded hover:bg-secondary">
+                        <Trash2 className="w-4 h-4 text-destructive" />
                       </button>
                     </div>
                   </td>
@@ -212,7 +212,7 @@ export default function Items() {
               {editing ? "Atualize as informações do item." : "Adicione um novo item ao acervo."}
             </DialogDescription>
           </DialogHeader>
-          {error && <p className="text-sm text-red-600">{error}</p>}
+          {error && <p className="text-sm text-destructive">{error}</p>}
           <div className="space-y-4 max-h-96 overflow-y-auto">
             <div>
               <Label>Código *</Label>

@@ -115,11 +115,11 @@ export default function Bookings() {
   };
 
   const statusColors: Record<string, string> = {
-    pendente: "bg-yellow-100 text-yellow-800",
-    confirmada: "bg-green-100 text-green-800",
-    em_andamento: "bg-blue-100 text-blue-800",
-    concluida: "bg-gray-100 text-gray-800",
-    cancelada: "bg-red-100 text-red-800",
+    pendente: "bg-accent/15 text-accent",
+    confirmada: "bg-primary/15 text-primary",
+    em_andamento: "bg-primary/10 text-primary",
+    concluida: "bg-secondary text-muted-foreground",
+    cancelada: "bg-destructive/15 text-destructive",
   };
 
   const tipoLabels: Record<string, string> = {
@@ -132,7 +132,7 @@ export default function Bookings() {
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-gray-800">Reservas</h1>
+        <h1 className="text-2xl text-foreground">Reservas</h1>
         <Button onClick={openNew}>
           <Plus className="w-4 h-4 mr-2" /> Nova Reserva
         </Button>
@@ -141,7 +141,7 @@ export default function Bookings() {
       <div className="flex gap-2 mb-4 flex-wrap">
         <button
           onClick={() => setStatusFilter("")}
-          className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${!statusFilter ? "bg-green-600 text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}
+          className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${!statusFilter ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground hover:bg-muted"}`}
         >
           Todas
         </button>
@@ -149,7 +149,7 @@ export default function Bookings() {
           <button
             key={s}
             onClick={() => setStatusFilter(s)}
-            className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${statusFilter === s ? "bg-green-600 text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}
+            className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${statusFilter === s ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground hover:bg-muted"}`}
           >
             {s}
           </button>
@@ -158,18 +158,18 @@ export default function Bookings() {
 
       {loading ? (
         <div className="flex items-center justify-center h-32">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600" />
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
         </div>
       ) : bookings.length === 0 ? (
-        <div className="text-center py-12 text-gray-500">
+        <div className="text-center py-12 text-muted-foreground">
           <CalendarDays className="w-12 h-12 mx-auto mb-3 opacity-50" />
           <p>Nenhuma reserva encontrada.</p>
         </div>
       ) : (
-        <div className="bg-white rounded-xl border overflow-hidden">
+        <div className="bg-card rounded-xl border border-border overflow-hidden">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b bg-gray-50 text-left text-gray-500">
+              <tr className="border-b border-border bg-secondary/50 text-left text-muted-foreground">
                 <th className="px-4 py-3 font-medium">Espaço</th>
                 <th className="px-4 py-3 font-medium">Responsável</th>
                 <th className="px-4 py-3 font-medium">Tipo</th>
@@ -182,7 +182,7 @@ export default function Bookings() {
             </thead>
             <tbody>
               {bookings.map((b) => (
-                <tr key={b.id} className="border-b last:border-0 hover:bg-gray-50">
+                <tr key={b.id} className="border-b border-border last:border-0 hover:bg-secondary/30">
                   <td className="px-4 py-3">{b.space_slug || "-"}</td>
                   <td className="px-4 py-3 font-medium">{b.profile_slug}</td>
                   <td className="px-4 py-3">{b.tipo_uso ? tipoLabels[b.tipo_uso] || b.tipo_uso : "-"}</td>
@@ -196,11 +196,11 @@ export default function Bookings() {
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex gap-1">
-                      <button onClick={() => openEdit(b)} className="p-1 rounded hover:bg-gray-100">
-                        <Pencil className="w-4 h-4 text-gray-500" />
+                      <button onClick={() => openEdit(b)} className="p-1 rounded hover:bg-secondary">
+                        <Pencil className="w-4 h-4 text-muted-foreground" />
                       </button>
-                      <button onClick={() => remove(b.id)} className="p-1 rounded hover:bg-gray-100">
-                        <Trash2 className="w-4 h-4 text-red-500" />
+                      <button onClick={() => remove(b.id)} className="p-1 rounded hover:bg-secondary">
+                        <Trash2 className="w-4 h-4 text-destructive" />
                       </button>
                     </div>
                   </td>
@@ -219,7 +219,7 @@ export default function Bookings() {
               {editing ? "Atualize os dados da reserva." : "Crie uma nova reserva de espaço."}
             </DialogDescription>
           </DialogHeader>
-          {error && <p className="text-sm text-red-600">{error}</p>}
+          {error && <p className="text-sm text-destructive">{error}</p>}
           <div className="space-y-4 max-h-96 overflow-y-auto">
             <div className="grid grid-cols-2 gap-4">
               <div>

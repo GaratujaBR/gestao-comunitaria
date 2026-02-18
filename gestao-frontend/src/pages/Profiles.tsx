@@ -97,16 +97,16 @@ export default function Profiles() {
   };
 
   const roleColors: Record<string, string> = {
-    fundador: "bg-purple-100 text-purple-700",
-    construtor: "bg-blue-100 text-blue-700",
-    cotista: "bg-green-100 text-green-700",
-    visitante: "bg-gray-100 text-gray-700",
+    fundador: "bg-accent/15 text-accent",
+    construtor: "bg-primary/15 text-primary",
+    cotista: "bg-secondary text-secondary-foreground",
+    visitante: "bg-muted text-muted-foreground",
   };
 
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-gray-800">Perfis</h1>
+        <h1 className="text-2xl text-foreground">Perfis</h1>
         <Button onClick={openNew}>
           <Plus className="w-4 h-4 mr-2" /> Novo Perfil
         </Button>
@@ -114,38 +114,38 @@ export default function Profiles() {
 
       {loading ? (
         <div className="flex items-center justify-center h-32">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600" />
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
         </div>
       ) : profiles.length === 0 ? (
-        <div className="text-center py-12 text-gray-500">
+        <div className="text-center py-12 text-muted-foreground">
           <UserCircle className="w-12 h-12 mx-auto mb-3 opacity-50" />
           <p>Nenhum perfil cadastrado.</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {profiles.map((p) => (
-            <div key={p.id} className="bg-white rounded-xl border p-5">
+            <div key={p.id} className="bg-card rounded-xl border border-border p-5">
               <div className="flex items-start justify-between">
                 <div>
-                  <h3 className="font-semibold text-gray-800">{p.nome_completo}</h3>
-                  <p className="text-sm text-gray-500">@{p.slug}</p>
+                  <h3 className="font-semibold text-foreground">{p.nome_completo}</h3>
+                  <p className="text-sm text-muted-foreground">@{p.slug}</p>
                 </div>
                 <div className="flex gap-1">
-                  <button onClick={() => openEdit(p)} className="p-1.5 rounded-lg hover:bg-gray-100">
-                    <Pencil className="w-4 h-4 text-gray-500" />
+                  <button onClick={() => openEdit(p)} className="p-1.5 rounded-lg hover:bg-secondary">
+                    <Pencil className="w-4 h-4 text-muted-foreground" />
                   </button>
-                  <button onClick={() => remove(p.slug)} className="p-1.5 rounded-lg hover:bg-gray-100">
-                    <Trash2 className="w-4 h-4 text-red-500" />
+                  <button onClick={() => remove(p.slug)} className="p-1.5 rounded-lg hover:bg-secondary">
+                    <Trash2 className="w-4 h-4 text-destructive" />
                   </button>
                 </div>
               </div>
               {p.role && (
-                <span className={`inline-block mt-2 px-2 py-0.5 rounded-full text-xs font-medium ${roleColors[p.role] || "bg-gray-100"}`}>
+                <span className={`inline-block mt-2 px-2 py-0.5 rounded-full text-xs font-medium ${roleColors[p.role] || "bg-muted"}`}>
                   {p.role}
                 </span>
               )}
-              {p.email && <p className="text-sm text-gray-500 mt-2">{p.email}</p>}
-              {p.telefone && <p className="text-sm text-gray-500">{p.telefone}</p>}
+              {p.email && <p className="text-sm text-muted-foreground mt-2">{p.email}</p>}
+              {p.telefone && <p className="text-sm text-muted-foreground">{p.telefone}</p>}
             </div>
           ))}
         </div>
@@ -159,7 +159,7 @@ export default function Profiles() {
               {editing ? "Atualize as informações do membro." : "Adicione um novo membro à comunidade."}
             </DialogDescription>
           </DialogHeader>
-          {error && <p className="text-sm text-red-600">{error}</p>}
+          {error && <p className="text-sm text-destructive">{error}</p>}
           <div className="space-y-4">
             <div>
               <Label>Slug *</Label>
