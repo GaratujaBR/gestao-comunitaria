@@ -10,6 +10,7 @@ import {
   LayoutDashboard,
   Menu,
   X,
+  Sheet,
   Wrench,
 } from "lucide-react";
 import { useState } from "react";
@@ -23,6 +24,7 @@ const navItems = [
   { to: "/logs", icon: ClipboardList, label: "Logs" },
   { to: "/wiki", icon: BookOpen, label: "Wiki" },
   { to: "/alertas", icon: Bell, label: "Alertas" },
+  { to: "/planilha", icon: Sheet, label: "Planilha" },
   { to: "/chamados", icon: Wrench, label: "Chamados" },
 ];
 

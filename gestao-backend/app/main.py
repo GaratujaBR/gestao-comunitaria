@@ -3,7 +3,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.database import init_db
-from app.routers import profiles, spaces, items, bookings, logs, wiki, alerts, prestadores, chamados
+from app.routers import profiles, spaces, items, bookings, logs, wiki, alerts, sheets, prestadores, chamados
 
 
 @asynccontextmanager
@@ -30,6 +30,7 @@ app.include_router(bookings.router)
 app.include_router(logs.router)
 app.include_router(wiki.router)
 app.include_router(alerts.router)
+app.include_router(sheets.router)
 app.include_router(prestadores.router)
 app.include_router(chamados.router)
 

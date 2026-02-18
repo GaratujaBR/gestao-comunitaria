@@ -99,6 +99,30 @@ export interface WikiArticle {
   updated_at: string;
 }
 
+export interface SheetRow {
+  area: string;
+  status: string;
+  responsavel: string | null;
+  item: string;
+  descricao: string | null;
+  quantidade: number | null;
+  valor: number | null;
+  total: number | null;
+}
+
+export interface SheetData {
+  rows: SheetRow[];
+  total_compras: number;
+  total_arrecadacao: number;
+  count: number;
+}
+
+export interface SyncResult {
+  created: number;
+  updated: number;
+  skipped: number;
+}
+
 export interface Prestador {
   id: string;
   nome: string;
