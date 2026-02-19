@@ -38,11 +38,8 @@ export default function Layout() {
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
-        <div className="flex items-center gap-2 px-6 py-5 border-b">
-          <div className="w-8 h-8 rounded-lg bg-green-600 flex items-center justify-center">
-            <Home className="w-5 h-5 text-white" />
-          </div>
-          <span className="text-lg font-bold text-gray-800">Comunidade</span>
+        <div className="flex items-center justify-center px-4 py-4 border-b">
+          <img src="/logo-app5.png" alt="Vilarejo Ecológico Terra de Canaã" className="w-28 h-28 object-contain" />
         </div>
         <nav className="p-4 space-y-1">
           {navItems.map((item) => (
@@ -78,7 +75,7 @@ export default function Layout() {
           <button onClick={() => setSidebarOpen(!sidebarOpen)}>
             {sidebarOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
           </button>
-          <span className="font-bold text-gray-800">Comunidade</span>
+          <img src="/logo-app5.png" alt="Terra de Canaã" className="w-8 h-8 rounded-lg object-cover" />
         </header>
         <main className="flex-1 overflow-auto p-6 bg-cover bg-center bg-no-repeat bg-fixed" style={{ backgroundImage: "url('/fundo-app4.png')" }}>
           <Outlet />
