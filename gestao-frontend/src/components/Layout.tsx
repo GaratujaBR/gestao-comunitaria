@@ -38,7 +38,7 @@ export default function Layout() {
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
-        <div className="flex items-center justify-center px-4 py-4 border-b">
+        <div className="flex items-center justify-center px-4 py-4 border-b" style={{ backgroundColor: "#b9d7a1" }}>
           <img src="/logo-app5.png" alt="Vilarejo Ecológico Terra de Canaã" className="w-52 h-52 object-contain" />
         </div>
         <nav className="p-4 space-y-1">
