@@ -78,7 +78,7 @@ export default function Layout() {
           </button>
           <span className="font-bold text-gray-800">Comunidade</span>
         </header>
-        <main className="flex-1 overflow-auto p-6" style={{ backgroundImage: "url('/fundo-app3.png')", backgroundSize: "100% auto", backgroundPosition: "top center", backgroundRepeat: "repeat-y" }}>
+        <main className="flex-1 overflow-auto p-6 bg-cover bg-center bg-no-repeat bg-fixed" style={{ backgroundImage: "url('/fundo-app4.png')" }}>
           <Outlet />
         </main>
       </div>
