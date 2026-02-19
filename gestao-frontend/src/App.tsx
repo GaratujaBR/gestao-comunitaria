@@ -8,6 +8,7 @@ import Bookings from "@/pages/Bookings";
 import Logs from "@/pages/Logs";
 import Wiki from "@/pages/Wiki";
 import Alerts from "@/pages/Alerts";
+import Chamados from "@/pages/Chamados";
 
 function App() {
   return (
@@ -22,6 +23,7 @@ function App() {
           <Route path="/logs" element={<Logs />} />
           <Route path="/wiki" element={<Wiki />} />
           <Route path="/alertas" element={<Alerts />} />
+          <Route path="/chamados" element={<Chamados />} />
         </Route>
       </Routes>
     </BrowserRouter>
