@@ -2,16 +2,14 @@ name: CI
 
 on:
   pull_request:
-    branches:
-      - main
+    branches: [ main ]
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -20,6 +18,10 @@ jobs:
 
       - name: Install dependencies
         run: npm install
+        working-directory: gestao-frontend
 
       - name: Run Lint
         run: npm run lint
+        working-directory: gestao-frontend
+
+        
