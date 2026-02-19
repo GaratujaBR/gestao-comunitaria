@@ -5,6 +5,12 @@
     "prettier": "^3.8.1"
   },
   "scripts": {
-    "test": "echo \"Sem testes configurados\""
+    "lint": "eslint ."
+  },
+  "lint-staged": {
+    "*.{js,ts,jsx,tsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ]
   }
 }
