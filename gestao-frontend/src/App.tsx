@@ -9,6 +9,7 @@ import Logs from "@/pages/Logs";
 import Wiki from "@/pages/Wiki";
 import Alerts from "@/pages/Alerts";
 import Planilha from "@/pages/Planilha";
+import Chamados from "@/pages/Chamados";
 
 function App() {
   return (
@@ -24,6 +25,7 @@ function App() {
           <Route path="/wiki" element={<Wiki />} />
           <Route path="/alertas" element={<Alerts />} />
           <Route path="/planilha" element={<Planilha />} />
+          <Route path="/chamados" element={<Chamados />} />
         </Route>
       </Routes>
     </BrowserRouter>
