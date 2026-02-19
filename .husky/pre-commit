@@ -1,2 +1,10 @@
-npm test
-echo "Rodando pre-commit"
+#!/usr/bin/env sh
+
+branch=$(git rev-parse --abbrev-ref HEAD)
+
+if [ "$branch" = "main" ]; then
+  echo "🚫 Commit direto na main não permitido."
+  exit 1
+fi
+
+
