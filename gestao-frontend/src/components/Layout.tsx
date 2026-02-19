@@ -38,7 +38,15 @@ export default function Layout() {
           <div className="w-8 h-8 rounded-lg bg-green-600 flex items-center justify-center">
             <Home className="w-5 h-5 text-white" />
           </div>
-          <span className="text-lg font-bold text-gray-800">Comunidade</span>
+
+          <div className="flex flex-col leading-tight">
+            <span className="text-[10px] tracking-[0.2em] uppercase text-gray-500">
+              Vilarejo Ecológico
+            </span>
+            <span className="text-lg font-bold text-gray-800">
+              Terra de Canaã
+            </span>
+          </div>
         </div>
         <nav className="p-4 space-y-1">
           {navItems.map((item) => (
