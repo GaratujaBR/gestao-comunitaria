@@ -39,7 +39,7 @@ export default function Layout() {
         }`}
       >
         <div className="flex items-center justify-center px-4 py-4 border-b">
-          <img src="/logo-app5.png" alt="Vilarejo Ecológico Terra de Canaã" className="w-28 h-28 object-contain" />
+          <img src="/logo-app5.png" alt="Vilarejo Ecológico Terra de Canaã" className="w-40 h-40 object-contain" />
         </div>
         <nav className="p-4 space-y-1">
           {navItems.map((item) => (
