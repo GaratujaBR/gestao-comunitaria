@@ -99,6 +99,65 @@ export interface WikiArticle {
   updated_at: string;
 }
 
+export interface SheetRow {
+  area: string;
+  status: string;
+  responsavel: string | null;
+  item: string;
+  descricao: string | null;
+  quantidade: number | null;
+  valor: number | null;
+  total: number | null;
+}
+
+export interface SheetData {
+  rows: SheetRow[];
+  total_compras: number;
+  total_arrecadacao: number;
+  count: number;
+}
+
+export interface SyncResult {
+  created: number;
+  updated: number;
+  skipped: number;
+}
+
+export interface Prestador {
+  id: string;
+  nome: string;
+  telefone: string;
+  especialidade: string | null;
+  empresa: string | null;
+  notas: string | null;
+  ativo: boolean;
+  created_at: string;
+}
+
+export interface Chamado {
+  id: string;
+  numero: number;
+  estrutura: string;
+  area: string | null;
+  descricao: string;
+  prioridade: string;
+  tipo: string;
+  prestador_id: string | null;
+  prestador_nome: string | null;
+  prestador_telefone: string | null;
+  solicitante: string | null;
+  mensagem_enviada: string | null;
+  status: string;
+  resolucao: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface MensagemPreview {
+  mensagem: string;
+  whatsapp_url: string;
+}
+
 export interface Alert {
   id: string;
   tipo: string | null;

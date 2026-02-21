@@ -1,0 +1,22 @@
+services:
+  backend:
+    build: ./gestao-backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - db-data:/data
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./gestao-frontend
+      args:
+        VITE_API_URL: http://localhost:8000
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+volumes:
+  db-data:
