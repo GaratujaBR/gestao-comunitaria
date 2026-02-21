@@ -10,6 +10,7 @@ import Wiki from "@/pages/Wiki";
 import Alerts from "@/pages/Alerts";
 import Planilha from "@/pages/Planilha";
 import Chamados from "@/pages/Chamados";
+import Enquetes from "@/pages/Enquetes";
 
 function App() {
   return (
@@ -26,6 +27,7 @@ function App() {
           <Route path="/alertas" element={<Alerts />} />
           <Route path="/planilha" element={<Planilha />} />
           <Route path="/chamados" element={<Chamados />} />
+          <Route path="/enquetes" element={<Enquetes />} />
         </Route>
       </Routes>
     </BrowserRouter>

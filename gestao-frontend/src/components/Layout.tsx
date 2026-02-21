@@ -12,6 +12,7 @@ import {
   X,
   Sheet,
   Wrench,
+  Vote,
 } from "lucide-react";
 import { useState } from "react";
 
@@ -26,6 +27,7 @@ const navItems = [
   { to: "/alertas", icon: Bell, label: "Alertas" },
   { to: "/planilha", icon: Sheet, label: "Planilha" },
   { to: "/chamados", icon: Wrench, label: "Chamados" },
+  { to: "/enquetes", icon: Vote, label: "Enquetes" },
 ];
 
 export default function Layout() {
