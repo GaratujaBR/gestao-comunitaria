@@ -1,268 +1,264 @@
 import { useEffect, useState } from "react";
 import { api } from "@/api/client";
-import type { Profile, Space, Item, Booking } from "@/api/types";
-import { Table2 } from "lucide-react";
+import type { SheetData } from "@/api/types";
 
-type Tab = "perfis" | "espacos" | "acervo" | "reservas";
+const statusColors: Record<string, string> = {
+  Compras: "bg-blue-100 text-blue-800",
+  "Doação": "bg-green-100 text-green-800",
+  Investir: "bg-amber-100 text-amber-800",
+  Caixinha: "bg-purple-100 text-purple-800",
+};
 
-const tabs: { key: Tab; label: string }[] = [
-  { key: "perfis", label: "Perfis" },
-  { key: "espacos", label: "Espacos" },
-  { key: "acervo", label: "Acervo" },
-  { key: "reservas", label: "Reservas" },
-];
+const areaColors: Record<string, string> = {
+  Cozinha: "bg-orange-100 text-orange-800",
+  Banheiro: "bg-cyan-100 text-cyan-800",
+  Limpeza: "bg-emerald-100 text-emerald-800",
+  Lazer: "bg-pink-100 text-pink-800",
+  SOS: "bg-red-100 text-red-800",
+};
 
 export default function Spreadsheet() {
-  const [activeTab, setActiveTab] = useState<Tab>("perfis");
-  const [profiles, setProfiles] = useState<Profile[]>([]);
-  const [spaces, setSpaces] = useState<Space[]>([]);
-  const [items, setItems] = useState<Item[]>([]);
-  const [bookings, setBookings] = useState<Booking[]>([]);
+  const [data, setData] = useState<SheetData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [syncing, setSyncing] = useState(false);
+  const [syncResult, setSyncResult] = useState<{ created: number; updated: number } | null>(null);
+  const [error, setError] = useState("");
+  const [search, setSearch] = useState("");
+  const [areaFilter, setAreaFilter] = useState("");
+  const [statusFilter, setStatusFilter] = useState("");
+
+  const load = async () => {
+    setLoading(true);
+    setError("");
+    try {
+      const result = await api.get<SheetData>("/api/sheets");
+      setData(result);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Erro ao carregar planilha");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    async function loadAll() {
-      setLoading(true);
-      try {
-        const [p, s, i, b] = await Promise.all([
-          api.get<Profile[]>("/api/profiles"),
-          api.get<Space[]>("/api/spaces"),
-          api.get<Item[]>("/api/items"),
-          api.get<Booking[]>("/api/bookings"),
-        ]);
-        setProfiles(p);
-        setSpaces(s);
-        setItems(i);
-        setBookings(b);
-      } catch {
-        /* ignore */
-      } finally {
-        setLoading(false);
-      }
-    }
-    loadAll();
+    load();
   }, []);
 
-  const roleColors: Record<string, string> = {
-    fundador: "bg-purple-100 text-purple-700",
-    construtor: "bg-blue-100 text-blue-700",
-    cotista: "bg-green-100 text-green-700",
-    visitante: "bg-gray-100 text-gray-700",
+  const sync = async () => {
+    setSyncing(true);
+    setSyncResult(null);
+    try {
+      const result = await api.post<{ created: number; updated: number }>("/api/sheets/sync", {});
+      setSyncResult(result);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Erro ao sincronizar");
+    } finally {
+      setSyncing(false);
+    }
   };
 
-  const estadoColors: Record<string, string> = {
-    novo: "bg-green-100 text-green-700",
-    bom: "bg-blue-100 text-blue-700",
-    regular: "bg-yellow-100 text-yellow-700",
-    manutencao: "bg-orange-100 text-orange-700",
-    indisponivel: "bg-red-100 text-red-700",
-  };
+  const areas = data ? [...new Set(data.rows.map((r) => r.area))] : [];
+  const statuses = data ? [...new Set(data.rows.map((r) => r.status))] : [];
 
-  const statusColors: Record<string, string> = {
-    ativo: "bg-green-100 text-green-700",
-    manutencao: "bg-yellow-100 text-yellow-700",
-    inativo: "bg-gray-100 text-gray-700",
-  };
+  const filtered = data
+    ? data.rows.filter((r) => {
+        if (areaFilter && r.area !== areaFilter) return false;
+        if (statusFilter && r.status !== statusFilter) return false;
+        if (search) {
+          const q = search.toLowerCase();
+          return (
+            r.item.toLowerCase().includes(q) ||
+            (r.descricao && r.descricao.toLowerCase().includes(q)) ||
+            (r.responsavel && r.responsavel.toLowerCase().includes(q))
+          );
+        }
+        return true;
+      })
+    : [];
 
-  const bookingStatusColors: Record<string, string> = {
-    pendente: "bg-yellow-100 text-yellow-800",
-    confirmada: "bg-green-100 text-green-800",
-    em_andamento: "bg-blue-100 text-blue-800",
-    concluida: "bg-gray-100 text-gray-800",
-    cancelada: "bg-red-100 text-red-800",
-  };
+  const totalFiltered = filtered.reduce((sum, r) => sum + (r.total || 0), 0);
 
-  const renderBadge = (value: string | null, colors: Record<string, string>) => {
-    if (!value) return <span className="text-gray-400">-</span>;
+  if (loading) {
     return (
-      <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${colors[value] || "bg-gray-100 text-gray-700"}`}>
-        {value}
-      </span>
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600" />
+      </div>
     );
-  };
+  }
 
-  const renderProfiles = () => (
-    <table className="w-full text-sm">
-      <thead>
-        <tr className="border-b bg-gray-50 text-left text-gray-500">
-          <th className="px-4 py-3 font-medium">Slug</th>
-          <th className="px-4 py-3 font-medium">Nome Completo</th>
-          <th className="px-4 py-3 font-medium">Nome Curto</th>
-          <th className="px-4 py-3 font-medium">Email</th>
-          <th className="px-4 py-3 font-medium">Telefone</th>
-          <th className="px-4 py-3 font-medium">Papel</th>
-          <th className="px-4 py-3 font-medium">Lote</th>
-          <th className="px-4 py-3 font-medium">Ativo</th>
-        </tr>
-      </thead>
-      <tbody>
-        {profiles.map((p) => (
-          <tr key={p.id} className="border-b last:border-0 hover:bg-gray-50">
-            <td className="px-4 py-3 font-mono text-xs">{p.slug}</td>
-            <td className="px-4 py-3 font-medium">{p.nome_completo}</td>
-            <td className="px-4 py-3">{p.nome_curto || "-"}</td>
-            <td className="px-4 py-3">{p.email || "-"}</td>
-            <td className="px-4 py-3">{p.telefone || "-"}</td>
-            <td className="px-4 py-3">{renderBadge(p.role, roleColors)}</td>
-            <td className="px-4 py-3">{p.lote || "-"}</td>
-            <td className="px-4 py-3">
-              <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${p.ativo ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}>
-                {p.ativo ? "Sim" : "Nao"}
-              </span>
-            </td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
-  );
-
-  const renderSpaces = () => (
-    <table className="w-full text-sm">
-      <thead>
-        <tr className="border-b bg-gray-50 text-left text-gray-500">
-          <th className="px-4 py-3 font-medium">Slug</th>
-          <th className="px-4 py-3 font-medium">Nome</th>
-          <th className="px-4 py-3 font-medium">Tipo</th>
-          <th className="px-4 py-3 font-medium">Capacidade</th>
-          <th className="px-4 py-3 font-medium">Area (m2)</th>
-          <th className="px-4 py-3 font-medium">Responsavel</th>
-          <th className="px-4 py-3 font-medium">Status</th>
-        </tr>
-      </thead>
-      <tbody>
-        {spaces.map((s) => (
-          <tr key={s.id} className="border-b last:border-0 hover:bg-gray-50">
-            <td className="px-4 py-3 font-mono text-xs">{s.slug}</td>
-            <td className="px-4 py-3 font-medium">{s.nome}</td>
-            <td className="px-4 py-3">{s.tipo || "-"}</td>
-            <td className="px-4 py-3">{s.capacidade ?? "-"}</td>
-            <td className="px-4 py-3">{s.area_m2 ?? "-"}</td>
-            <td className="px-4 py-3">{s.responsavel_slug || "-"}</td>
-            <td className="px-4 py-3">{renderBadge(s.status, statusColors)}</td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
-  );
-
-  const renderItems = () => (
-    <table className="w-full text-sm">
-      <thead>
-        <tr className="border-b bg-gray-50 text-left text-gray-500">
-          <th className="px-4 py-3 font-medium">Codigo</th>
-          <th className="px-4 py-3 font-medium">Nome</th>
-          <th className="px-4 py-3 font-medium">Categoria</th>
-          <th className="px-4 py-3 font-medium">Local</th>
-          <th className="px-4 py-3 font-medium">Estado</th>
-          <th className="px-4 py-3 font-medium">Usos</th>
-          <th className="px-4 py-3 font-medium">Tags</th>
-        </tr>
-      </thead>
-      <tbody>
-        {items.map((item) => (
-          <tr key={item.id} className="border-b last:border-0 hover:bg-gray-50">
-            <td className="px-4 py-3 font-mono text-xs">{item.codigo}</td>
-            <td className="px-4 py-3 font-medium">{item.nome}</td>
-            <td className="px-4 py-3">{item.categoria || "-"}</td>
-            <td className="px-4 py-3">{item.space_slug || "-"}</td>
-            <td className="px-4 py-3">{renderBadge(item.estado, estadoColors)}</td>
-            <td className="px-4 py-3">{item.vezes_usado}</td>
-            <td className="px-4 py-3">{item.tags?.join(", ") || "-"}</td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
-  );
-
-  const renderBookings = () => (
-    <table className="w-full text-sm">
-      <thead>
-        <tr className="border-b bg-gray-50 text-left text-gray-500">
-          <th className="px-4 py-3 font-medium">Espaco</th>
-          <th className="px-4 py-3 font-medium">Responsavel</th>
-          <th className="px-4 py-3 font-medium">Tipo</th>
-          <th className="px-4 py-3 font-medium">Inicio</th>
-          <th className="px-4 py-3 font-medium">Fim</th>
-          <th className="px-4 py-3 font-medium">Pessoas</th>
-          <th className="px-4 py-3 font-medium">Status</th>
-          <th className="px-4 py-3 font-medium">Finalidade</th>
-        </tr>
-      </thead>
-      <tbody>
-        {bookings.map((b) => (
-          <tr key={b.id} className="border-b last:border-0 hover:bg-gray-50">
-            <td className="px-4 py-3">{b.space_slug || "-"}</td>
-            <td className="px-4 py-3 font-medium">{b.profile_slug}</td>
-            <td className="px-4 py-3">{b.tipo_uso || "-"}</td>
-            <td className="px-4 py-3">{new Date(b.data_inicio).toLocaleDateString("pt-BR")}</td>
-            <td className="px-4 py-3">{new Date(b.data_fim).toLocaleDateString("pt-BR")}</td>
-            <td className="px-4 py-3">{b.numero_pessoas ?? "-"}</td>
-            <td className="px-4 py-3">{renderBadge(b.status, bookingStatusColors)}</td>
-            <td className="px-4 py-3">{b.finalidade || "-"}</td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
-  );
-
-  const tableRenderers: Record<Tab, () => React.JSX.Element> = {
-    perfis: renderProfiles,
-    espacos: renderSpaces,
-    acervo: renderItems,
-    reservas: renderBookings,
-  };
-
-  const emptyMessages: Record<Tab, string> = {
-    perfis: "Nenhum perfil cadastrado.",
-    espacos: "Nenhum espaco cadastrado.",
-    acervo: "Nenhum item encontrado.",
-    reservas: "Nenhuma reserva encontrada.",
-  };
-
-  const dataCounts: Record<Tab, number> = {
-    perfis: profiles.length,
-    espacos: spaces.length,
-    acervo: items.length,
-    reservas: bookings.length,
-  };
+  if (error && !data) {
+    return (
+      <div className="p-6">
+        <div className="bg-red-50 text-red-700 p-4 rounded-lg">{error}</div>
+        <button
+          onClick={load}
+          className="mt-4 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+        >
+          Tentar novamente
+        </button>
+      </div>
+    );
+  }
 
   return (
-    <div>
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-gray-800">Planilha</h1>
-      </div>
-
-      <div className="flex gap-2 mb-4 flex-wrap">
-        {tabs.map((tab) => (
+    <div className="space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-800">Planilha de Itens</h1>
+          <p className="text-sm text-gray-500 mt-1">
+            {data?.count || 0} itens na planilha Google Sheets
+          </p>
+        </div>
+        <div className="flex items-center gap-3">
           <button
-            key={tab.key}
-            onClick={() => setActiveTab(tab.key)}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-              activeTab === tab.key
-                ? "bg-green-600 text-white"
-                : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-            }`}
+            onClick={load}
+            disabled={loading}
+            className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
           >
-            {tab.label}
-            <span className="ml-2 text-xs opacity-75">({dataCounts[tab.key]})</span>
+            Atualizar
           </button>
-        ))}
+          <button
+            onClick={sync}
+            disabled={syncing}
+            className="px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700 disabled:opacity-50"
+          >
+            {syncing ? "Sincronizando..." : "Sincronizar com Acervo"}
+          </button>
+        </div>
       </div>
 
-      {loading ? (
-        <div className="flex items-center justify-center h-32">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600" />
-        </div>
-      ) : dataCounts[activeTab] === 0 ? (
-        <div className="text-center py-12 text-gray-500">
-          <Table2 className="w-12 h-12 mx-auto mb-3 opacity-50" />
-          <p>{emptyMessages[activeTab]}</p>
-        </div>
-      ) : (
-        <div className="bg-white rounded-xl border overflow-x-auto">
-          {tableRenderers[activeTab]()}
+      {syncResult && (
+        <div className="bg-green-50 border border-green-200 text-green-800 p-4 rounded-lg">
+          Sincronizado: {syncResult.created} criados, {syncResult.updated} atualizados
         </div>
       )}
+
+      {error && (
+        <div className="bg-red-50 border border-red-200 text-red-700 p-4 rounded-lg">{error}</div>
+      )}
+
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="bg-white rounded-lg border p-4">
+          <p className="text-sm text-gray-500">Total Compras</p>
+          <p className="text-2xl font-bold text-gray-800">
+            R$ {(data?.total_compras || 0).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+          </p>
+        </div>
+        <div className="bg-white rounded-lg border p-4">
+          <p className="text-sm text-gray-500">Total Itens</p>
+          <p className="text-2xl font-bold text-gray-800">{data?.count || 0}</p>
+        </div>
+        <div className="bg-white rounded-lg border p-4">
+          <p className="text-sm text-gray-500">Total Filtrado</p>
+          <p className="text-2xl font-bold text-gray-800">
+            R$ {totalFiltered.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+          </p>
+        </div>
+      </div>
+
+      <div className="flex flex-col sm:flex-row gap-3">
+        <input
+          type="text"
+          placeholder="Buscar item..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+        />
+        <select
+          value={areaFilter}
+          onChange={(e) => setAreaFilter(e.target.value)}
+          className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+        >
+          <option value="">Todas as áreas</option>
+          {areas.map((a) => (
+            <option key={a} value={a}>
+              {a}
+            </option>
+          ))}
+        </select>
+        <select
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value)}
+          className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+        >
+          <option value="">Todos os status</option>
+          {statuses.map((s) => (
+            <option key={s} value={s}>
+              {s}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      <div className="bg-white rounded-lg border overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b bg-gray-50">
+                <th className="text-left px-4 py-3 font-medium text-gray-600">Área</th>
+                <th className="text-left px-4 py-3 font-medium text-gray-600">Status</th>
+                <th className="text-left px-4 py-3 font-medium text-gray-600">Responsável</th>
+                <th className="text-left px-4 py-3 font-medium text-gray-600">Item</th>
+                <th className="text-left px-4 py-3 font-medium text-gray-600">Descrição</th>
+                <th className="text-right px-4 py-3 font-medium text-gray-600">Qtd</th>
+                <th className="text-right px-4 py-3 font-medium text-gray-600">Valor</th>
+                <th className="text-right px-4 py-3 font-medium text-gray-600">Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filtered.map((row) => (
+                <tr key={row.id} className="border-b last:border-b-0 hover:bg-gray-50">
+                  <td className="px-4 py-3">
+                    <span
+                      className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${areaColors[row.area.trim()] || "bg-gray-100 text-gray-800"}`}
+                    >
+                      {row.area}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3">
+                    <span
+                      className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${statusColors[row.status] || "bg-gray-100 text-gray-800"}`}
+                    >
+                      {row.status}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3 text-gray-600">{row.responsavel || "—"}</td>
+                  <td className="px-4 py-3 font-medium text-gray-800">{row.item}</td>
+                  <td className="px-4 py-3 text-gray-600 max-w-xs truncate">
+                    {row.descricao || "—"}
+                  </td>
+                  <td className="px-4 py-3 text-right text-gray-600">{row.quantidade ?? "—"}</td>
+                  <td className="px-4 py-3 text-right text-gray-600">
+                    {row.valor ? `R$ ${row.valor.toFixed(2)}` : "—"}
+                  </td>
+                  <td className="px-4 py-3 text-right font-medium text-gray-800">
+                    {row.total ? `R$ ${row.total.toFixed(2)}` : "—"}
+                  </td>
+                </tr>
+              ))}
+              {filtered.length === 0 && (
+                <tr>
+                  <td colSpan={8} className="px-4 py-8 text-center text-gray-500">
+                    Nenhum item encontrado
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div className="text-xs text-gray-400 text-center">
+        Dados da{" "}
+        <a
+          href="https://docs.google.com/spreadsheets/d/16fCr0rhUfZKw8THvfoVxlMcn95XKxs2N"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="underline hover:text-gray-600"
+        >
+          planilha Google Sheets
+        </a>
+      </div>
     </div>
   );
 }
