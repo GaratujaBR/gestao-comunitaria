@@ -8,6 +8,7 @@ import {
   BookOpen,
   Bell,
   LayoutDashboard,
+  Table2,
   Menu,
   X,
 } from "lucide-react";
@@ -22,6 +23,7 @@ const navItems = [
   { to: "/logs", icon: ClipboardList, label: "Logs" },
   { to: "/wiki", icon: BookOpen, label: "Wiki" },
   { to: "/alertas", icon: Bell, label: "Alertas" },
+  { to: "/planilha", icon: Table2, label: "Planilha" },
 ];
 
 export default function Layout() {
