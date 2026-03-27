@@ -8,6 +8,9 @@ import {
   BookOpen,
   Bell,
   LayoutDashboard,
+  Table2,
+  Wrench,
+  Vote,
   Menu,
   X,
 } from "lucide-react";
@@ -22,6 +25,9 @@ const navItems = [
   { to: "/logs", icon: ClipboardList, label: "Logs" },
   { to: "/wiki", icon: BookOpen, label: "Wiki" },
   { to: "/alertas", icon: Bell, label: "Alertas" },
+  { to: "/planilha", icon: Table2, label: "Planilha" },
+  { to: "/chamados", icon: Wrench, label: "Chamados" },
+  { to: "/enquetes", icon: Vote, label: "Enquetes" },
 ];
 
 export default function Layout() {

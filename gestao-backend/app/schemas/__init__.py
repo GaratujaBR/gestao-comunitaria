@@ -5,3 +5,7 @@ from app.schemas.booking import BookingCreate, BookingUpdate, BookingResponse
 from app.schemas.log import LogCreate, LogResponse
 from app.schemas.wiki_article import WikiArticleCreate, WikiArticleUpdate, WikiArticleResponse
 from app.schemas.alert import AlertCreate, AlertUpdate, AlertResponse
+from app.schemas.chamado import ChamadoCreate, ChamadoUpdate, ChamadoResponse
+from app.schemas.prestador import PrestadorCreate, PrestadorResponse
+from app.schemas.enquete import EnqueteCreate, EnqueteUpdate, VotoCreate, EnqueteResponse
+from app.schemas.sheet_row import SheetRowCreate, SheetRowResponse, SheetDataResponse

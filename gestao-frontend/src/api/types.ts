@@ -110,3 +110,64 @@ export interface Alert {
   data_acao: string | null;
   created_at: string;
 }
+
+export interface SheetRow {
+  id: string;
+  area: string;
+  status: string;
+  responsavel: string | null;
+  item: string;
+  descricao: string | null;
+  quantidade: number | null;
+  valor: number | null;
+  total: number | null;
+  created_at: string;
+}
+
+export interface SheetData {
+  rows: SheetRow[];
+  count: number;
+  total_compras: number;
+}
+
+export interface Chamado {
+  id: string;
+  numero: number;
+  estrutura: string;
+  area: string | null;
+  descricao: string;
+  prioridade: string;
+  tipo: string;
+  status: string;
+  prestador_id: string | null;
+  prestador_nome: string | null;
+  prestador_telefone: string | null;
+  solicitante: string | null;
+  resolucao: string | null;
+  created_at: string;
+}
+
+export interface Prestador {
+  id: string;
+  nome: string;
+  telefone: string;
+  especialidade: string | null;
+  empresa: string | null;
+  notas: string | null;
+  created_at: string;
+}
+
+export interface Enquete {
+  id: string;
+  titulo: string;
+  descricao: string | null;
+  categoria: string;
+  opcoes: string[];
+  votos: Record<string, number>;
+  votantes: Record<string, number[]>;
+  total_votos: number;
+  criador: string | null;
+  multipla_escolha: boolean;
+  status: string;
+  created_at: string;
+}

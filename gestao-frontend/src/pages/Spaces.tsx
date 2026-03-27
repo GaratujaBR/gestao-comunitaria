@@ -93,7 +93,7 @@ export default function Spaces() {
         responsavel_slug: form.responsavel_slug || null,
       };
       if (editing) {
-        const { slug: _slug, ...update } = payload;
+        const { slug: _slug, ...update } = payload; void _slug;
         await api.put(`/api/spaces/${editing}`, update);
       } else {
         await api.post("/api/spaces", payload);

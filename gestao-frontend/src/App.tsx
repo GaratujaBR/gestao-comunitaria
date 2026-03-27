@@ -8,6 +8,9 @@ import Bookings from "@/pages/Bookings";
 import Logs from "@/pages/Logs";
 import Wiki from "@/pages/Wiki";
 import Alerts from "@/pages/Alerts";
+import Spreadsheet from "@/pages/Spreadsheet";
+import Chamados from "@/pages/Chamados";
+import Enquetes from "@/pages/Enquetes";
 
 function App() {
   return (
@@ -22,6 +25,9 @@ function App() {
           <Route path="/logs" element={<Logs />} />
           <Route path="/wiki" element={<Wiki />} />
           <Route path="/alertas" element={<Alerts />} />
+          <Route path="/planilha" element={<Spreadsheet />} />
+          <Route path="/chamados" element={<Chamados />} />
+          <Route path="/enquetes" element={<Enquetes />} />
         </Route>
       </Routes>
     </BrowserRouter>

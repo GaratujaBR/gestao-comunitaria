@@ -98,7 +98,7 @@ export default function Items() {
         tags: form.tags ? form.tags.split(",").map((t) => t.trim()).filter(Boolean) : null,
       };
       if (editing) {
-        const { codigo: _codigo, ...update } = payload;
+        const { codigo: _codigo, ...update } = payload; void _codigo;
         await api.put(`/api/items/${editing}`, update);
       } else {
         await api.post("/api/items", payload);

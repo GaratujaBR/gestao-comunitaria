@@ -78,7 +78,7 @@ export default function Profiles() {
   const save = async () => {
     try {
       if (editing) {
-        const { slug: _slug, ...update } = form;
+        const { slug: _slug, ...update } = form; void _slug;
         await api.put(`/api/profiles/${editing}`, update);
       } else {
         await api.post("/api/profiles", form);
