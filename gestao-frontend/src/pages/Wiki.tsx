@@ -95,7 +95,7 @@ export default function Wiki() {
         autor_slug: form.autor_slug || null,
       };
       if (editing) {
-        const { slug: _slug, ...update } = payload;
+        const { slug: _slug, ...update } = payload; void _slug;
         await api.put(`/api/wiki/${editing}`, update);
       } else {
         await api.post("/api/wiki", payload);
