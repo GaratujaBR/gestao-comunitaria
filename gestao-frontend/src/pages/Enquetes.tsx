@@ -99,7 +99,7 @@ export default function Enquetes() {
 
   const deletar = async (id: string) => {
     try {
-      await api.delete(`/api/enquetes/${id}`);
+      await api.del(`/api/enquetes/${id}`);
       load();
     } catch {
       /* ignore */
