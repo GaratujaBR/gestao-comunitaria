@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { api } from "@/api/client";
-import type { SheetData } from "@/api/types";
+import { supabase } from "@/api/client";
+import type { SheetRow, SheetData } from "@/api/types";
 
 const statusColors: Record<string, string> = {
   Compras: "bg-blue-100 text-blue-800",
@@ -31,8 +31,13 @@ export default function Spreadsheet() {
     setLoading(true);
     setError("");
     try {
-      const result = await api.get<SheetData>("/api/sheets");
-      setData(result);
+      const { data: rows, error: err } = await supabase.from("sheet_rows").select("*").order("created_at", { ascending: false });
+      if (err) throw err;
+      const typedRows = (rows || []) as SheetRow[];
+      const totalCompras = typedRows
+        .filter((r) => r.status === "Compras")
+        .reduce((sum, r) => sum + (r.total || 0), 0);
+      setData({ rows: typedRows, count: typedRows.length, total_compras: totalCompras });
     } catch (e) {
       setError(e instanceof Error ? e.message : "Erro ao carregar planilha");
     } finally {
@@ -48,8 +53,8 @@ export default function Spreadsheet() {
     setSyncing(true);
     setSyncResult(null);
     try {
-      const result = await api.post<{ created: number; updated: number }>("/api/sheets/sync", {});
-      setSyncResult(result);
+      setSyncResult({ created: 0, updated: 0 });
+      setError("Sincronização com Google Sheets não disponível no modo Supabase.");
     } catch (e) {
       setError(e instanceof Error ? e.message : "Erro ao sincronizar");
     } finally {

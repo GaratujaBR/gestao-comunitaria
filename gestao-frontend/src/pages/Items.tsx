@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { api } from "@/api/client";
+import { supabase } from "@/api/client";
 import type { Item } from "@/api/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -49,8 +49,10 @@ export default function Items() {
   const load = async () => {
     setLoading(true);
     try {
-      const url = filter ? `/api/items?categoria=${filter}` : "/api/items";
-      setItems(await api.get<Item[]>(url));
+      let query = supabase.from("items").select("*").order("created_at", { ascending: false });
+      if (filter) query = query.eq("categoria", filter);
+      const { data } = await query;
+      setItems((data || []) as Item[]);
     } finally {
       setLoading(false);
     }
@@ -99,9 +101,11 @@ export default function Items() {
       };
       if (editing) {
         const { codigo: _codigo, ...update } = payload; void _codigo;
-        await api.put(`/api/items/${editing}`, update);
+        const { error: err } = await supabase.from("items").update(update).eq("codigo", editing);
+        if (err) throw err;
       } else {
-        await api.post("/api/items", payload);
+        const { error: err } = await supabase.from("items").insert(payload);
+        if (err) throw err;
       }
       setOpen(false);
       load();
@@ -112,7 +116,8 @@ export default function Items() {
 
   const remove = async (codigo: string) => {
     if (!confirm("Remover este item?")) return;
-    await api.del(`/api/items/${codigo}`);
+    const { error } = await supabase.from("items").delete().eq("codigo", codigo);
+    if (error) { alert("Erro ao remover: " + error.message); return; }
     load();
   };
 

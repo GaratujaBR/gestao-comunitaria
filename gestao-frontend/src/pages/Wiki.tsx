@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { api } from "@/api/client";
+import { supabase } from "@/api/client";
 import type { WikiArticle } from "@/api/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -48,8 +48,10 @@ export default function Wiki() {
   const load = async () => {
     setLoading(true);
     try {
-      const url = catFilter ? `/api/wiki?categoria=${catFilter}` : "/api/wiki";
-      setArticles(await api.get<WikiArticle[]>(url));
+      let query = supabase.from("wiki_articles").select("*").order("created_at", { ascending: false });
+      if (catFilter) query = query.eq("categoria", catFilter);
+      const { data } = await query;
+      setArticles((data || []) as WikiArticle[]);
     } finally {
       setLoading(false);
     }
@@ -96,9 +98,11 @@ export default function Wiki() {
       };
       if (editing) {
         const { slug: _slug, ...update } = payload; void _slug;
-        await api.put(`/api/wiki/${editing}`, update);
+        const { error: err } = await supabase.from("wiki_articles").update({ ...update, updated_at: new Date().toISOString() }).eq("slug", editing);
+        if (err) throw err;
       } else {
-        await api.post("/api/wiki", payload);
+        const { error: err } = await supabase.from("wiki_articles").insert(payload);
+        if (err) throw err;
       }
       setOpen(false);
       load();
@@ -109,7 +113,8 @@ export default function Wiki() {
 
   const remove = async (slug: string) => {
     if (!confirm("Remover este artigo?")) return;
-    await api.del(`/api/wiki/${slug}`);
+    const { error } = await supabase.from("wiki_articles").delete().eq("slug", slug);
+    if (error) { alert("Erro ao remover: " + error.message); return; }
     load();
   };
 

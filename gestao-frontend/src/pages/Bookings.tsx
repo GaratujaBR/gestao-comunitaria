@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { api } from "@/api/client";
+import { supabase } from "@/api/client";
 import type { Booking } from "@/api/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -48,8 +48,10 @@ export default function Bookings() {
   const load = async () => {
     setLoading(true);
     try {
-      const url = statusFilter ? `/api/bookings?status=${statusFilter}` : "/api/bookings";
-      setBookings(await api.get<Booking[]>(url));
+      let query = supabase.from("bookings").select("*").order("created_at", { ascending: false });
+      if (statusFilter) query = query.eq("status", statusFilter);
+      const { data } = await query;
+      setBookings((data || []) as Booking[]);
     } finally {
       setLoading(false);
     }
@@ -97,9 +99,11 @@ export default function Bookings() {
         observacoes: form.observacoes || null,
       };
       if (editing) {
-        await api.put(`/api/bookings/${editing}`, payload);
+        const { error: err } = await supabase.from("bookings").update(payload).eq("id", editing);
+        if (err) throw err;
       } else {
-        await api.post("/api/bookings", payload);
+        const { error: err } = await supabase.from("bookings").insert(payload);
+        if (err) throw err;
       }
       setOpen(false);
       load();
@@ -110,7 +114,8 @@ export default function Bookings() {
 
   const remove = async (id: string) => {
     if (!confirm("Remover esta reserva?")) return;
-    await api.del(`/api/bookings/${id}`);
+    const { error } = await supabase.from("bookings").delete().eq("id", id);
+    if (error) { alert("Erro ao remover: " + error.message); return; }
     load();
   };
 

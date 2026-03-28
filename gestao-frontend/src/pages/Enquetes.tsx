@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { api } from "@/api/client";
+import { supabase } from "@/api/client";
 import type { Enquete } from "@/api/types";
 import { Plus, X, BarChart3, Trash2 } from "lucide-react";
 
@@ -36,8 +36,8 @@ export default function Enquetes() {
   const load = async () => {
     setLoading(true);
     try {
-      const result = await api.get<Enquete[]>("/api/enquetes");
-      setEnquetes(result);
+      const { data } = await supabase.from("enquetes").select("*").order("created_at", { ascending: false });
+      setEnquetes((data || []) as Enquete[]);
     } catch {
       /* ignore */
     } finally {
@@ -59,7 +59,16 @@ export default function Enquetes() {
     try {
       const opcoes = form.opcoes.filter((o) => o.trim() !== "");
       if (opcoes.length < 2) return;
-      await api.post("/api/enquetes", { ...form, opcoes });
+      const votos: Record<string, number> = {};
+      opcoes.forEach((_, i) => { votos[String(i)] = 0; });
+      const { error: err } = await supabase.from("enquetes").insert({
+        ...form,
+        opcoes,
+        votos,
+        votantes: {},
+        total_votos: 0,
+      });
+      if (err) throw err;
       setShowModal(false);
       setForm({
         titulo: "",
@@ -78,10 +87,20 @@ export default function Enquetes() {
   const votar = async (enqueteId: string, opcaoIndex: number) => {
     if (!votante.trim()) return;
     try {
-      await api.post(`/api/enquetes/${enqueteId}/votar`, {
-        opcao_index: opcaoIndex,
-        votante: votante.trim(),
-      });
+      const enquete = enquetes.find((e) => e.id === enqueteId);
+      if (!enquete) return;
+      const votos = { ...enquete.votos };
+      const votantes = { ...(enquete.votantes || {}) } as Record<string, number[]>;
+      const nome = votante.trim();
+      if (!enquete.multipla_escolha && votantes[nome]) return;
+      if (votantes[nome]?.includes(opcaoIndex)) return;
+      votos[String(opcaoIndex)] = (votos[String(opcaoIndex)] || 0) + 1;
+      votantes[nome] = [...(votantes[nome] || []), opcaoIndex];
+      await supabase.from("enquetes").update({
+        votos,
+        votantes,
+        total_votos: enquete.total_votos + 1,
+      }).eq("id", enqueteId);
       load();
     } catch {
       /* ignore */
@@ -90,7 +109,7 @@ export default function Enquetes() {
 
   const encerrar = async (id: string) => {
     try {
-      await api.put(`/api/enquetes/${id}`, { status: "encerrada" });
+      await supabase.from("enquetes").update({ status: "encerrada" }).eq("id", id);
       load();
     } catch {
       /* ignore */
@@ -99,7 +118,7 @@ export default function Enquetes() {
 
   const deletar = async (id: string) => {
     try {
-      await api.del(`/api/enquetes/${id}`);
+      await supabase.from("enquetes").delete().eq("id", id);
       load();
     } catch {
       /* ignore */

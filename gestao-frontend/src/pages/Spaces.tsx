@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { api } from "@/api/client";
+import { supabase } from "@/api/client";
 import type { Space } from "@/api/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -47,7 +47,8 @@ export default function Spaces() {
   const load = async () => {
     setLoading(true);
     try {
-      setSpaces(await api.get<Space[]>("/api/spaces"));
+      const { data } = await supabase.from("spaces").select("*").order("created_at", { ascending: false });
+      setSpaces((data || []) as Space[]);
     } finally {
       setLoading(false);
     }
@@ -94,9 +95,11 @@ export default function Spaces() {
       };
       if (editing) {
         const { slug: _slug, ...update } = payload; void _slug;
-        await api.put(`/api/spaces/${editing}`, update);
+        const { error: err } = await supabase.from("spaces").update(update).eq("slug", editing);
+        if (err) throw err;
       } else {
-        await api.post("/api/spaces", payload);
+        const { error: err } = await supabase.from("spaces").insert(payload);
+        if (err) throw err;
       }
       setOpen(false);
       load();
@@ -107,7 +110,8 @@ export default function Spaces() {
 
   const remove = async (slug: string) => {
     if (!confirm("Remover este espaço?")) return;
-    await api.del(`/api/spaces/${slug}`);
+    const { error } = await supabase.from("spaces").delete().eq("slug", slug);
+    if (error) { alert("Erro ao remover: " + error.message); return; }
     load();
   };
 

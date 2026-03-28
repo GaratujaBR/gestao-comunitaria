@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { api } from "@/api/client";
+import { supabase } from "@/api/client";
 import type { Alert } from "@/api/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -42,8 +42,10 @@ export default function Alerts() {
   const load = async () => {
     setLoading(true);
     try {
-      const url = showRead ? "/api/alerts" : "/api/alerts?lido=false";
-      setAlerts(await api.get<Alert[]>(url));
+      let query = supabase.from("alerts").select("*").order("created_at", { ascending: false });
+      if (!showRead) query = query.eq("lido", false);
+      const { data } = await query;
+      setAlerts((data || []) as Alert[]);
     } finally {
       setLoading(false);
     }
@@ -68,7 +70,8 @@ export default function Alerts() {
         mensagem: form.mensagem || null,
         data_acao: form.data_acao ? new Date(form.data_acao).toISOString() : null,
       };
-      await api.post("/api/alerts", payload);
+      const { error: err } = await supabase.from("alerts").insert(payload);
+      if (err) throw err;
       setOpen(false);
       load();
     } catch (e: unknown) {
@@ -77,13 +80,14 @@ export default function Alerts() {
   };
 
   const markRead = async (id: string) => {
-    await api.put(`/api/alerts/${id}`, { lido: true });
+    await supabase.from("alerts").update({ lido: true }).eq("id", id);
     load();
   };
 
   const remove = async (id: string) => {
     if (!confirm("Remover este alerta?")) return;
-    await api.del(`/api/alerts/${id}`);
+    const { error } = await supabase.from("alerts").delete().eq("id", id);
+    if (error) { alert("Erro ao remover: " + error.message); return; }
     load();
   };
 
