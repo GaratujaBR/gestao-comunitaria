@@ -116,7 +116,8 @@ export default function Items() {
 
   const remove = async (codigo: string) => {
     if (!confirm("Remover este item?")) return;
-    await supabase.from("items").delete().eq("codigo", codigo);
+    const { error } = await supabase.from("items").delete().eq("codigo", codigo);
+    if (error) { alert("Erro ao remover: " + error.message); return; }
     load();
   };
 

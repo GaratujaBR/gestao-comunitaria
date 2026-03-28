@@ -110,7 +110,8 @@ export default function Spaces() {
 
   const remove = async (slug: string) => {
     if (!confirm("Remover este espaço?")) return;
-    await supabase.from("spaces").delete().eq("slug", slug);
+    const { error } = await supabase.from("spaces").delete().eq("slug", slug);
+    if (error) { alert("Erro ao remover: " + error.message); return; }
     load();
   };
 

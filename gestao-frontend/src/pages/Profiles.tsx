@@ -95,7 +95,8 @@ export default function Profiles() {
 
   const remove = async (slug: string) => {
     if (!confirm("Remover este perfil?")) return;
-    await supabase.from("profiles").delete().eq("slug", slug);
+    const { error } = await supabase.from("profiles").delete().eq("slug", slug);
+    if (error) { alert("Erro ao remover: " + error.message); return; }
     load();
   };
 

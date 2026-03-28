@@ -114,7 +114,8 @@ export default function Bookings() {
 
   const remove = async (id: string) => {
     if (!confirm("Remover esta reserva?")) return;
-    await supabase.from("bookings").delete().eq("id", id);
+    const { error } = await supabase.from("bookings").delete().eq("id", id);
+    if (error) { alert("Erro ao remover: " + error.message); return; }
     load();
   };
 

@@ -27,11 +27,12 @@ export default function Dashboard() {
   useEffect(() => {
     async function load() {
       try {
-        const [profilesRes, spacesRes, itemsRes, bookingsRes, alertsRes] = await Promise.all([
+        const [profilesRes, spacesRes, itemsRes, bookingsRes, bookingsCountRes, alertsRes] = await Promise.all([
           supabase.from("profiles").select("id"),
           supabase.from("spaces").select("id"),
           supabase.from("items").select("id, estado"),
           supabase.from("bookings").select("*").order("created_at", { ascending: false }).limit(5),
+          supabase.from("bookings").select("*", { count: "exact", head: true }),
           supabase.from("alerts").select("id").eq("lido", false),
         ]);
         const items = itemsRes.data || [];
@@ -40,7 +41,7 @@ export default function Dashboard() {
           profiles: profilesRes.data?.length || 0,
           spaces: spacesRes.data?.length || 0,
           items: items.length,
-          bookings: bookings.length,
+          bookings: bookingsCountRes.count || 0,
           alertsUnread: alertsRes.data?.length || 0,
           itemsMaintenance: items.filter((i) => i.estado === "manutencao").length,
         });

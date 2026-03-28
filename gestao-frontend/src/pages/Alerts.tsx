@@ -86,7 +86,8 @@ export default function Alerts() {
 
   const remove = async (id: string) => {
     if (!confirm("Remover este alerta?")) return;
-    await supabase.from("alerts").delete().eq("id", id);
+    const { error } = await supabase.from("alerts").delete().eq("id", id);
+    if (error) { alert("Erro ao remover: " + error.message); return; }
     load();
   };
 

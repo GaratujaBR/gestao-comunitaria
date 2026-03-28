@@ -113,7 +113,8 @@ export default function Wiki() {
 
   const remove = async (slug: string) => {
     if (!confirm("Remover este artigo?")) return;
-    await supabase.from("wiki_articles").delete().eq("slug", slug);
+    const { error } = await supabase.from("wiki_articles").delete().eq("slug", slug);
+    if (error) { alert("Erro ao remover: " + error.message); return; }
     load();
   };
 
