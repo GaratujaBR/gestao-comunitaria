@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { api } from "@/api/client";
-import type { Profile, Space, Item, Booking, Alert } from "@/api/types";
+import { supabase } from "@/api/client";
+import type { Booking } from "@/api/types";
 import { Users, Home, Package, CalendarDays, Bell, AlertTriangle } from "lucide-react";
 
 interface Stats {
@@ -27,22 +27,24 @@ export default function Dashboard() {
   useEffect(() => {
     async function load() {
       try {
-        const [profiles, spaces, items, bookings, alerts] = await Promise.all([
-          api.get<Profile[]>("/api/profiles"),
-          api.get<Space[]>("/api/spaces"),
-          api.get<Item[]>("/api/items"),
-          api.get<Booking[]>("/api/bookings"),
-          api.get<Alert[]>("/api/alerts?lido=false"),
+        const [profilesRes, spacesRes, itemsRes, bookingsRes, alertsRes] = await Promise.all([
+          supabase.from("profiles").select("id"),
+          supabase.from("spaces").select("id"),
+          supabase.from("items").select("id, estado"),
+          supabase.from("bookings").select("*").order("created_at", { ascending: false }).limit(5),
+          supabase.from("alerts").select("id").eq("lido", false),
         ]);
+        const items = itemsRes.data || [];
+        const bookings = (bookingsRes.data || []) as Booking[];
         setStats({
-          profiles: profiles.length,
-          spaces: spaces.length,
+          profiles: profilesRes.data?.length || 0,
+          spaces: spacesRes.data?.length || 0,
           items: items.length,
           bookings: bookings.length,
-          alertsUnread: alerts.length,
+          alertsUnread: alertsRes.data?.length || 0,
           itemsMaintenance: items.filter((i) => i.estado === "manutencao").length,
         });
-        setRecentBookings(bookings.slice(0, 5));
+        setRecentBookings(bookings);
       } catch {
         /* ignore */
       } finally {

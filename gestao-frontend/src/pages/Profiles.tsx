@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { api } from "@/api/client";
+import { supabase } from "@/api/client";
 import type { Profile } from "@/api/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -43,7 +43,8 @@ export default function Profiles() {
   const load = async () => {
     setLoading(true);
     try {
-      setProfiles(await api.get<Profile[]>("/api/profiles"));
+      const { data } = await supabase.from("profiles").select("*").order("created_at", { ascending: false });
+      setProfiles((data || []) as Profile[]);
     } finally {
       setLoading(false);
     }
@@ -79,9 +80,11 @@ export default function Profiles() {
     try {
       if (editing) {
         const { slug: _slug, ...update } = form; void _slug;
-        await api.put(`/api/profiles/${editing}`, update);
+        const { error: err } = await supabase.from("profiles").update(update).eq("slug", editing);
+        if (err) throw err;
       } else {
-        await api.post("/api/profiles", form);
+        const { error: err } = await supabase.from("profiles").insert(form);
+        if (err) throw err;
       }
       setOpen(false);
       load();
@@ -92,7 +95,7 @@ export default function Profiles() {
 
   const remove = async (slug: string) => {
     if (!confirm("Remover este perfil?")) return;
-    await api.del(`/api/profiles/${slug}`);
+    await supabase.from("profiles").delete().eq("slug", slug);
     load();
   };
 

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { api } from "@/api/client";
+import { supabase } from "@/api/client";
 import type { Log } from "@/api/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -48,8 +48,10 @@ export default function Logs() {
   const load = async () => {
     setLoading(true);
     try {
-      const url = acaoFilter ? `/api/logs?acao=${acaoFilter}` : "/api/logs";
-      setLogs(await api.get<Log[]>(url));
+      let query = supabase.from("logs").select("*").order("timestamp", { ascending: false });
+      if (acaoFilter) query = query.eq("acao", acaoFilter);
+      const { data } = await query;
+      setLogs((data || []) as Log[]);
     } finally {
       setLoading(false);
     }
@@ -78,7 +80,8 @@ export default function Logs() {
         clima: form.clima || null,
         sazonalidade: form.sazonalidade || null,
       };
-      await api.post("/api/logs", payload);
+      const { error: err } = await supabase.from("logs").insert(payload);
+      if (err) throw err;
       setOpen(false);
       load();
     } catch (e: unknown) {

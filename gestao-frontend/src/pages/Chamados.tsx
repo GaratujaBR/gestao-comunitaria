@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { api } from "@/api/client";
+import { supabase } from "@/api/client";
 import type { Chamado, Prestador } from "@/api/types";
 import { Plus, Phone, X } from "lucide-react";
 
@@ -50,12 +50,12 @@ export default function Chamados() {
   const load = async () => {
     setLoading(true);
     try {
-      const [c, p] = await Promise.all([
-        api.get<Chamado[]>("/api/chamados"),
-        api.get<Prestador[]>("/api/prestadores"),
+      const [chamadosRes, prestadoresRes] = await Promise.all([
+        supabase.from("chamados").select("*").order("created_at", { ascending: false }),
+        supabase.from("prestadores").select("*").order("created_at", { ascending: false }),
       ]);
-      setChamados(c);
-      setPrestadores(p);
+      setChamados((chamadosRes.data || []) as Chamado[]);
+      setPrestadores((prestadoresRes.data || []) as Prestador[]);
     } catch {
       /* ignore */
     } finally {
@@ -73,7 +73,16 @@ export default function Chamados() {
 
   const createChamado = async () => {
     try {
-      await api.post("/api/chamados", form);
+      const prestador = form.prestador_id
+        ? prestadores.find((p) => p.id === form.prestador_id)
+        : null;
+      const { error: err } = await supabase.from("chamados").insert({
+        ...form,
+        prestador_id: form.prestador_id || null,
+        prestador_nome: prestador?.nome || null,
+        prestador_telefone: prestador?.telefone || null,
+      });
+      if (err) throw err;
       setShowModal(false);
       setForm({
         estrutura: "",
@@ -92,7 +101,8 @@ export default function Chamados() {
 
   const createPrestador = async () => {
     try {
-      await api.post("/api/prestadores", prestadorForm);
+      const { error: err } = await supabase.from("prestadores").insert(prestadorForm);
+      if (err) throw err;
       setShowPrestadorModal(false);
       setPrestadorForm({ nome: "", telefone: "", especialidade: "", empresa: "" });
       load();
@@ -103,20 +113,21 @@ export default function Chamados() {
 
   const updateStatus = async (id: string, status: string) => {
     try {
-      await api.put(`/api/chamados/${id}`, { status });
+      await supabase.from("chamados").update({ status }).eq("id", id);
       load();
     } catch {
       /* ignore */
     }
   };
 
-  const openWhatsApp = async (id: string) => {
-    try {
-      const result = await api.get<{ url: string }>(`/api/chamados/${id}/whatsapp`);
-      window.open(result.url, "_blank");
-    } catch {
-      /* ignore */
-    }
+  const openWhatsApp = (id: string) => {
+    const chamado = chamados.find((c) => c.id === id);
+    if (!chamado?.prestador_telefone) return;
+    const phone = chamado.prestador_telefone.replace(/\D/g, "");
+    const msg = encodeURIComponent(
+      `Olá! Chamado #${chamado.numero} - ${chamado.estrutura}: ${chamado.descricao}`
+    );
+    window.open(`https://wa.me/${phone}?text=${msg}`, "_blank");
   };
 
   if (loading) {
