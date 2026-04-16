@@ -23,6 +23,7 @@ export interface Space {
   instrucoes_acesso: string | null;
   fotos: string[] | null;
   responsavel_slug: string | null;
+  parent_slug: string | null;
   status: string;
   created_at: string;
 }
