@@ -49,7 +49,7 @@ export default function Items() {
   const load = async () => {
     setLoading(true);
     try {
-      const url = filter ? `/api/items?categoria=${filter}` : "/api/items";
+      const url = filter ? `/api/items?tipo=comum&categoria=${filter}` : "/api/items?tipo=comum";
       setItems(await api.get<Item[]>(url));
     } finally {
       setLoading(false);
@@ -95,6 +95,7 @@ export default function Items() {
         categoria: form.categoria || null,
         manual_cuidados: form.manual_cuidados || null,
         ciclo_manutencao: form.ciclo_manutencao || null,
+        tipo: "comum",
         tags: form.tags ? form.tags.split(",").map((t) => t.trim()).filter(Boolean) : null,
       };
       if (editing) {

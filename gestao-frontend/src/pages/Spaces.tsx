@@ -75,13 +75,6 @@ export default function Spaces() {
   useEffect(() => { load(); }, []);
 
   // --- Handlers de Espaço ---
-  const openNewSpace = () => {
-    setSpaceForm(emptySpaceForm);
-    setEditingSpace(null);
-    setSpaceError("");
-    setSpaceOpen(true);
-  };
-
   const openEditSpace = (s: Space) => {
     setSpaceForm({
       slug: s.slug,
@@ -215,9 +208,6 @@ export default function Spaces() {
     <div>
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold text-gray-800">Espaços</h1>
-        <Button onClick={openNewSpace}>
-          <Plus className="w-4 h-4 mr-2" /> Novo Espaço
-        </Button>
       </div>
 
       {loading ? (

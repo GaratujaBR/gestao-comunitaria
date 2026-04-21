@@ -1,0 +1,74 @@
+/* ============================================
+   Community Hub — Design Tokens
+   Terra de Canaã · Vilarejo Ecológico
+   ============================================ */
+
+:root {
+  /* --- Backgrounds (contexto promo / marketing) --- */
+  --color-bg-primary:    #4CAF50;   /* verde vibrante — fundo promo */
+  --color-bg-surface:    #F3EFE0;   /* creme suave — fundo de cards promo */
+  --color-bg-section:    #D5E8D4;   /* verde pálido — áreas internas de destaque */
+
+  /* --- App transacional --- */
+  --cc-app-bg:           #F8F7F4;   /* off-white quente — fundo do app */
+  --cc-primary:          #1F6B3A;   /* verde-floresta profundo — cor primária */
+  --cc-primary-dark:     #154B28;   /* verde mais escuro — hover/pressed */
+  --cc-border-app:       #E7E5E4;   /* cinza-quente claro — bordas de cards e inputs */
+  --cc-nav-active-bg:    #ECF7EE;   /* verde muito claro — fundo do nav ativo */
+
+  /* --- Accents & Identity --- */
+  --color-accent:        #88C9A1;   /* verde água — ícones e botões secundários */
+  --color-accent-dark:   #2D5A27;   /* verde menta escuro — fills e ícones */
+  --color-accent-pink:   #F8BBD0;   /* rosa pastel — contraste térmico */
+
+  /* --- Texto --- */
+  --color-text-primary:  #1A1A1A;
+  --color-text-secondary:#4D4D4D;
+
+  /* --- Bordas & Detalhes --- */
+  --color-border:        #6B8E23;   /* verde oliva — contexto promo */
+  --color-border-dark:   #4A5D23;
+
+  /* --- Status --- */
+  --color-status-success:#90EE90;
+  --color-status-alert:  #FF80AB;
+
+  /* --- Escala de verdes --- */
+  --green-100: #D5E8D4;
+  --green-200: #90EE90;
+  --green-300: #88C9A1;
+  --green-500: #4CAF50;
+  --green-700: #6B8E23;
+  --green-900: #2D5A27;
+
+  /* --- Tipografia --- */
+  --cc-font-sans:        'Montserrat', system-ui, -apple-system, sans-serif;
+  --font-size-xs:        12px;
+  --font-size-sm:        14px;
+  --font-size-base:      16px;
+  --font-size-lg:        20px;
+  --font-size-xl:        24px;
+  --font-size-2xl:       32px;
+  --font-weight-regular: 400;
+  --font-weight-medium:  500;
+  --font-weight-bold:    700;
+
+  /* --- Espaçamento (base 8pt grid) --- */
+  --space-xs:   4px;
+  --space-sm:   8px;
+  --space-md:   16px;
+  --space-lg:   24px;
+  --space-xl:   32px;
+  --space-2xl:  48px;
+
+  /* --- Border radius --- */
+  --radius-sm:   6px;
+  --radius-md:   12px;
+  --radius-lg:   20px;
+  --radius-xl:   28px;
+  --radius-pill: 9999px;
+
+  /* --- Sombras (flat com leve profundidade verde) --- */
+  --shadow-card:     0 2px 8px rgba(45, 90, 39, 0.08);
+  --shadow-elevated: 0 4px 16px rgba(45, 90, 39, 0.15);
+}

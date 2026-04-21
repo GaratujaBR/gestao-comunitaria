@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  html, body { margin:0; background:#F8F7F4; font-family: var(--cc-font-sans); color:#1A1A1A; }
+  body { padding: 20px; display:flex; align-items:center; justify-content:center; min-height:100vh; box-sizing:border-box; }
+  .wrap { width:100%; max-width:660px; display:flex; flex-direction:column; gap: 6px; }
+  .nav { display:flex; align-items:center; gap: 12px; padding: 10px 14px; border-radius: 10px; font-size: 14px; font-weight: 500; color:#4D4D4D; border-left: 2px solid transparent; padding-left: 12px; }
+  .nav.active { background:#ECF7EE; color:#1F6B3A; border-left-color:#1F6B3A; font-weight: 600; }
+  .nav:hover { background:#F5F5F4; color:#1A1A1A; }
+  .ico { width:18px; height:18px; stroke: currentColor; stroke-width: 1.8; fill: none; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="nav active">
+    <svg class="ico" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+    Painel
+  </div>
+  <div class="nav">
+    <svg class="ico" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M13 7a4 4 0 1 1-8 0 4 4 0 0 1 8 0M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+    Perfis
+  </div>
+  <div class="nav">
+    <svg class="ico" viewBox="0 0 24 24"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18ZM6 12H4a2 2 0 0 0-2 2v8h4ZM18 9h2a2 2 0 0 1 2 2v11h-4ZM10 6h4M10 10h4M10 14h4M10 18h4"/></svg>
+    Espaços
+  </div>
+  <div class="nav">
+    <svg class="ico" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+    Reservas
+  </div>
+</div>
+</body>
+</html>

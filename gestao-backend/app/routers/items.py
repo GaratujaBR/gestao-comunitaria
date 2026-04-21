@@ -13,6 +13,7 @@ async def list_items(
     categoria: str | None = Query(None),
     estado: str | None = Query(None),
     space_slug: str | None = Query(None),
+    tipo: str | None = Query(None),
     db: AsyncSession = Depends(get_db),
 ):
     query = select(Item).order_by(Item.nome)
@@ -22,6 +23,8 @@ async def list_items(
         query = query.where(Item.estado == estado)
     if space_slug:
         query = query.where(Item.space_slug == space_slug)
+    if tipo:
+        query = query.where(Item.tipo == tipo)
     result = await db.execute(query)
     return result.scalars().all()
 

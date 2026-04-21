@@ -4,6 +4,8 @@ from sqlalchemy import select, func
 from app.database import get_db
 from app.models.chamado import Chamado
 from app.models.prestador import Prestador
+from app.models.alert import Alert
+from app.models.log import Log
 from app.schemas.chamado import ChamadoCreate, ChamadoUpdate, ChamadoResponse
 from urllib.parse import quote
 
@@ -39,6 +41,16 @@ async def create_chamado(data: ChamadoCreate, db: AsyncSession = Depends(get_db)
         prestador_telefone=prestador_telefone,
     )
     db.add(chamado)
+    await db.flush()
+    db.add(Alert(
+        tipo="chamado",
+        titulo=f"Chamado #{chamado.numero} aberto: {data.estrutura}",
+        mensagem=data.descricao[:120] if data.descricao else None,
+    ))
+    db.add(Log(
+        acao="chamado_aberto",
+        descricao_incidente=f"#{chamado.numero} — {data.estrutura}: {data.descricao[:80] if data.descricao else ''}",
+    ))
     await db.commit()
     await db.refresh(chamado)
     return chamado
@@ -66,8 +78,15 @@ async def update_chamado(chamado_id: str, data: ChamadoUpdate, db: AsyncSession 
     chamado = result.scalar_one_or_none()
     if not chamado:
         raise HTTPException(status_code=404, detail="Chamado not found")
+    old_status = chamado.status
     for key, value in data.model_dump(exclude_unset=True).items():
         setattr(chamado, key, value)
+    if data.status and data.status != old_status and data.status == "concluido":
+        db.add(Alert(
+            tipo="chamado",
+            titulo=f"Chamado #{chamado.numero} concluído",
+            mensagem=chamado.resolucao,
+        ))
     await db.commit()
     await db.refresh(chamado)
     return chamado

@@ -1,0 +1,67 @@
+/* ============================================
+   Community Hub — Design Tokens
+   Gerado a partir da referência visual
+   ============================================ */
+
+:root {
+  /* --- Backgrounds --- */
+  --color-bg-primary:    #4CAF50;   /* verde vibrante — fundo geral da página */
+  --color-bg-surface:    #F3EFE0;   /* creme suave — fundo dos cards */
+  --color-bg-section:    #D5E8D4;   /* verde pálido — áreas internas de destaque */
+
+  /* --- Accents & Identity --- */
+  --color-accent:        #88C9A1;   /* verde água — ícones e botões primários */
+  --color-accent-dark:   #2D5A27;   /* verde menta escuro — fills e ícones de ferramentas */
+  --color-accent-pink:   #F8BBD0;   /* rosa pastel — contraste térmico, coração, chaves */
+
+  /* --- Texto --- */
+  --color-text-primary:  #1A1A1A;   /* quase preto — títulos e corpo principal */
+  --color-text-secondary:#4D4D4D;   /* cinza escuro — subtítulos e infos secundárias */
+
+  /* --- Bordas & Detalhes --- */
+  --color-border:        #6B8E23;   /* verde oliva — bordas de cards e divisores */
+  --color-border-dark:   #4A5D23;   /* verde musgo — contornos de ilustrações */
+
+  /* --- Status --- */
+  --color-status-success:#90EE90;   /* verde claro — voting ativo */
+  --color-status-alert:  #FF80AB;   /* rosa vibrante — voting arquivado/encerrado */
+
+  /* --- Escala de verdes (design system) --- */
+  --green-100: #D5E8D4;
+  --green-200: #90EE90;
+  --green-300: #88C9A1;
+  --green-500: #4CAF50;
+  --green-700: #6B8E23;
+  --green-900: #2D5A27;
+
+  /* --- Tipografia --- */
+  --font-family-base:    'Nunito', 'Poppins', sans-serif; /* Google Fonts — estilo arredondado e amigável */
+  --font-size-xs:        12px;
+  --font-size-sm:        14px;
+  --font-size-base:      16px;
+  --font-size-lg:        20px;
+  --font-size-xl:        24px;
+  --font-size-2xl:       32px;
+  --font-weight-regular: 400;
+  --font-weight-medium:  500;
+  --font-weight-bold:    700;
+
+  /* --- Espaçamento (base 8pt grid) --- */
+  --space-xs:   4px;
+  --space-sm:   8px;
+  --space-md:   16px;
+  --space-lg:   24px;
+  --space-xl:   32px;
+  --space-2xl:  48px;
+
+  /* --- Border radius --- */
+  --radius-sm:  6px;
+  --radius-md:  12px;
+  --radius-lg:  20px;
+  --radius-xl:  28px;
+  --radius-pill:9999px;
+
+  /* --- Sombras (flat com leve profundidade) --- */
+  --shadow-card:     0 2px 8px rgba(45, 90, 39, 0.10);
+  --shadow-elevated: 0 4px 16px rgba(45, 90, 39, 0.15);
+}

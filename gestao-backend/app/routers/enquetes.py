@@ -43,15 +43,15 @@ async def votar(enquete_id: str, data: VotoCreate, db: AsyncSession = Depends(ge
     votantes = dict(enquete.votantes)
     votos = dict(enquete.votos)
 
-    if not enquete.multipla_escolha and data.votante in votantes:
-        raise HTTPException(status_code=400, detail="Você já votou nesta enquete")
+    if not enquete.multipla_escolha and data.cota_slug in votantes:
+        raise HTTPException(status_code=409, detail="Cota já votou nesta enquete")
 
-    if data.votante in votantes:
-        if data.opcao_index in votantes[data.votante]:
-            raise HTTPException(status_code=400, detail="Você já votou nesta opção")
-        votantes[data.votante].append(data.opcao_index)
+    if data.cota_slug in votantes:
+        if data.opcao_index in votantes[data.cota_slug]:
+            raise HTTPException(status_code=409, detail="Cota já votou nesta opção")
+        votantes[data.cota_slug].append(data.opcao_index)
     else:
-        votantes[data.votante] = [data.opcao_index]
+        votantes[data.cota_slug] = [data.opcao_index]
 
     key = str(data.opcao_index)
     votos[key] = votos.get(key, 0) + 1

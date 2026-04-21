@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  html, body { margin:0; background:#F8F7F4; font-family: var(--cc-font-sans); }
+  body { padding: 20px; display:flex; align-items:center; justify-content:center; min-height:100vh; box-sizing:border-box; }
+  .wrap { display:grid; grid-template-columns: repeat(5, 1fr); gap: 14px; width:100%; max-width: 660px; }
+  .item { display:flex; flex-direction:column; align-items:center; gap: 6px; }
+  .box { width: 80px; height: 80px; background: #F3EFE0; border: 2px solid #6B8E23; }
+  .sm { border-radius: 6px; }
+  .md { border-radius: 12px; }
+  .lg { border-radius: 20px; }
+  .xl { border-radius: 28px; }
+  .pill { border-radius: 9999px; }
+  .token { font-family: var(--cc-font-mono); font-size: 10px; color: #4D4D4D; text-align:center; }
+  .name { font-size: 11px; font-weight: 700; color: #1A1A1A; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="item"><div class="box sm"></div><div class="name">sm</div><div class="token">6 px · tags</div></div>
+  <div class="item"><div class="box md"></div><div class="name">md</div><div class="token">12 px · inputs</div></div>
+  <div class="item"><div class="box lg"></div><div class="name">lg</div><div class="token">20 px · cards</div></div>
+  <div class="item"><div class="box xl"></div><div class="name">xl</div><div class="token">28 px · modais</div></div>
+  <div class="item"><div class="box pill"></div><div class="name">pill</div><div class="token">∞ · badges</div></div>
+</div>
+</body>
+</html>

@@ -10,6 +10,7 @@ class ProfileCreate(BaseModel):
     telefone: str | None = None
     role: str | None = None
     lote: str | None = None
+    cota_slug: str | None = None
     ativo: bool = True
 
 
@@ -20,6 +21,7 @@ class ProfileUpdate(BaseModel):
     telefone: str | None = None
     role: str | None = None
     lote: str | None = None
+    cota_slug: str | None = None
     ativo: bool | None = None
 
 
@@ -32,6 +34,7 @@ class ProfileResponse(BaseModel):
     telefone: str | None = None
     role: str | None = None
     lote: str | None = None
+    cota_slug: str | None = None
     ativo: bool
     created_at: datetime
 

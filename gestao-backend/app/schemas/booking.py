@@ -7,6 +7,7 @@ class BookingCreate(BaseModel):
     space_slug: str | None = None
     item_codigos: list[str] | None = None
     profile_slug: str
+    cota_slug: str | None = None
     data_inicio: datetime
     data_fim: datetime
     tipo_uso: str | None = None
@@ -37,6 +38,7 @@ class BookingResponse(BaseModel):
     space_slug: str | None = None
     item_codigos: list[str] | None = None
     profile_slug: str
+    cota_slug: str | None = None
     data_inicio: datetime
     data_fim: datetime
     tipo_uso: str | None = None

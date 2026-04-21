@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  html, body { margin:0; background:#F8F7F4; font-family: var(--cc-font-sans); color: var(--cc-fg1); }
+  body { padding: 20px; display:flex; align-items:center; justify-content:center; min-height: 100vh; box-sizing:border-box; }
+  .card { width: 100%; max-width: 660px; }
+  .row { display:flex; align-items:center; gap:14px; padding: 8px 0; border-bottom: 1px dashed #E7E5E4; }
+  .row:last-child { border-bottom: none; }
+  .swatch { width: 64px; height: 64px; border-radius: 12px; flex: 0 0 64px; border: 1px solid rgba(45,90,39,.08); }
+  .meta { display:flex; flex-direction:column; gap:2px; min-width:0; }
+  .name { font-size: 14px; font-weight: 700; }
+  .hex { font-family: var(--cc-font-mono); font-size: 12px; color: var(--cc-fg2); }
+  .usage { font-size: 12px; color: var(--cc-fg2); margin-left:auto; text-align:right; }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="row"><div class="swatch" style="background:#F8F7F4"></div>
+    <div class="meta"><div class="name">app-bg · stone-50</div><div class="hex">#F8F7F4</div></div>
+    <div class="usage">Fundo de todas as páginas do app</div>
+  </div>
+  <div class="row"><div class="swatch" style="background:#FFFFFF;border:1px solid #E7E5E4"></div>
+    <div class="meta"><div class="name">app-card · white</div><div class="hex">#FFFFFF</div></div>
+    <div class="usage">Cards e superfícies de conteúdo</div>
+  </div>
+  <div class="row"><div class="swatch" style="background:#F5F5F4"></div>
+    <div class="meta"><div class="name">app-hover · stone-100</div><div class="hex">#F5F5F4</div></div>
+    <div class="usage">Hover em items neutros, linhas de tabela</div>
+  </div>
+  <div class="row"><div class="swatch" style="background:#E7E5E4"></div>
+    <div class="meta"><div class="name">app-border · stone-200</div><div class="hex">#E7E5E4</div></div>
+    <div class="usage">Borda 1 px em cards, inputs, dividers</div>
+  </div>
+  <div class="row"><div class="swatch" style="background:#1F6B3A"></div>
+    <div class="meta"><div class="name">app-primary</div><div class="hex">#1F6B3A · hsl(152 52% 30%)</div></div>
+    <div class="usage">Botão primário do app · Salvar, Novo</div>
+  </div>
+</div>
+</body>
+</html>

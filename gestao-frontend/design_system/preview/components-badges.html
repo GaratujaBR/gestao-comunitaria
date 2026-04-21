@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  html, body { margin:0; background:#F8F7F4; font-family: var(--cc-font-sans); color: #1A1A1A; }
+  body { padding: 20px; display:flex; align-items:center; justify-content:center; min-height:100vh; box-sizing:border-box; }
+  .wrap { width:100%; max-width: 660px; display:flex; flex-wrap: wrap; gap: 8px; align-items:flex-start; }
+  .pill { display:inline-flex; align-items:center; gap:6px; padding: 4px 12px; border-radius: 9999px; font-size: 12px; font-weight: 700; }
+  .dot { width:6px; height:6px; border-radius: 9999px; }
+  .role-founder { background:#F3E8FF; color:#6B21A8 }
+  .role-builder { background:#DBEAFE; color:#1E40AF }
+  .role-cotista { background:#D5E8D4; color:#2D5A27 }
+  .role-visit   { background:#F4F4F5; color:#3F3F46 }
+  .cat-decisao  { background:#DBEAFE; color:#1E40AF }
+  .cat-feedback { background:#E9D5FF; color:#6B21A8 }
+  .cat-pref     { background:#FDE68A; color:#854D0E }
+  .cat-aprov    { background:#D5E8D4; color:#2D5A27 }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <span class="pill role-founder">fundador</span>
+  <span class="pill role-builder">construtor</span>
+  <span class="pill role-cotista">cotista</span>
+  <span class="pill role-visit">visitante</span>
+  <span class="pill" style="background:#90EE90;color:#2D5A27"><span class="dot" style="background:#2D5A27"></span>ativo</span>
+  <span class="pill" style="background:#FEF3C7;color:#854D0E">manutencao</span>
+  <span class="pill" style="background:#FEE2E2;color:#991B1B">indisponivel</span>
+  <span class="pill cat-decisao">decisão</span>
+  <span class="pill cat-feedback">feedback</span>
+  <span class="pill cat-pref">preferência</span>
+  <span class="pill cat-aprov">aprovação</span>
+  <span class="pill" style="background:#FF80AB;color:#7A1A3A">encerrada</span>
+</div>
+</body>
+</html>

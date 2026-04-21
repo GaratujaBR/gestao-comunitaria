@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  html, body { margin:0; background:#F8F7F4; font-family: var(--cc-font-sans); }
+  body { padding: 24px; display:flex; align-items:center; justify-content:center; min-height:100vh; box-sizing:border-box; }
+  .wrap { width: 100%; max-width: 660px; display:flex; flex-direction:column; gap: 12px; }
+  .row { display:grid; grid-template-columns: 96px 1fr; align-items:baseline; gap: 12px; padding: 6px 0; border-bottom: 1px dashed #E7E5E4; }
+  .token { font-family: var(--cc-font-mono); font-size: 11px; color: #4D4D4D; }
+  .px   { font-family: var(--cc-font-mono); font-size: 12px; color: #8A8A8A; }
+  .demo { font-family: var(--cc-font-sans); color: #1A1A1A; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="row"><div class="token">--size-xs</div><div class="demo" style="font-size:12px">12 — Labels, badges, timestamps</div></div>
+  <div class="row"><div class="token">--size-sm</div><div class="demo" style="font-size:14px">14 — Corpo secundário, inputs</div></div>
+  <div class="row"><div class="token">--size-md</div><div class="demo" style="font-size:16px">16 — Corpo principal</div></div>
+  <div class="row"><div class="token">--size-lg</div><div class="demo" style="font-size:20px">20 — Subtítulos de card</div></div>
+  <div class="row"><div class="token">--size-xl</div><div class="demo" style="font-size:24px; font-weight:700">24 — Título de card</div></div>
+  <div class="row"><div class="token">--size-2xl</div><div class="demo" style="font-size:32px; font-weight:700">32 — Título da página</div></div>
+</div>
+</body>
+</html>

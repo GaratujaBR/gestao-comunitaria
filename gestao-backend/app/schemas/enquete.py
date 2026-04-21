@@ -18,7 +18,7 @@ class EnqueteUpdate(BaseModel):
 
 class VotoCreate(BaseModel):
     opcao_index: int
-    votante: str
+    cota_slug: str
 
 
 class EnqueteResponse(BaseModel):

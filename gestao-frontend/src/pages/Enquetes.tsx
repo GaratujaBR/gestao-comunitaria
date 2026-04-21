@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { api } from "@/api/client";
-import type { Enquete } from "@/api/types";
+import type { Enquete, Profile } from "@/api/types";
 import { Plus, X, BarChart3, Trash2 } from "lucide-react";
 
 const categoriaColors: Record<string, string> = {
@@ -19,11 +19,13 @@ const categoriaLabels: Record<string, string> = {
 
 export default function Enquetes() {
   const [enquetes, setEnquetes] = useState<Enquete[]>([]);
+  const [profiles, setProfiles] = useState<Profile[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [categoriaFilter, setCategoriaFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
-  const [votante, setVotante] = useState("");
+  const [selectedProfile, setSelectedProfile] = useState("");
+  const [votoError, setVotoError] = useState("");
   const [form, setForm] = useState({
     titulo: "",
     descricao: "",
@@ -36,8 +38,12 @@ export default function Enquetes() {
   const load = async () => {
     setLoading(true);
     try {
-      const result = await api.get<Enquete[]>("/api/enquetes");
-      setEnquetes(result);
+      const [es, ps] = await Promise.all([
+        api.get<Enquete[]>("/api/enquetes"),
+        api.get<Profile[]>("/api/profiles"),
+      ]);
+      setEnquetes(es);
+      setProfiles(ps);
     } catch {
       /* ignore */
     } finally {
@@ -76,15 +82,22 @@ export default function Enquetes() {
   };
 
   const votar = async (enqueteId: string, opcaoIndex: number) => {
-    if (!votante.trim()) return;
+    if (!selectedProfile) return;
+    const profile = profiles.find((p) => p.slug === selectedProfile);
+    if (!profile?.cota_slug) {
+      setVotoError("Perfil selecionado não pertence a uma cota.");
+      return;
+    }
+    setVotoError("");
     try {
       await api.post(`/api/enquetes/${enqueteId}/votar`, {
         opcao_index: opcaoIndex,
-        votante: votante.trim(),
+        cota_slug: profile.cota_slug,
       });
       load();
-    } catch {
-      /* ignore */
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : "";
+      setVotoError(msg.includes("409") || msg.toLowerCase().includes("cota") ? "Sua cota já votou nesta enquete." : msg || "Erro ao votar.");
     }
   };
 
@@ -137,14 +150,22 @@ export default function Enquetes() {
           <h1 className="text-2xl font-bold text-gray-800">Enquetes</h1>
           <p className="text-sm text-gray-500 mt-1">{enquetes.length} enquetes registradas</p>
         </div>
-        <div className="flex items-center gap-3">
-          <input
-            type="text"
-            placeholder="Seu nome para votar"
-            value={votante}
-            onChange={(e) => setVotante(e.target.value)}
-            className="px-3 py-2 border border-gray-300 rounded-lg text-sm w-48 focus:outline-none focus:ring-2 focus:ring-green-500"
-          />
+        <div className="flex items-center gap-3 flex-wrap">
+          <div className="flex flex-col gap-0.5">
+            <select
+              value={selectedProfile}
+              onChange={(e) => { setSelectedProfile(e.target.value); setVotoError(""); }}
+              className="px-3 py-2 border border-[#E7E5E4] rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#1F6B3A]/20 focus:border-[#1F6B3A]"
+            >
+              <option value="">Quem está votando?</option>
+              {profiles.filter((p) => p.ativo && p.cota_slug).map((p) => (
+                <option key={p.slug} value={p.slug}>
+                  {p.nome_curto || p.nome_completo} ({p.cota_slug})
+                </option>
+              ))}
+            </select>
+            {votoError && <span className="text-xs text-red-500">{votoError}</span>}
+          </div>
           <button
             onClick={() => setShowModal(true)}
             className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700"
@@ -250,7 +271,7 @@ export default function Enquetes() {
                         {e.status === "aberta" && (
                           <button
                             onClick={() => votar(e.id, idx)}
-                            disabled={!votante.trim()}
+                            disabled={!selectedProfile}
                             className="px-2 py-1 text-xs bg-green-50 text-green-700 rounded hover:bg-green-100 disabled:opacity-50 shrink-0"
                           >
                             Votar

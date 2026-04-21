@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  html, body { margin:0; background:#F8F7F4; font-family: var(--cc-font-sans); color:#1A1A1A; }
+  body { padding: 20px; display:flex; align-items:center; justify-content:center; min-height:100vh; box-sizing:border-box; }
+  .wrap { width:100%; max-width:660px; background:#fff; border:1px solid #E7E5E4; border-radius: 14px; padding: 18px; }
+  .head { display:flex; justify-content:space-between; align-items:flex-start; gap: 12px; }
+  .title { font-size:15px; font-weight:700; color:#1A1A1A; }
+  .desc { font-size:13px; color:#4D4D4D; margin-top: 2px; }
+  .opts { margin-top: 14px; display:flex; flex-direction:column; gap: 10px; }
+  .opt { display:flex; align-items:center; gap: 10px; font-size: 13px; }
+  .btn { padding: 3px 10px; border-radius: 6px; background:#ECF7EE; color:#1F6B3A; font-size: 11px; font-weight: 700; border: none; cursor: pointer; }
+  .bar { flex:1; height: 8px; background:#F5F5F4; border-radius: 9999px; overflow:hidden; }
+  .fill { height: 100%; background:#4CAF50; border-radius: 9999px; }
+  .lbl { flex: 0 0 150px; display:flex; justify-content:space-between; gap: 8px; }
+  .count { color:#8A8A8A; font-size: 11px; }
+  .pill { display:inline-flex; padding: 2px 8px; border-radius:4px; font-size:10px; font-weight:700; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="head">
+    <div>
+      <div style="display:flex;gap:6px;margin-bottom:4px">
+        <span class="pill" style="background:#DBEAFE;color:#1E40AF">decisão</span>
+        <span class="pill" style="background:#D5E8D4;color:#2D5A27">Aberta</span>
+      </div>
+      <div class="title">Qual próxima árvore para o pomar?</div>
+      <div class="desc">Queremos plantar na próxima lua nova. Votem até sexta.</div>
+    </div>
+  </div>
+  <div class="opts">
+    <div class="opt"><button class="btn">Votar</button><div class="lbl"><span>Jabuticabeira</span><span class="count">7 (54%)</span></div><div class="bar"><div class="fill" style="width:100%"></div></div></div>
+    <div class="opt"><button class="btn">Votar</button><div class="lbl"><span>Pitangueira</span><span class="count">4 (31%)</span></div><div class="bar"><div class="fill" style="width:57%"></div></div></div>
+    <div class="opt"><button class="btn">Votar</button><div class="lbl"><span>Cajueiro</span><span class="count">2 (15%)</span></div><div class="bar"><div class="fill" style="width:28%"></div></div></div>
+  </div>
+</div>
+</body>
+</html>

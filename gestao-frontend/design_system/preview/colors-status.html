@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  html, body { margin:0; background:#F8F7F4; font-family: var(--cc-font-sans); }
+  body { padding: 20px; display:flex; align-items:center; justify-content:center; min-height:100vh; box-sizing:border-box; }
+  .wrap { display:grid; grid-template-columns: 1fr 1fr; gap: 10px; width:100%; max-width: 660px; }
+  .status { border-radius: 12px; padding: 14px 16px; display:flex; flex-direction:column; gap:8px; border:1px solid rgba(45,90,39,.1); }
+  .pill { display:inline-flex; align-items:center; gap:6px; padding: 4px 12px; border-radius: 9999px; font-size: 12px; font-weight: 700; width:fit-content; }
+  .lbl { font-family: var(--cc-font-mono); font-size: 11px; color: var(--cc-fg2); }
+  .dot { width:8px; height:8px; border-radius:9999px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="status" style="background:#F0FAF0">
+    <span class="pill" style="background:#90EE90;color:#2D5A27"><span class="dot" style="background:#2D5A27"></span>ativo</span>
+    <span class="lbl">--cc-status-success · #90EE90</span>
+  </div>
+  <div class="status" style="background:#FFF1F5">
+    <span class="pill" style="background:#FF80AB;color:#7A1A3A"><span class="dot" style="background:#7A1A3A"></span>encerrada</span>
+    <span class="lbl">--cc-status-alert · #FF80AB</span>
+  </div>
+  <div class="status" style="background:#FEF9E7">
+    <span class="pill" style="background:#FEF3C7;color:#854D0E">pendente</span>
+    <span class="lbl">warning · amber-100 / 800</span>
+  </div>
+  <div class="status" style="background:#EBF5FF">
+    <span class="pill" style="background:#DBEAFE;color:#1E40AF">em_andamento</span>
+    <span class="lbl">info · blue-100 / 800</span>
+  </div>
+  <div class="status" style="background:#F4F4F5">
+    <span class="pill" style="background:#E4E4E7;color:#3F3F46">concluida</span>
+    <span class="lbl">neutral · zinc-200 / 700</span>
+  </div>
+  <div class="status" style="background:#FEF2F2">
+    <span class="pill" style="background:#FEE2E2;color:#991B1B">cancelada</span>
+    <span class="lbl">danger · red-100 / 800</span>
+  </div>
+</div>
+</body>
+</html>

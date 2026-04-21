@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  html, body { margin:0; background:#F8F7F4; font-family: var(--cc-font-sans); }
+  body { padding: 26px 20px; display:flex; align-items:center; justify-content:center; min-height:100vh; box-sizing:border-box; }
+  .wrap { display:grid; grid-template-columns: repeat(3, 1fr); gap: 22px; width:100%; max-width: 660px; }
+  .item { display:flex; flex-direction:column; align-items:center; gap: 10px; }
+  .card { background: #FFFFFF; width: 120px; height: 80px; border-radius: 16px; border: 1px solid #E7E5E4; }
+  .s1 { box-shadow: 0 2px 8px rgba(45,90,39,0.10); }
+  .s2 { box-shadow: 0 4px 16px rgba(45,90,39,0.15); }
+  .s3 { box-shadow: 0 20px 50px rgba(45,90,39,0.25); }
+  .label { font-size: 12px; font-weight: 700; color: #1A1A1A; }
+  .token { font-family: var(--cc-font-mono); font-size: 10px; color: #4D4D4D; text-align:center; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="item"><div class="card s1"></div><div class="label">card</div><div class="token">0 2 8 · green 10%</div></div>
+  <div class="item"><div class="card s2"></div><div class="label">elevated</div><div class="token">0 4 16 · green 15%</div></div>
+  <div class="item"><div class="card s3"></div><div class="label">modal</div><div class="token">0 20 50 · green 25%</div></div>
+</div>
+</body>
+</html>
