@@ -3,6 +3,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, and_
 from app.database import get_db
 from app.models.booking import Booking
+from app.models.alert import Alert
+from app.models.log import Log
 from app.schemas.booking import BookingCreate, BookingUpdate, BookingResponse
 
 router = APIRouter(prefix="/api/bookings", tags=["bookings"])
@@ -54,6 +56,18 @@ async def create_booking(data: BookingCreate, db: AsyncSession = Depends(get_db)
             )
     booking = Booking(**data.model_dump())
     db.add(booking)
+    await db.flush()
+    db.add(Alert(
+        tipo="reserva",
+        titulo=f"Reserva registrada: {data.space_slug or 'espaço'}",
+        mensagem=f"Por {data.cota_slug or data.profile_slug} — {data.data_inicio.strftime('%d/%m/%Y')} a {data.data_fim.strftime('%d/%m/%Y')}",
+    ))
+    db.add(Log(
+        acao="reserva_criada",
+        profile_slug=data.profile_slug,
+        booking_id=booking.id,
+        local_uso=data.space_slug,
+    ))
     await db.commit()
     await db.refresh(booking)
     return booking
@@ -65,8 +79,15 @@ async def update_booking(booking_id: str, data: BookingUpdate, db: AsyncSession 
     booking = result.scalar_one_or_none()
     if not booking:
         raise HTTPException(status_code=404, detail="Booking not found")
+    old_status = booking.status
     for key, value in data.model_dump(exclude_unset=True).items():
         setattr(booking, key, value)
+    if data.status and data.status != old_status and data.status in ("confirmada", "cancelada", "concluida"):
+        db.add(Alert(
+            tipo="reserva",
+            titulo=f"Reserva {data.status}: {booking.space_slug or 'espaço'}",
+            mensagem=f"Status atualizado para {data.status}",
+        ))
     await db.commit()
     await db.refresh(booking)
     return booking

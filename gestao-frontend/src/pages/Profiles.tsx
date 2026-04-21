@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { api } from "@/api/client";
-import type { Profile } from "@/api/types";
+import type { Profile, Cota } from "@/api/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -30,10 +30,12 @@ const emptyForm = {
   telefone: "",
   role: "",
   lote: "",
+  cota_slug: "",
 };
 
 export default function Profiles() {
   const [profiles, setProfiles] = useState<Profile[]>([]);
+  const [cotas, setCotas] = useState<Cota[]>([]);
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<string | null>(null);
@@ -43,7 +45,12 @@ export default function Profiles() {
   const load = async () => {
     setLoading(true);
     try {
-      setProfiles(await api.get<Profile[]>("/api/profiles"));
+      const [ps, cs] = await Promise.all([
+        api.get<Profile[]>("/api/profiles"),
+        api.get<Cota[]>("/api/cotas"),
+      ]);
+      setProfiles(ps);
+      setCotas(cs);
     } finally {
       setLoading(false);
     }
@@ -69,6 +76,7 @@ export default function Profiles() {
       telefone: p.telefone || "",
       role: p.role || "",
       lote: p.lote || "",
+      cota_slug: p.cota_slug || "",
     });
     setEditing(p.slug);
     setError("");
@@ -77,11 +85,12 @@ export default function Profiles() {
 
   const save = async () => {
     try {
+      const payload = { ...form, cota_slug: form.cota_slug || null };
       if (editing) {
-        const { slug: _slug, ...update } = form; void _slug;
+        const { slug: _slug, ...update } = payload; void _slug;
         await api.put(`/api/profiles/${editing}`, update);
       } else {
-        await api.post("/api/profiles", form);
+        await api.post("/api/profiles", payload);
       }
       setOpen(false);
       load();
@@ -139,11 +148,18 @@ export default function Profiles() {
                   </button>
                 </div>
               </div>
-              {p.role && (
-                <span className={`inline-block mt-2 px-2 py-0.5 rounded-full text-xs font-medium ${roleColors[p.role] || "bg-gray-100"}`}>
-                  {p.role}
-                </span>
-              )}
+              <div className="flex flex-wrap gap-1 mt-2">
+                {p.role && (
+                  <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${roleColors[p.role] || "bg-gray-100"}`}>
+                    {p.role}
+                  </span>
+                )}
+                {p.cota_slug && (
+                  <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-[#D5E8D4] text-[#1F6B3A]">
+                    {p.cota_slug}
+                  </span>
+                )}
+              </div>
               {p.email && <p className="text-sm text-gray-500 mt-2">{p.email}</p>}
               {p.telefone && <p className="text-sm text-gray-500">{p.telefone}</p>}
             </div>
@@ -214,12 +230,25 @@ export default function Profiles() {
                 />
               </div>
             </div>
-            <div>
-              <Label>Lote</Label>
-              <Input
-                value={form.lote}
-                onChange={(e) => setForm({ ...form, lote: e.target.value })}
-              />
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label>Lote</Label>
+                <Input
+                  value={form.lote}
+                  onChange={(e) => setForm({ ...form, lote: e.target.value })}
+                />
+              </div>
+              <div>
+                <Label>Cota</Label>
+                <Select value={form.cota_slug} onValueChange={(v) => setForm({ ...form, cota_slug: v })}>
+                  <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
+                  <SelectContent>
+                    {cotas.map((c) => (
+                      <SelectItem key={c.slug} value={c.slug}>#{c.numero} — {c.nome}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
             <div className="flex justify-end gap-2 pt-2">
               <Button variant="outline" onClick={() => setOpen(false)}>Cancelar</Button>

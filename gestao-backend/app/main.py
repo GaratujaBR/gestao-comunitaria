@@ -1,13 +1,33 @@
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy import text
+from sqlalchemy.exc import OperationalError
 
-from app.database import init_db
-from app.routers import profiles, spaces, items, bookings, logs, wiki, alerts, chamados, prestadores, enquetes, sheets
+from app.database import engine, init_db
+from app.routers import profiles, spaces, items, bookings, logs, wiki, alerts, chamados, prestadores, enquetes, sheets, cotas, eventos
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    # Migrations inline (sem Alembic)
+    async with engine.begin() as conn:
+        try:
+            await conn.execute(text("ALTER TABLE spaces ADD COLUMN parent_slug VARCHAR"))
+        except OperationalError:
+            pass
+        try:
+            await conn.execute(text("ALTER TABLE items ADD COLUMN tipo VARCHAR DEFAULT 'comum'"))
+        except OperationalError:
+            pass
+        try:
+            await conn.execute(text("ALTER TABLE profiles ADD COLUMN cota_slug VARCHAR"))
+        except OperationalError:
+            pass
+        try:
+            await conn.execute(text("ALTER TABLE bookings ADD COLUMN cota_slug VARCHAR"))
+        except OperationalError:
+            pass
     await init_db()
     yield
 
@@ -34,6 +54,8 @@ app.include_router(chamados.router)
 app.include_router(prestadores.router)
 app.include_router(enquetes.router)
 app.include_router(sheets.router)
+app.include_router(cotas.router)
+app.include_router(eventos.router)
 
 
 @app.get("/healthz")

@@ -11,6 +11,8 @@ import Alerts from "@/pages/Alerts";
 import Spreadsheet from "@/pages/Spreadsheet";
 import Chamados from "@/pages/Chamados";
 import Enquetes from "@/pages/Enquetes";
+import Cotas from "@/pages/Cotas";
+import Eventos from "@/pages/Eventos";
 
 function App() {
   return (
@@ -28,6 +30,8 @@ function App() {
           <Route path="/planilha" element={<Spreadsheet />} />
           <Route path="/chamados" element={<Chamados />} />
           <Route path="/enquetes" element={<Enquetes />} />
+          <Route path="/cotas" element={<Cotas />} />
+          <Route path="/eventos" element={<Eventos />} />
         </Route>
       </Routes>
     </BrowserRouter>

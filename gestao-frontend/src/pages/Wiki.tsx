@@ -20,6 +20,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Plus, Pencil, Trash2, BookOpen, Eye } from "lucide-react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 const categorias = ["bioconstrucao", "regras", "sistemas", "manutencao", "historia"];
 
@@ -39,6 +41,7 @@ export default function Wiki() {
   const [articles, setArticles] = useState<WikiArticle[]>([]);
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
+  const [preview, setPreview] = useState(false);
   const [viewing, setViewing] = useState<WikiArticle | null>(null);
   const [editing, setEditing] = useState<string | null>(null);
   const [form, setForm] = useState(emptyForm);
@@ -63,10 +66,12 @@ export default function Wiki() {
     setForm(emptyForm);
     setEditing(null);
     setError("");
+    setPreview(false);
     setOpen(true);
   };
 
   const openEdit = (a: WikiArticle) => {
+    setPreview(false);
     setForm({
       slug: a.slug,
       titulo: a.titulo,
@@ -215,8 +220,10 @@ export default function Wiki() {
               )}
             </DialogDescription>
           </DialogHeader>
-          <div className="max-h-96 overflow-y-auto whitespace-pre-wrap text-sm">
-            {viewing?.conteudo}
+          <div className="max-h-[70vh] overflow-y-auto pr-1 wiki-content">
+            <ReactMarkdown remarkPlugins={[remarkGfm]}>
+              {viewing?.conteudo ?? ""}
+            </ReactMarkdown>
           </div>
         </DialogContent>
       </Dialog>
@@ -263,8 +270,30 @@ export default function Wiki() {
               </div>
             </div>
             <div>
-              <Label>Conteúdo *</Label>
-              <Textarea value={form.conteudo} onChange={(e) => setForm({ ...form, conteudo: e.target.value })} rows={8} />
+              <div className="flex items-center justify-between mb-1">
+                <Label>Conteúdo *</Label>
+                <button
+                  type="button"
+                  onClick={() => setPreview((p) => !p)}
+                  className="text-xs text-[#1F6B3A] font-semibold hover:underline"
+                >
+                  {preview ? "← Editar" : "Prévia →"}
+                </button>
+              </div>
+              {preview ? (
+                <div className="min-h-[200px] rounded-[12px] border border-[#E7E5E4] bg-white px-4 py-3 wiki-content overflow-y-auto">
+                  <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                    {form.conteudo || "_Nenhum conteúdo ainda._"}
+                  </ReactMarkdown>
+                </div>
+              ) : (
+                <Textarea
+                  value={form.conteudo}
+                  onChange={(e) => setForm({ ...form, conteudo: e.target.value })}
+                  rows={8}
+                  placeholder={"Escreva em Markdown.\n## Título  **negrito**  - lista\n> citação  | tabela |"}
+                />
+              )}
             </div>
             <div>
               <Label>Entidades (separadas por vírgula)</Label>

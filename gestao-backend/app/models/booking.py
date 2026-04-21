@@ -12,6 +12,7 @@ class Booking(Base):
     space_slug: Mapped[str | None] = mapped_column(String, nullable=True)
     item_codigos: Mapped[dict | None] = mapped_column(JSON, default=list)
     profile_slug: Mapped[str] = mapped_column(String, nullable=False)
+    cota_slug: Mapped[str | None] = mapped_column(String, nullable=True)
     data_inicio: Mapped[datetime] = mapped_column(DateTime, nullable=False)
     data_fim: Mapped[datetime] = mapped_column(DateTime, nullable=False)
     tipo_uso: Mapped[str | None] = mapped_column(String, nullable=True)

@@ -19,5 +19,6 @@ class Space(Base):
     instrucoes_acesso: Mapped[str | None] = mapped_column(String, nullable=True)
     fotos: Mapped[dict | None] = mapped_column(JSON, default=list)
     responsavel_slug: Mapped[str | None] = mapped_column(String, nullable=True)
+    parent_slug: Mapped[str | None] = mapped_column(String, nullable=True, default=None)
     status: Mapped[str] = mapped_column(String, default="ativo")
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)

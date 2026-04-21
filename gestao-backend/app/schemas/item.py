@@ -9,6 +9,7 @@ class ItemCreate(BaseModel):
     space_slug: str | None = None
     container_especifico: str | None = None
     categoria: str | None = None
+    tipo: str = "comum"
     estado: str = "bom"
     manual_cuidados: str | None = None
     ciclo_manutencao: str | None = None
@@ -25,6 +26,7 @@ class ItemUpdate(BaseModel):
     space_slug: str | None = None
     container_especifico: str | None = None
     categoria: str | None = None
+    tipo: str | None = None
     estado: str | None = None
     manual_cuidados: str | None = None
     ciclo_manutencao: str | None = None
@@ -44,6 +46,7 @@ class ItemResponse(BaseModel):
     space_slug: str | None = None
     container_especifico: str | None = None
     categoria: str | None = None
+    tipo: str
     estado: str
     manual_cuidados: str | None = None
     ciclo_manutencao: str | None = None

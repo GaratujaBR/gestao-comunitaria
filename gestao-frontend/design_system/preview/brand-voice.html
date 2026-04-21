@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  html, body { margin:0; background:#F8F7F4; font-family: var(--cc-font-sans); color:#1A1A1A; }
+  body { padding: 20px; display:flex; align-items:center; justify-content:center; min-height:100vh; box-sizing:border-box; }
+  .wrap { width:100%; max-width: 660px; display:grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .card { border-radius: 16px; padding: 18px; display:flex; flex-direction:column; gap: 6px; border: 1px solid rgba(45,90,39,.12); position:relative; overflow: hidden; }
+  .title { font-size: 16px; font-weight: 800; letter-spacing: 0.04em; }
+  .body { font-size: 13px; }
+  .hand {
+    background: #F3EFE0;
+    border: 2px solid #6B8E23;
+    color: #2D5A27;
+  }
+  .flat {
+    background: #4CAF50;
+    color: #F3EFE0;
+  }
+  .soft {
+    background: #D5E8D4;
+    color: #2D5A27;
+  }
+  .app {
+    background: #fff;
+    color: #1A1A1A;
+    box-shadow: 0 2px 8px rgba(45,90,39,0.10);
+  }
+  .cap { font-size: 10px; font-weight: 800; letter-spacing: 0.2em; text-transform: uppercase; opacity: .7; }
+  .tag { position:absolute; top: 10px; right: 12px; font-family: var(--cc-font-mono); font-size: 10px; opacity: .55; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="card hand">
+    <span class="tag">promo · hero</span>
+    <div class="cap">Comunidade ∙ Humanidade</div>
+    <div class="title">Terra de Canaã</div>
+    <div class="body">Fundo creme + moldura oliva — tom de quadro de avisos, folheto xilográfico. Usar para landing page e material impresso.</div>
+  </div>
+  <div class="card flat">
+    <span class="tag">promo · chapado</span>
+    <div class="cap">Verde floresta</div>
+    <div class="title">Vive & Compartilha</div>
+    <div class="body">Fundo verde vibrante, branco/creme no texto. Energia de vilarejo, natureza presente. Evite sobrecarregar com sombras.</div>
+  </div>
+  <div class="card soft">
+    <span class="tag">promo · seção</span>
+    <div class="cap">Verde pálido</div>
+    <div class="title">Seções internas</div>
+    <div class="body">Bloco dentro de páginas promocionais, suporte para títulos, quebra visual entre seções sem perder hierarquia.</div>
+  </div>
+  <div class="card app">
+    <span class="tag">app · card</span>
+    <div class="cap" style="color:#88C9A1">App transacional</div>
+    <div class="title">Painel da comunidade</div>
+    <div class="body" style="color:#4D4D4D">Fundo stone-50, card branco, borda stone-200, sombra verde sutil. Foco em produtividade; cores só aparecem em status.</div>
+  </div>
+</div>
+</body>
+</html>

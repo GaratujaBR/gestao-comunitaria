@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from app.database import get_db
@@ -9,8 +9,17 @@ router = APIRouter(prefix="/api/spaces", tags=["spaces"])
 
 
 @router.get("", response_model=list[SpaceResponse])
-async def list_spaces(db: AsyncSession = Depends(get_db)):
-    result = await db.execute(select(Space).order_by(Space.nome))
+async def list_spaces(
+    parent_slug: str | None = Query(None),
+    top_level: bool = Query(False),
+    db: AsyncSession = Depends(get_db),
+):
+    query = select(Space)
+    if top_level:
+        query = query.where(Space.parent_slug == None)  # noqa: E711
+    elif parent_slug is not None:
+        query = query.where(Space.parent_slug == parent_slug)
+    result = await db.execute(query.order_by(Space.nome))
     return result.scalars().all()
 
 

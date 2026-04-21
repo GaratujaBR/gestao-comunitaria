@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  html, body { margin:0; background:#F8F7F4; font-family: var(--cc-font-sans); }
+  body { padding: 20px; display:flex; align-items:center; justify-content:center; min-height:100vh; box-sizing:border-box; }
+  .wrap { width:100%; max-width: 660px; display:flex; flex-direction:column; gap: 8px; }
+  .row { display:grid; grid-template-columns: 90px 1fr 70px; align-items:center; gap: 12px; }
+  .token { font-family: var(--cc-font-mono); font-size: 11px; color: #4D4D4D; }
+  .bar { background: #88C9A1; height: 18px; border-radius: 4px; }
+  .px { font-family: var(--cc-font-mono); font-size: 11px; color: #8A8A8A; text-align:right; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="row"><div class="token">--space-xs</div><div><div class="bar" style="width:4px"></div></div><div class="px">4 px</div></div>
+  <div class="row"><div class="token">--space-sm</div><div><div class="bar" style="width:8px"></div></div><div class="px">8 px</div></div>
+  <div class="row"><div class="token">--space-md</div><div><div class="bar" style="width:16px"></div></div><div class="px">16 px</div></div>
+  <div class="row"><div class="token">--space-lg</div><div><div class="bar" style="width:24px"></div></div><div class="px">24 px</div></div>
+  <div class="row"><div class="token">--space-xl</div><div><div class="bar" style="width:32px"></div></div><div class="px">32 px</div></div>
+  <div class="row"><div class="token">--space-2xl</div><div><div class="bar" style="width:48px"></div></div><div class="px">48 px</div></div>
+  <div class="row"><div class="token">--space-3xl</div><div><div class="bar" style="width:64px"></div></div><div class="px">64 px</div></div>
+</div>
+</body>
+</html>

@@ -1,29 +1,86 @@
+@import "./styles/tokens.css";
+
+/* Fontes locais Montserrat — pesos em uso no app */
+@font-face {
+  font-family: 'Montserrat';
+  src: url('../design_system/fonts/Montserrat-Regular.ttf') format('truetype');
+  font-weight: 400; font-style: normal; font-display: swap;
+}
+@font-face {
+  font-family: 'Montserrat';
+  src: url('../design_system/fonts/Montserrat-Italic.ttf') format('truetype');
+  font-weight: 400; font-style: italic; font-display: swap;
+}
+@font-face {
+  font-family: 'Montserrat';
+  src: url('../design_system/fonts/Montserrat-Medium.ttf') format('truetype');
+  font-weight: 500; font-style: normal; font-display: swap;
+}
+@font-face {
+  font-family: 'Montserrat';
+  src: url('../design_system/fonts/Montserrat-SemiBold.ttf') format('truetype');
+  font-weight: 600; font-style: normal; font-display: swap;
+}
+@font-face {
+  font-family: 'Montserrat';
+  src: url('../design_system/fonts/Montserrat-Bold.ttf') format('truetype');
+  font-weight: 700; font-style: normal; font-display: swap;
+}
+@font-face {
+  font-family: 'Montserrat';
+  src: url('../design_system/fonts/Montserrat-ExtraBold.ttf') format('truetype');
+  font-weight: 800; font-style: normal; font-display: swap;
+}
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/* ── Wiki — prose markdown ───────────────────────────────────────────────── */
+.wiki-content h1 { font-size: 1.5rem; font-weight: 800; color: #1A1A1A; margin: 1.25rem 0 0.5rem; line-height: 1.3; }
+.wiki-content h2 { font-size: 1.15rem; font-weight: 700; color: #1F6B3A; margin: 1.1rem 0 0.4rem; border-bottom: 1px solid #E7E5E4; padding-bottom: 0.25rem; }
+.wiki-content h3 { font-size: 1rem; font-weight: 700; color: #2D5A27; margin: 0.8rem 0 0.25rem; }
+.wiki-content p  { font-size: 0.9rem; line-height: 1.75; color: #1A1A1A; margin: 0.35rem 0; }
+.wiki-content strong { font-weight: 700; }
+.wiki-content em { font-style: italic; }
+.wiki-content ul, .wiki-content ol { padding-left: 1.4rem; margin: 0.4rem 0; }
+.wiki-content li { font-size: 0.9rem; line-height: 1.7; color: #1A1A1A; margin: 0.1rem 0; }
+.wiki-content ul > li { list-style-type: disc; }
+.wiki-content ol > li { list-style-type: decimal; }
+.wiki-content blockquote { border-left: 3px solid #88C9A1; background: #D5E8D4; border-radius: 0 8px 8px 0; padding: 0.5rem 1rem; margin: 0.6rem 0; }
+.wiki-content blockquote p { color: #2D5A27; margin: 0; font-size: 0.875rem; }
+.wiki-content table { width: 100%; border-collapse: collapse; font-size: 0.875rem; margin: 0.75rem 0; }
+.wiki-content th { background: #D5E8D4; color: #2D5A27; font-weight: 700; padding: 8px 12px; text-align: left; border: 1px solid #E7E5E4; }
+.wiki-content td { padding: 7px 12px; border: 1px solid #E7E5E4; color: #1A1A1A; vertical-align: top; }
+.wiki-content tr:nth-child(even) td { background: #F8F7F4; }
+.wiki-content hr { border: none; border-top: 1px solid #E7E5E4; margin: 1rem 0; }
+.wiki-content code { background: #D5E8D4; color: #2D5A27; padding: 1px 5px; border-radius: 4px; font-size: 0.8rem; font-family: monospace; }
+.wiki-content a { color: #1F6B3A; text-decoration: underline; }
+.wiki-content > :first-child { margin-top: 0; }
+
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-    --primary: 142.1 76.2% 36.3%;
-    --primary-foreground: 355.7 100% 97.3%;
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
-    --destructive: 0 84.2% 60.2%;
+    /* shadcn/ui variables — mapeadas para o design system */
+    --background:             40 20% 97%;    /* #F8F7F4 — off-white quente */
+    --foreground:             0 0% 10%;      /* #1A1A1A */
+    --card:                   0 0% 100%;     /* #fff */
+    --card-foreground:        0 0% 10%;
+    --popover:                0 0% 100%;
+    --popover-foreground:     0 0% 10%;
+    --primary:                141 55% 27%;   /* #1F6B3A — verde-floresta */
+    --primary-foreground:     0 0% 100%;     /* branco */
+    --secondary:              117 31% 87%;   /* #D5E8D4 — verde pálido */
+    --secondary-foreground:   113 40% 25%;   /* #2D5A27 */
+    --muted:                  40 20% 97%;    /* #F8F7F4 */
+    --muted-foreground:       0 0% 30%;      /* #4D4D4D */
+    --accent:                 117 31% 87%;   /* #D5E8D4 */
+    --accent-foreground:      113 40% 25%;
+    --destructive:            0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 142.1 76.2% 36.3%;
-    --radius: 0.5rem;
+    --border:                 20 5% 90%;     /* #E7E5E4 — cinza-quente claro */
+    --input:                  20 5% 90%;
+    --ring:                   141 55% 27%;   /* #1F6B3A */
+    --radius:                 0.75rem;       /* 12px */
   }
 
   * {
@@ -33,7 +90,6 @@
   body {
     background-color: hsl(var(--background));
     color: hsl(var(--foreground));
-    font-family: system-ui, -apple-system, sans-serif;
+    font-family: var(--cc-font-sans);
   }
 }
-

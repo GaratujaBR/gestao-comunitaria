@@ -1,3 +1,12 @@
+export interface Cota {
+  id: string;
+  slug: string;
+  numero: number;
+  nome: string;
+  ativo: boolean;
+  created_at: string;
+}
+
 export interface Profile {
   id: string;
   slug: string;
@@ -7,6 +16,7 @@ export interface Profile {
   telefone: string | null;
   role: string | null;
   lote: string | null;
+  cota_slug: string | null;
   ativo: boolean;
   created_at: string;
 }
@@ -23,6 +33,7 @@ export interface Space {
   instrucoes_acesso: string | null;
   fotos: string[] | null;
   responsavel_slug: string | null;
+  parent_slug: string | null;
   status: string;
   created_at: string;
 }
@@ -52,6 +63,7 @@ export interface Booking {
   space_slug: string | null;
   item_codigos: string[] | null;
   profile_slug: string;
+  cota_slug: string | null;
   data_inicio: string;
   data_fim: string;
   tipo_uso: string | null;
@@ -154,6 +166,19 @@ export interface Prestador {
   especialidade: string | null;
   empresa: string | null;
   notas: string | null;
+  created_at: string;
+}
+
+export interface Evento {
+  id: string;
+  titulo: string;
+  descricao: string | null;
+  data_inicio: string;
+  data_fim: string;
+  tipo: string | null;
+  local_slug: string | null;
+  criador_slug: string | null;
+  cor: string | null;
   created_at: string;
 }
 

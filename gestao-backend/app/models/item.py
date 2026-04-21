@@ -15,6 +15,7 @@ class Item(Base):
     space_slug: Mapped[str | None] = mapped_column(String, nullable=True)
     container_especifico: Mapped[str | None] = mapped_column(String, nullable=True)
     categoria: Mapped[str | None] = mapped_column(String, nullable=True)
+    tipo: Mapped[str] = mapped_column(String, default="comum")
     estado: Mapped[str] = mapped_column(String, default="bom")
     manual_cuidados: Mapped[str | None] = mapped_column(String, nullable=True)
     ciclo_manutencao: Mapped[str | None] = mapped_column(String, nullable=True)

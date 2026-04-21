@@ -14,6 +14,7 @@ class SpaceCreate(BaseModel):
     instrucoes_acesso: str | None = None
     fotos: list[str] | None = None
     responsavel_slug: str | None = None
+    parent_slug: str | None = None
     status: str = "ativo"
 
 
@@ -27,6 +28,7 @@ class SpaceUpdate(BaseModel):
     instrucoes_acesso: str | None = None
     fotos: list[str] | None = None
     responsavel_slug: str | None = None
+    parent_slug: str | None = None
     status: str | None = None
 
 
@@ -42,6 +44,7 @@ class SpaceResponse(BaseModel):
     instrucoes_acesso: str | None = None
     fotos: list[str] | None = None
     responsavel_slug: str | None = None
+    parent_slug: str | None = None
     status: str
     created_at: datetime
 
