@@ -23,6 +23,7 @@ import { Trash2 } from "lucide-react";
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
+import listPlugin from "@fullcalendar/list";
 import interactionPlugin from "@fullcalendar/interaction";
 import type { DateSelectArg, EventClickArg } from "@fullcalendar/core";
 
@@ -53,6 +54,13 @@ export default function Eventos() {
   const [form, setForm] = useState(emptyForm);
   const [error, setError] = useState("");
   const calendarRef = useRef<FullCalendar>(null);
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+
+  useEffect(() => {
+    const handler = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener("resize", handler);
+    return () => window.removeEventListener("resize", handler);
+  }, []);
 
   const load = async () => {
     try {
@@ -146,21 +154,26 @@ export default function Eventos() {
 
       <div className="bg-white rounded-xl border border-[#E7E5E4] p-4 [&_.fc-button]:rounded-full [&_.fc-button]:border-[#E7E5E4] [&_.fc-button-primary]:bg-[#1F6B3A] [&_.fc-button-primary]:border-[#1F6B3A] [&_.fc-toolbar-title]:font-bold [&_.fc-toolbar-title]:text-[#1A1A1A]">
         <FullCalendar
+          key={isMobile ? "mobile" : "desktop"}
           ref={calendarRef}
-          plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
-          initialView="dayGridMonth"
-          headerToolbar={{
-            left: "prev,next today",
-            center: "title",
-            right: "dayGridMonth,timeGridWeek",
-          }}
+          plugins={[dayGridPlugin, timeGridPlugin, listPlugin, interactionPlugin]}
+          initialView={isMobile ? "listMonth" : "dayGridMonth"}
+          headerToolbar={
+            isMobile
+              ? { left: "prev,next", center: "title", right: "listMonth,dayGridMonth" }
+              : { left: "prev,next today", center: "title", right: "dayGridMonth,timeGridWeek" }
+          }
           locale="pt-br"
           events={calendarEvents}
           selectable
           select={handleDateSelect}
           eventClick={handleEventClick}
           height="auto"
-          buttonText={{ today: "Hoje", month: "Mês", week: "Semana" }}
+          buttonText={
+            isMobile
+              ? { list: "Lista", month: "Mês" }
+              : { today: "Hoje", month: "Mês", week: "Semana" }
+          }
         />
       </div>
 

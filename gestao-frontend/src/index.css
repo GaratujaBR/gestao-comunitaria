@@ -93,3 +93,10 @@
     font-family: var(--cc-font-sans);
   }
 }
+
+@media (max-width: 767px) {
+  .fc-toolbar { flex-wrap: wrap; gap: 0.5rem; }
+  .fc-toolbar-title { font-size: 1rem !important; }
+  .fc-toolbar-chunk { display: flex; gap: 0.25rem; }
+  .fc-list-event { cursor: pointer; }
+}
