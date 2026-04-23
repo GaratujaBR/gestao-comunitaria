@@ -10,24 +10,19 @@ from app.routers import profiles, spaces, items, bookings, logs, wiki, alerts, c
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Migrations inline (sem Alembic)
     async with engine.begin() as conn:
-        try:
-            await conn.execute(text("ALTER TABLE spaces ADD COLUMN parent_slug VARCHAR"))
-        except OperationalError:
-            pass
-        try:
-            await conn.execute(text("ALTER TABLE items ADD COLUMN tipo VARCHAR DEFAULT 'comum'"))
-        except OperationalError:
-            pass
-        try:
-            await conn.execute(text("ALTER TABLE profiles ADD COLUMN cota_slug VARCHAR"))
-        except OperationalError:
-            pass
-        try:
-            await conn.execute(text("ALTER TABLE bookings ADD COLUMN cota_slug VARCHAR"))
-        except OperationalError:
-            pass
+        await conn.execute(text("""
+            ALTER TABLE spaces ADD COLUMN IF NOT EXISTS parent_slug VARCHAR
+        """))
+        await conn.execute(text("""
+            ALTER TABLE items ADD COLUMN IF NOT EXISTS tipo VARCHAR DEFAULT 'comum'
+        """))
+        await conn.execute(text("""
+            ALTER TABLE profiles ADD COLUMN IF NOT EXISTS cota_slug VARCHAR
+        """))
+        await conn.execute(text("""
+            ALTER TABLE bookings ADD COLUMN IF NOT EXISTS cota_slug VARCHAR
+        """))
     await init_db()
     yield
 
