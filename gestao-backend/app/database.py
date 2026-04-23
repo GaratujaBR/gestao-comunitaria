@@ -4,7 +4,11 @@ from sqlalchemy.orm import DeclarativeBase
 
 DATABASE_URL = os.getenv("DATABASE_URL", "sqlite+aiosqlite:///./app.db")
 
-if os.path.exists("/data"):
+# Supabase/Render fornece "postgresql://..." — converter para driver async
+if DATABASE_URL.startswith("postgresql://") or DATABASE_URL.startswith("postgres://"):
+    DATABASE_URL = DATABASE_URL.replace("postgresql://", "postgresql+psycopg_async://", 1)
+    DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql+psycopg_async://", 1)
+elif os.path.exists("/data"):
     DATABASE_URL = "sqlite+aiosqlite:////data/app.db"
 
 engine = create_async_engine(DATABASE_URL, echo=False)
