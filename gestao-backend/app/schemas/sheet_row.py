@@ -1,5 +1,6 @@
 from pydantic import BaseModel
 from datetime import datetime
+from typing import Optional
 
 
 class SheetRowCreate(BaseModel):
@@ -23,7 +24,7 @@ class SheetRowResponse(BaseModel):
     quantidade: int | None = None
     valor: float | None = None
     total: float | None = None
-    created_at: datetime
+    created_at: Optional[datetime] = None
 
     model_config = {"from_attributes": True}
 
