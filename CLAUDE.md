@@ -21,6 +21,7 @@ wiki de bioconstrução/ecologia e gestão de conhecimento comunitário.
 ## Frontend — gestao-frontend/
 
 ### Stack
+
 - **Framework:** React 18 + Vite + **TypeScript**
 - **Estilo:** Tailwind CSS + `src/index.css`
 - **Componentes UI base:** `src/components/ui/` (button, dialog, input, label, select, textarea)
@@ -28,25 +29,28 @@ wiki de bioconstrução/ecologia e gestão de conhecimento comunitário.
 - **Utilitários:** `src/lib/utils.ts`
 
 ### Páginas existentes
-| Arquivo                        | Módulo                        |
-|-------------------------------|-------------------------------|
-| `src/pages/Dashboard.tsx`     | Visão geral / hub principal   |
-| `src/pages/Bookings.tsx`      | Reservas de espaços           |
-| `src/pages/Spaces.tsx`        | Gestão de espaços             |
-| `src/pages/Wiki.tsx`          | Wiki comunitária              |
-| `src/pages/Alerts.tsx`        | Alertas e avisos              |
-| `src/pages/Enquetes.tsx`      | Enquetes / votações           |
-| `src/pages/Chamados.tsx`      | Chamados / solicitações       |
-| `src/pages/Items.tsx`         | Itens / inventário            |
-| `src/pages/Profiles.tsx`      | Perfis de membros             |
-| `src/pages/Logs.tsx`          | Logs de atividade             |
-| `src/pages/Spreadsheet.tsx`   | Planilha / dados tabulares    |
+
+| Arquivo                     | Módulo                      |
+| --------------------------- | --------------------------- |
+| `src/pages/Dashboard.tsx`   | Visão geral / hub principal |
+| `src/pages/Bookings.tsx`    | Reservas de espaços         |
+| `src/pages/Spaces.tsx`      | Gestão de espaços           |
+| `src/pages/Wiki.tsx`        | Wiki comunitária            |
+| `src/pages/Alerts.tsx`      | Alertas e avisos            |
+| `src/pages/Enquetes.tsx`    | Enquetes / votações         |
+| `src/pages/Chamados.tsx`    | Chamados / solicitações     |
+| `src/pages/Items.tsx`       | Itens / inventário          |
+| `src/pages/Profiles.tsx`    | Perfis de membros           |
+| `src/pages/Logs.tsx`        | Logs de atividade           |
+| `src/pages/Spreadsheet.tsx` | Planilha / dados tabulares  |
 
 ### Componentes existentes
+
 - `src/components/Layout.tsx` — layout base com navegação
 - `src/components/ui/` — componentes primitivos (shadcn/ui ou similar)
 
 ### Configuração
+
 - `tailwind.config.js` — extender com tokens do design system
 - `src/index.css` — importar `tokens.css` aqui
 - `src/App.tsx` — rotas principais
@@ -59,6 +63,7 @@ wiki de bioconstrução/ecologia e gestão de conhecimento comunitário.
 **Leia o `DESIGN_SYSTEM.md` antes de qualquer alteração visual.**
 
 Resumo rápido:
+
 - Paleta: verde `#4CAF50` (fundo), creme `#F3EFE0` (cards), verde água `#88C9A1` (accent)
 - Fonte: Nunito (Google Fonts) — adicionar no `index.html` se ainda não estiver
 - Estilo: flat ilustrado, cards modulares, ícones line-art via **Lucide React**
@@ -97,3 +102,72 @@ Resumo rápido:
 6. **Nunca mexer no backend** (`gestao-backend/`) salvo instrução explícita.
 7. **Manter responsividade** em toda alteração — mobile first.
 8. **Rodar `npm run build`** após mudanças significativas para verificar erros de TypeScript antes de considerar a tarefa concluída.
+
+Behavioral guidelines to reduce common LLM coding mistakes. Merge with project-specific instructions as needed.
+
+**Tradeoff:** These guidelines bias toward caution over speed. For trivial tasks, use judgment.
+
+## 1. Think Before Coding
+
+**Don't assume. Don't hide confusion. Surface tradeoffs.**
+
+Before implementing:
+
+- State your assumptions explicitly. If uncertain, ask.
+- If multiple interpretations exist, present them - don't pick silently.
+- If a simpler approach exists, say so. Push back when warranted.
+- If something is unclear, stop. Name what's confusing. Ask.
+
+## 2. Simplicity First
+
+**Minimum code that solves the problem. Nothing speculative.**
+
+- No features beyond what was asked.
+- No abstractions for single-use code.
+- No "flexibility" or "configurability" that wasn't requested.
+- No error handling for impossible scenarios.
+- If you write 200 lines and it could be 50, rewrite it.
+
+Ask yourself: "Would a senior engineer say this is overcomplicated?" If yes, simplify.
+
+## 3. Surgical Changes
+
+**Touch only what you must. Clean up only your own mess.**
+
+When editing existing code:
+
+- Don't "improve" adjacent code, comments, or formatting.
+- Don't refactor things that aren't broken.
+- Match existing style, even if you'd do it differently.
+- If you notice unrelated dead code, mention it - don't delete it.
+
+When your changes create orphans:
+
+- Remove imports/variables/functions that YOUR changes made unused.
+- Don't remove pre-existing dead code unless asked.
+
+The test: Every changed line should trace directly to the user's request.
+
+## 4. Goal-Driven Execution
+
+**Define success criteria. Loop until verified.**
+
+Transform tasks into verifiable goals:
+
+- "Add validation" → "Write tests for invalid inputs, then make them pass"
+- "Fix the bug" → "Write a test that reproduces it, then make it pass"
+- "Refactor X" → "Ensure tests pass before and after"
+
+For multi-step tasks, state a brief plan:
+
+```
+1. [Step] → verify: [check]
+2. [Step] → verify: [check]
+3. [Step] → verify: [check]
+```
+
+Strong success criteria let you loop independently. Weak criteria ("make it work") require constant clarification.
+
+---
+
+**These guidelines are working if:** fewer unnecessary changes in diffs, fewer rewrites due to overcomplication, and clarifying questions come before implementation rather than after mistakes.

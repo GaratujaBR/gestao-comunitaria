@@ -27,10 +27,11 @@ export default function Spreadsheet() {
   const [areaFilter, setAreaFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
 
-  const load = async () => {
+  const load = async (forceRefresh = false) => {
     setLoading(true);
     setError("");
     try {
+      if (forceRefresh) await api.post("/api/sheets/refresh", {});
       const result = await api.get<SheetData>("/api/sheets");
       setData(result);
     } catch (e) {
@@ -91,7 +92,7 @@ export default function Spreadsheet() {
       <div className="p-6">
         <div className="bg-red-50 text-red-700 p-4 rounded-lg">{error}</div>
         <button
-          onClick={load}
+          onClick={() => load()}
           className="mt-4 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
         >
           Tentar novamente
@@ -111,11 +112,11 @@ export default function Spreadsheet() {
         </div>
         <div className="flex items-center gap-3">
           <button
-            onClick={load}
+            onClick={() => load(true)}
             disabled={loading}
             className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
           >
-            Atualizar
+            Atualizar da Planilha
           </button>
           <button
             onClick={sync}
@@ -251,7 +252,7 @@ export default function Spreadsheet() {
       <div className="text-xs text-gray-400 text-center">
         Dados da{" "}
         <a
-          href="https://docs.google.com/spreadsheets/d/16fCr0rhUfZKw8THvfoVxlMcn95XKxs2N"
+          href="https://docs.google.com/spreadsheets/d/1Wa5cB_C3ABzE74ozj7l1dLLL3B3wXWVZ/edit?gid=1161263825"
           target="_blank"
           rel="noopener noreferrer"
           className="underline hover:text-gray-600"
