@@ -1,7 +1,6 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Layout from "@/components/Layout";
 import Dashboard from "@/pages/Dashboard";
-import Profiles from "@/pages/Profiles";
 import Spaces from "@/pages/Spaces";
 import Items from "@/pages/Items";
 import Bookings from "@/pages/Bookings";
@@ -20,7 +19,6 @@ function App() {
       <Routes>
         <Route element={<Layout />}>
           <Route path="/" element={<Dashboard />} />
-          <Route path="/perfis" element={<Profiles />} />
           <Route path="/espacos" element={<Spaces />} />
           <Route path="/acervo" element={<Items />} />
           <Route path="/reservas" element={<Bookings />} />
