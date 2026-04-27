@@ -11,6 +11,7 @@ class ProfileCreate(BaseModel):
     role: str | None = None
     lote: str | None = None
     cota_slug: str | None = None
+    foto_url: str | None = None
     ativo: bool = True
 
 
@@ -22,6 +23,7 @@ class ProfileUpdate(BaseModel):
     role: str | None = None
     lote: str | None = None
     cota_slug: str | None = None
+    foto_url: str | None = None
     ativo: bool | None = None
 
 
@@ -35,6 +37,7 @@ class ProfileResponse(BaseModel):
     role: str | None = None
     lote: str | None = None
     cota_slug: str | None = None
+    foto_url: str | None = None
     ativo: bool
     created_at: datetime
 

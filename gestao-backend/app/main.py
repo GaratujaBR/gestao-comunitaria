@@ -23,6 +23,9 @@ async def lifespan(app: FastAPI):
         await conn.execute(text("""
             ALTER TABLE bookings ADD COLUMN IF NOT EXISTS cota_slug VARCHAR
         """))
+        await conn.execute(text("""
+            ALTER TABLE profiles ADD COLUMN IF NOT EXISTS foto_url TEXT
+        """))
     await init_db()
     yield
 
