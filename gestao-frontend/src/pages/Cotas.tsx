@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { api } from "@/api/client";
 import type { Cota, Profile } from "@/api/types";
 import { Button } from "@/components/ui/button";
@@ -11,7 +11,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
-import { Plus, Pencil, Trash2, Landmark, ChevronDown } from "lucide-react";
+import { Plus, Pencil, Trash2, Landmark, ChevronDown, Camera } from "lucide-react";
 
 const AVATAR_COLORS = [
   "bg-green-200 text-green-800",
@@ -34,6 +34,25 @@ function initials(nome: string) {
   return nome.split(" ").slice(0, 2).map((w) => w[0]).join("").toUpperCase();
 }
 
+function resizeToBase64(file: File, maxPx = 300): Promise<string> {
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const img = new Image();
+      img.onload = () => {
+        const scale = Math.min(1, maxPx / Math.max(img.width, img.height));
+        const canvas = document.createElement("canvas");
+        canvas.width = Math.round(img.width * scale);
+        canvas.height = Math.round(img.height * scale);
+        canvas.getContext("2d")!.drawImage(img, 0, 0, canvas.width, canvas.height);
+        resolve(canvas.toDataURL("image/jpeg", 0.85));
+      };
+      img.src = reader.result as string;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
 const emptyCotaForm = { slug: "", numero: "", nome: "" };
 const emptyProfileForm = {
   slug: "",
@@ -41,8 +60,8 @@ const emptyProfileForm = {
   nome_curto: "",
   email: "",
   telefone: "",
-  role: "",
   lote: "",
+  foto_url: "",
 };
 
 export default function Cotas() {
@@ -50,6 +69,8 @@ export default function Cotas() {
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [loading, setLoading] = useState(true);
   const [expandedSlug, setExpandedSlug] = useState<string | null>(null);
+
+  const fileRef = useRef<HTMLInputElement>(null);
 
   // Cota dialog
   const [cotaOpen, setCotaOpen] = useState(false);
@@ -79,6 +100,15 @@ export default function Cotas() {
   };
 
   useEffect(() => { load(); }, []);
+
+  // ── Photo upload ───────────────────────────────────────────
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const base64 = await resizeToBase64(file);
+    setMemberForm((f) => ({ ...f, foto_url: base64 }));
+    e.target.value = "";
+  };
 
   // ── Cota handlers ──────────────────────────────────────────
   const openEditCota = (c: Cota) => {
@@ -121,8 +151,8 @@ export default function Cotas() {
       nome_curto: p.nome_curto || "",
       email: p.email || "",
       telefone: p.telefone || "",
-      role: p.role || "",
       lote: p.lote || "",
+      foto_url: p.foto_url || "",
     });
     setMemberEditing(p.slug);
     setMemberCotaSlug(p.cota_slug || "");
@@ -138,8 +168,8 @@ export default function Cotas() {
         nome_curto: memberForm.nome_curto || null,
         email: memberForm.email || null,
         telefone: memberForm.telefone || null,
-        role: memberForm.role || null,
         lote: memberForm.lote || null,
+        foto_url: memberForm.foto_url || null,
         cota_slug: memberCotaSlug || null,
       };
       if (memberEditing) {
@@ -218,14 +248,13 @@ export default function Cotas() {
                     >
                       <Trash2 className="w-3.5 h-3.5 text-red-400" />
                     </button>
-                    {/* Chevron only on mobile */}
                     <ChevronDown
                       className={`w-4 h-4 text-[#8A8A8A] ml-1 transition-transform duration-200 lg:hidden ${isExpanded ? "rotate-180" : ""}`}
                     />
                   </div>
                 </div>
 
-                {/* Members section: accordion on mobile, always visible on desktop */}
+                {/* Members: accordion mobile, always visible desktop */}
                 <div className={`border-t border-[#F5F5F4] px-4 pb-4 pt-3 ${isExpanded ? "block" : "hidden"} lg:block`}>
                   {membros.length === 0 ? (
                     <p className="text-xs text-[#8A8A8A] py-1">Sem membros.</p>
@@ -235,21 +264,22 @@ export default function Cotas() {
                         <button
                           key={p.slug}
                           onClick={(e) => { e.stopPropagation(); openEditMember(p); }}
-                          className="flex flex-col items-center gap-1 p-2 rounded-xl hover:bg-[#ECF7EE] transition-colors group"
+                          className="flex flex-col items-center gap-1 p-2 rounded-xl hover:bg-[#ECF7EE] transition-colors"
                         >
-                          <div
-                            className={`w-11 h-11 rounded-full flex items-center justify-center text-sm font-bold ${avatarColor(p.slug)}`}
-                          >
-                            {initials(p.nome_completo)}
-                          </div>
+                          {p.foto_url ? (
+                            <img
+                              src={p.foto_url}
+                              alt={p.nome_completo}
+                              className="w-11 h-11 rounded-full object-cover"
+                            />
+                          ) : (
+                            <div className={`w-11 h-11 rounded-full flex items-center justify-center text-sm font-bold ${avatarColor(p.slug)}`}>
+                              {initials(p.nome_completo)}
+                            </div>
+                          )}
                           <p className="text-[11px] font-medium text-[#1A1A1A] max-w-[56px] truncate text-center leading-tight">
                             {p.nome_curto || p.nome_completo.split(" ")[0]}
                           </p>
-                          {p.role && (
-                            <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-[#D5E8D4] text-[#1F6B3A] font-medium leading-none">
-                              {p.role}
-                            </span>
-                          )}
                         </button>
                       ))}
                     </div>
@@ -293,6 +323,13 @@ export default function Cotas() {
       </Dialog>
 
       {/* Member dialog */}
+      <input
+        ref={fileRef}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={handleFileChange}
+      />
       <Dialog open={memberOpen} onOpenChange={setMemberOpen}>
         <DialogContent>
           <DialogHeader>
@@ -303,6 +340,34 @@ export default function Cotas() {
           </DialogHeader>
           {memberError && <p className="text-sm text-red-600">{memberError}</p>}
           <div className="space-y-4">
+            {/* Photo */}
+            <div className="flex items-center gap-4">
+              <button
+                type="button"
+                onClick={() => fileRef.current?.click()}
+                className="relative w-16 h-16 rounded-full overflow-hidden border-2 border-dashed border-[#88C9A1] hover:border-[#1F6B3A] transition-colors flex items-center justify-center bg-[#F8F7F4] shrink-0"
+              >
+                {memberForm.foto_url ? (
+                  <img src={memberForm.foto_url} className="w-full h-full object-cover" />
+                ) : (
+                  <Camera className="w-6 h-6 text-[#88C9A1]" />
+                )}
+              </button>
+              <div className="text-sm text-[#4D4D4D]">
+                <p className="font-medium">Foto do membro</p>
+                <p className="text-xs text-[#8A8A8A]">Clique para escolher uma imagem</p>
+                {memberForm.foto_url && (
+                  <button
+                    type="button"
+                    onClick={() => setMemberForm((f) => ({ ...f, foto_url: "" }))}
+                    className="text-xs text-red-400 hover:text-red-600 mt-0.5"
+                  >
+                    Remover foto
+                  </button>
+                )}
+              </div>
+            </div>
+
             <div>
               <Label>Nome Completo *</Label>
               <Input
@@ -348,23 +413,13 @@ export default function Cotas() {
                 />
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label>Lote</Label>
-                <Input
-                  value={memberForm.lote}
-                  onChange={(e) => setMemberForm({ ...memberForm, lote: e.target.value })}
-                  placeholder="A1"
-                />
-              </div>
-              <div>
-                <Label>Papel</Label>
-                <Input
-                  value={memberForm.role}
-                  onChange={(e) => setMemberForm({ ...memberForm, role: e.target.value })}
-                  placeholder="morador"
-                />
-              </div>
+            <div>
+              <Label>Lote</Label>
+              <Input
+                value={memberForm.lote}
+                onChange={(e) => setMemberForm({ ...memberForm, lote: e.target.value })}
+                placeholder="A1"
+              />
             </div>
             <div className="flex justify-between pt-2">
               {memberEditing && (

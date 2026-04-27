@@ -17,6 +17,7 @@ export interface Profile {
   role: string | null;
   lote: string | null;
   cota_slug: string | null;
+  foto_url: string | null;
   ativo: boolean;
   created_at: string;
 }

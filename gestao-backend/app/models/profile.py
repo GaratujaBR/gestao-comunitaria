@@ -17,5 +17,6 @@ class Profile(Base):
     role: Mapped[str | None] = mapped_column(String, nullable=True)
     lote: Mapped[str | None] = mapped_column(String, nullable=True)
     cota_slug: Mapped[str | None] = mapped_column(String, nullable=True)
+    foto_url: Mapped[str | None] = mapped_column(String, nullable=True)
     ativo: Mapped[bool] = mapped_column(Boolean, default=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
