@@ -419,13 +419,13 @@ export default function Cotas() {
                     key={c.slug}
                     type="button"
                     onClick={() => setMemberCotaSlug(c.slug)}
-                    className={`text-xs px-2 py-1 rounded-full border font-medium transition-colors ${
+                    className={`w-8 h-8 rounded-full border text-xs font-semibold transition-colors flex items-center justify-center shrink-0 ${
                       memberCotaSlug === c.slug
                         ? "bg-[#1F6B3A] text-white border-[#1F6B3A]"
                         : "border-[#E7E5E4] text-[#4D4D4D] hover:border-[#88C9A1] hover:text-[#1F6B3A]"
                     }`}
                   >
-                    #{c.numero}
+                    {c.numero}
                   </button>
                 ))}
               </div>
