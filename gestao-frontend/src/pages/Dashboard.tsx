@@ -1,7 +1,17 @@
 import { useEffect, useState } from "react";
 import { api } from "@/api/client";
 import type { Space, Item, Booking, Alert, Cota } from "@/api/types";
-import { Home, Package, CalendarDays, Bell, AlertTriangle, Landmark } from "lucide-react";
+import { Home, Package, CalendarDays, Bell, AlertTriangle } from "lucide-react";
+
+function BallIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <circle cx="12" cy="12" r="10" />
+      <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+      <line x1="2" y1="12" x2="22" y2="12" />
+    </svg>
+  );
+}
 
 interface Stats {
   cotas: number;
@@ -61,7 +71,7 @@ export default function Dashboard() {
   }
 
   const cards = [
-    { label: "Bolinhas Ativas",   value: stats.cotas,            icon: Landmark,       color: "bg-[#D5E8D4] text-[#1F6B3A]" },
+    { label: "Bolinhas Ativas",   value: stats.cotas,            icon: BallIcon,       color: "bg-[#D5E8D4] text-[#1F6B3A]" },
     { label: "Espaços",           value: stats.spaces,           icon: Home,           color: "bg-green-50 text-green-600"  },
     { label: "Itens no Acervo",   value: stats.items,            icon: Package,        color: "bg-amber-50 text-amber-600"  },
     { label: "Reservas Ativas",   value: stats.bookings,         icon: CalendarDays,   color: "bg-purple-50 text-purple-600"},
