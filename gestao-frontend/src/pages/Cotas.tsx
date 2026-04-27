@@ -11,7 +11,28 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
-import { Plus, Pencil, Trash2, Landmark, Users, ChevronDown } from "lucide-react";
+import { Plus, Pencil, Trash2, Landmark, ChevronDown } from "lucide-react";
+
+const AVATAR_COLORS = [
+  "bg-green-200 text-green-800",
+  "bg-blue-200 text-blue-800",
+  "bg-purple-200 text-purple-800",
+  "bg-amber-200 text-amber-800",
+  "bg-rose-200 text-rose-800",
+  "bg-cyan-200 text-cyan-800",
+  "bg-indigo-200 text-indigo-800",
+  "bg-teal-200 text-teal-800",
+];
+
+function avatarColor(slug: string) {
+  let h = 0;
+  for (const c of slug) h = (h * 31 + c.charCodeAt(0)) & 0xffff;
+  return AVATAR_COLORS[h % AVATAR_COLORS.length];
+}
+
+function initials(nome: string) {
+  return nome.split(" ").slice(0, 2).map((w) => w[0]).join("").toUpperCase();
+}
 
 const emptyCotaForm = { slug: "", numero: "", nome: "" };
 const emptyProfileForm = {
@@ -68,10 +89,7 @@ export default function Cotas() {
   };
 
   const saveCota = async () => {
-    if (!cotaForm.nome) {
-      setCotaError("Nome é obrigatório.");
-      return;
-    }
+    if (!cotaForm.nome) { setCotaError("Nome é obrigatório."); return; }
     try {
       await api.put(`/api/cotas/${cotaEditing}`, { nome: cotaForm.nome });
       setCotaOpen(false);
@@ -113,10 +131,7 @@ export default function Cotas() {
   };
 
   const saveMember = async () => {
-    if (!memberForm.nome_completo) {
-      setMemberError("Nome completo é obrigatório.");
-      return;
-    }
+    if (!memberForm.nome_completo) { setMemberError("Nome completo é obrigatório."); return; }
     try {
       const payload = {
         nome_completo: memberForm.nome_completo,
@@ -170,95 +185,82 @@ export default function Cotas() {
           {cotas.map((c) => {
             const membros = profiles.filter((p) => p.cota_slug === c.slug);
             const isExpanded = expandedSlug === c.slug;
+
             return (
-              <div key={c.id} className="bg-white rounded-xl border border-[#E7E5E4]">
-                {/* Card header — clickable to toggle accordion */}
+              <div key={c.id} className="bg-white rounded-xl border border-[#E7E5E4] flex flex-col">
+                {/* Card header */}
                 <div
-                  className="p-5 cursor-pointer select-none"
+                  className="p-4 flex items-start justify-between cursor-pointer select-none lg:cursor-default"
                   onClick={() => setExpandedSlug(isExpanded ? null : c.slug)}
                 >
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs font-bold text-[#1F6B3A] bg-[#D5E8D4] px-2 py-0.5 rounded-full">
-                          #{c.numero}
-                        </span>
-                        {!c.ativo && (
-                          <span className="text-xs text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">
-                            inativa
-                          </span>
-                        )}
-                      </div>
-                      <h3 className="font-semibold text-[#1A1A1A] mt-1">{c.nome}</h3>
-                      <p className="text-xs text-[#8A8A8A] mt-0.5">@{c.slug}</p>
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="text-xs font-bold text-[#1F6B3A] bg-[#D5E8D4] px-2 py-0.5 rounded-full">
+                        #{c.numero}
+                      </span>
+                      {!c.ativo && (
+                        <span className="text-xs text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">inativa</span>
+                      )}
                     </div>
-                    <div className="flex items-center gap-1">
-                      <button
-                        onClick={(e) => { e.stopPropagation(); openEditCota(c); }}
-                        className="p-1.5 rounded-lg hover:bg-[#F5F5F4]"
-                      >
-                        <Pencil className="w-4 h-4 text-[#4D4D4D]" />
-                      </button>
-                      <button
-                        onClick={(e) => { e.stopPropagation(); removeCota(c.slug); }}
-                        className="p-1.5 rounded-lg hover:bg-[#F5F5F4]"
-                      >
-                        <Trash2 className="w-4 h-4 text-red-500" />
-                      </button>
-                      <ChevronDown
-                        className={`w-4 h-4 text-[#8A8A8A] ml-1 transition-transform duration-200 ${isExpanded ? "rotate-180" : ""}`}
-                      />
-                    </div>
+                    <h3 className="font-semibold text-[#1A1A1A] mt-1 truncate">{c.nome}</h3>
+                    <p className="text-xs text-[#8A8A8A]">@{c.slug}</p>
                   </div>
-                  <div className="flex items-center gap-1.5 text-xs text-[#4D4D4D] mt-2">
-                    <Users className="w-3.5 h-3.5" />
-                    <span className="font-medium">
-                      {membros.length} membro{membros.length !== 1 ? "s" : ""}
-                    </span>
+                  <div className="flex items-center gap-1 ml-2 shrink-0">
+                    <button
+                      onClick={(e) => { e.stopPropagation(); openEditCota(c); }}
+                      className="p-1.5 rounded-lg hover:bg-[#F5F5F4]"
+                    >
+                      <Pencil className="w-3.5 h-3.5 text-[#4D4D4D]" />
+                    </button>
+                    <button
+                      onClick={(e) => { e.stopPropagation(); removeCota(c.slug); }}
+                      className="p-1.5 rounded-lg hover:bg-[#F5F5F4]"
+                    >
+                      <Trash2 className="w-3.5 h-3.5 text-red-400" />
+                    </button>
+                    {/* Chevron only on mobile */}
+                    <ChevronDown
+                      className={`w-4 h-4 text-[#8A8A8A] ml-1 transition-transform duration-200 lg:hidden ${isExpanded ? "rotate-180" : ""}`}
+                    />
                   </div>
                 </div>
 
-                {/* Accordion body */}
-                {isExpanded && (
-                  <div className="border-t border-[#F5F5F4] px-5 pb-4 pt-3">
-                    <div className="space-y-2">
+                {/* Members section: accordion on mobile, always visible on desktop */}
+                <div className={`border-t border-[#F5F5F4] px-4 pb-4 pt-3 ${isExpanded ? "block" : "hidden"} lg:block`}>
+                  {membros.length === 0 ? (
+                    <p className="text-xs text-[#8A8A8A] py-1">Sem membros.</p>
+                  ) : (
+                    <div className="flex flex-wrap gap-2">
                       {membros.map((p) => (
                         <button
                           key={p.slug}
-                          onClick={() => openEditMember(p)}
-                          className="w-full text-left p-3 rounded-lg bg-[#F8F7F4] hover:bg-[#ECF7EE] border border-[#E7E5E4] hover:border-[#88C9A1] transition-colors"
+                          onClick={(e) => { e.stopPropagation(); openEditMember(p); }}
+                          className="flex flex-col items-center gap-1 p-2 rounded-xl hover:bg-[#ECF7EE] transition-colors group"
                         >
-                          <div className="flex items-center justify-between gap-2">
-                            <div className="min-w-0">
-                              <p className="text-sm font-medium text-[#1A1A1A]">
-                                {p.nome_completo}
-                              </p>
-                              {(p.email || p.telefone) && (
-                                <p className="text-xs text-[#8A8A8A] mt-0.5 truncate">
-                                  {p.email || p.telefone}
-                                </p>
-                              )}
-                            </div>
-                            {p.role && (
-                              <span className="shrink-0 text-xs px-2 py-0.5 rounded-full bg-[#D5E8D4] text-[#1F6B3A] font-medium">
-                                {p.role}
-                              </span>
-                            )}
+                          <div
+                            className={`w-11 h-11 rounded-full flex items-center justify-center text-sm font-bold ${avatarColor(p.slug)}`}
+                          >
+                            {initials(p.nome_completo)}
                           </div>
+                          <p className="text-[11px] font-medium text-[#1A1A1A] max-w-[56px] truncate text-center leading-tight">
+                            {p.nome_curto || p.nome_completo.split(" ")[0]}
+                          </p>
+                          {p.role && (
+                            <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-[#D5E8D4] text-[#1F6B3A] font-medium leading-none">
+                              {p.role}
+                            </span>
+                          )}
                         </button>
                       ))}
-                      {membros.length === 0 && (
-                        <p className="text-sm text-[#8A8A8A] py-1">Nenhum membro cadastrado.</p>
-                      )}
                     </div>
-                    <button
-                      onClick={() => openNewMember(c.slug)}
-                      className="mt-3 flex items-center gap-1.5 text-sm text-[#1F6B3A] hover:text-[#2D5A27] font-medium"
-                    >
-                      <Plus className="w-4 h-4" /> Adicionar Membro
-                    </button>
-                  </div>
-                )}
+                  )}
+                  <button
+                    onClick={(e) => { e.stopPropagation(); openNewMember(c.slug); }}
+                    className="mt-3 flex items-center gap-1 text-xs text-[#1F6B3A] hover:text-[#2D5A27] font-medium"
+                  >
+                    <Plus className="w-3.5 h-3.5" /> Adicionar Membro
+                  </button>
+                </div>
               </div>
             );
           })}
@@ -296,9 +298,7 @@ export default function Cotas() {
           <DialogHeader>
             <DialogTitle>{memberEditing ? "Editar Membro" : "Adicionar Membro"}</DialogTitle>
             <DialogDescription>
-              {memberEditing
-                ? "Atualize os dados do membro."
-                : `Novo membro para a bolinha @${memberCotaSlug}.`}
+              {memberEditing ? "Atualize os dados do membro." : `Novo membro para a bolinha @${memberCotaSlug}.`}
             </DialogDescription>
           </DialogHeader>
           {memberError && <p className="text-sm text-red-600">{memberError}</p>}
