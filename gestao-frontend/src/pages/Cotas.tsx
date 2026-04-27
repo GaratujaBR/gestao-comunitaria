@@ -60,7 +60,6 @@ const emptyProfileForm = {
   nome_curto: "",
   email: "",
   telefone: "",
-  lote: "",
   foto_url: "",
 };
 
@@ -151,7 +150,6 @@ export default function Cotas() {
       nome_curto: p.nome_curto || "",
       email: p.email || "",
       telefone: p.telefone || "",
-      lote: p.lote || "",
       foto_url: p.foto_url || "",
     });
     setMemberEditing(p.slug);
@@ -168,7 +166,6 @@ export default function Cotas() {
         nome_curto: memberForm.nome_curto || null,
         email: memberForm.email || null,
         telefone: memberForm.telefone || null,
-        lote: memberForm.lote || null,
         foto_url: memberForm.foto_url || null,
         cota_slug: memberCotaSlug || null,
       };
@@ -413,13 +410,30 @@ export default function Cotas() {
                 />
               </div>
             </div>
+            {/* Bolinha picker */}
             <div>
-              <Label>Lote</Label>
-              <Input
-                value={memberForm.lote}
-                onChange={(e) => setMemberForm({ ...memberForm, lote: e.target.value })}
-                placeholder="A1"
-              />
+              <Label>Bolinha</Label>
+              <div className="mt-1.5 flex flex-wrap gap-1.5 max-h-32 overflow-y-auto p-1">
+                {cotas.map((c) => (
+                  <button
+                    key={c.slug}
+                    type="button"
+                    onClick={() => setMemberCotaSlug(c.slug)}
+                    className={`text-xs px-2 py-1 rounded-full border font-medium transition-colors ${
+                      memberCotaSlug === c.slug
+                        ? "bg-[#1F6B3A] text-white border-[#1F6B3A]"
+                        : "border-[#E7E5E4] text-[#4D4D4D] hover:border-[#88C9A1] hover:text-[#1F6B3A]"
+                    }`}
+                  >
+                    #{c.numero}
+                  </button>
+                ))}
+              </div>
+              {memberCotaSlug && (
+                <p className="text-xs text-[#1F6B3A] mt-1 font-medium">
+                  {cotas.find((c) => c.slug === memberCotaSlug)?.nome}
+                </p>
+              )}
             </div>
             <div className="flex justify-between pt-2">
               {memberEditing && (
