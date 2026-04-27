@@ -11,7 +11,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
-import { Plus, Pencil, Trash2, Landmark, Users, UserPlus } from "lucide-react";
+import { Plus, Pencil, Trash2, Landmark, Users, ChevronDown } from "lucide-react";
 
 const emptyCotaForm = { slug: "", numero: "", nome: "" };
 const emptyProfileForm = {
@@ -28,6 +28,7 @@ export default function Cotas() {
   const [cotas, setCotas] = useState<Cota[]>([]);
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [loading, setLoading] = useState(true);
+  const [expandedSlug, setExpandedSlug] = useState<string | null>(null);
 
   // Cota dialog
   const [cotaOpen, setCotaOpen] = useState(false);
@@ -59,13 +60,6 @@ export default function Cotas() {
   useEffect(() => { load(); }, []);
 
   // ── Cota handlers ──────────────────────────────────────────
-  const openNewCota = () => {
-    setCotaForm(emptyCotaForm);
-    setCotaEditing(null);
-    setCotaError("");
-    setCotaOpen(true);
-  };
-
   const openEditCota = (c: Cota) => {
     setCotaForm({ slug: c.slug, numero: c.numero.toString(), nome: c.nome });
     setCotaEditing(c.slug);
@@ -74,20 +68,12 @@ export default function Cotas() {
   };
 
   const saveCota = async () => {
-    if (!cotaForm.nome || !cotaForm.numero) {
-      setCotaError("Número e nome são obrigatórios.");
+    if (!cotaForm.nome) {
+      setCotaError("Nome é obrigatório.");
       return;
     }
     try {
-      if (cotaEditing) {
-        await api.put(`/api/cotas/${cotaEditing}`, { nome: cotaForm.nome });
-      } else {
-        await api.post("/api/cotas", {
-          slug: cotaForm.slug || `cota-${cotaForm.numero}`,
-          numero: parseInt(cotaForm.numero),
-          nome: cotaForm.nome,
-        });
-      }
+      await api.put(`/api/cotas/${cotaEditing}`, { nome: cotaForm.nome });
       setCotaOpen(false);
       load();
     } catch (e: unknown) {
@@ -96,7 +82,7 @@ export default function Cotas() {
   };
 
   const removeCota = async (slug: string) => {
-    if (!confirm("Remover esta cota?")) return;
+    if (!confirm("Remover esta bolinha?")) return;
     await api.del(`/api/cotas/${slug}`);
     load();
   };
@@ -168,9 +154,6 @@ export default function Cotas() {
     <div>
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold text-gray-800">Bolinhas</h1>
-        <Button onClick={openNewCota}>
-          <Plus className="w-4 h-4 mr-2" /> Nova Bolinha
-        </Button>
       </div>
 
       {loading ? (
@@ -186,95 +169,111 @@ export default function Cotas() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {cotas.map((c) => {
             const membros = profiles.filter((p) => p.cota_slug === c.slug);
+            const isExpanded = expandedSlug === c.slug;
             return (
-              <div key={c.id} className="bg-white rounded-xl border border-[#E7E5E4] p-5">
-                <div className="flex items-start justify-between">
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs font-bold text-[#1F6B3A] bg-[#D5E8D4] px-2 py-0.5 rounded-full">
-                        #{c.numero}
-                      </span>
-                      {!c.ativo && (
-                        <span className="text-xs text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">
-                          inativa
+              <div key={c.id} className="bg-white rounded-xl border border-[#E7E5E4]">
+                {/* Card header — clickable to toggle accordion */}
+                <div
+                  className="p-5 cursor-pointer select-none"
+                  onClick={() => setExpandedSlug(isExpanded ? null : c.slug)}
+                >
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-bold text-[#1F6B3A] bg-[#D5E8D4] px-2 py-0.5 rounded-full">
+                          #{c.numero}
                         </span>
-                      )}
+                        {!c.ativo && (
+                          <span className="text-xs text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">
+                            inativa
+                          </span>
+                        )}
+                      </div>
+                      <h3 className="font-semibold text-[#1A1A1A] mt-1">{c.nome}</h3>
+                      <p className="text-xs text-[#8A8A8A] mt-0.5">@{c.slug}</p>
                     </div>
-                    <h3 className="font-semibold text-[#1A1A1A] mt-1">{c.nome}</h3>
-                    <p className="text-xs text-[#8A8A8A] mt-0.5">@{c.slug}</p>
+                    <div className="flex items-center gap-1">
+                      <button
+                        onClick={(e) => { e.stopPropagation(); openEditCota(c); }}
+                        className="p-1.5 rounded-lg hover:bg-[#F5F5F4]"
+                      >
+                        <Pencil className="w-4 h-4 text-[#4D4D4D]" />
+                      </button>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); removeCota(c.slug); }}
+                        className="p-1.5 rounded-lg hover:bg-[#F5F5F4]"
+                      >
+                        <Trash2 className="w-4 h-4 text-red-500" />
+                      </button>
+                      <ChevronDown
+                        className={`w-4 h-4 text-[#8A8A8A] ml-1 transition-transform duration-200 ${isExpanded ? "rotate-180" : ""}`}
+                      />
+                    </div>
                   </div>
-                  <div className="flex gap-1">
-                    <button onClick={() => openNewMember(c.slug)} className="p-1.5 rounded-lg hover:bg-[#F5F5F4]" title="Adicionar membro">
-                      <UserPlus className="w-4 h-4 text-[#1F6B3A]" />
-                    </button>
-                    <button onClick={() => openEditCota(c)} className="p-1.5 rounded-lg hover:bg-[#F5F5F4]">
-                      <Pencil className="w-4 h-4 text-[#4D4D4D]" />
-                    </button>
-                    <button onClick={() => removeCota(c.slug)} className="p-1.5 rounded-lg hover:bg-[#F5F5F4]">
-                      <Trash2 className="w-4 h-4 text-red-500" />
-                    </button>
-                  </div>
-                </div>
-
-                <div className="mt-3 pt-3 border-t border-[#F5F5F4]">
-                  <div className="flex items-center gap-1.5 text-xs text-[#4D4D4D] mb-1.5">
+                  <div className="flex items-center gap-1.5 text-xs text-[#4D4D4D] mt-2">
                     <Users className="w-3.5 h-3.5" />
                     <span className="font-medium">
                       {membros.length} membro{membros.length !== 1 ? "s" : ""}
                     </span>
                   </div>
-                  {membros.length > 0 && (
-                    <div className="flex flex-wrap gap-1">
+                </div>
+
+                {/* Accordion body */}
+                {isExpanded && (
+                  <div className="border-t border-[#F5F5F4] px-5 pb-4 pt-3">
+                    <div className="space-y-2">
                       {membros.map((p) => (
                         <button
                           key={p.slug}
                           onClick={() => openEditMember(p)}
-                          className="text-xs bg-[#F8F7F4] border border-[#E7E5E4] px-2 py-0.5 rounded-full text-[#4D4D4D] hover:border-[#88C9A1] hover:text-[#1F6B3A] transition-colors"
+                          className="w-full text-left p-3 rounded-lg bg-[#F8F7F4] hover:bg-[#ECF7EE] border border-[#E7E5E4] hover:border-[#88C9A1] transition-colors"
                         >
-                          {p.nome_curto || p.nome_completo.split(" ")[0]}
+                          <div className="flex items-center justify-between gap-2">
+                            <div className="min-w-0">
+                              <p className="text-sm font-medium text-[#1A1A1A]">
+                                {p.nome_completo}
+                              </p>
+                              {(p.email || p.telefone) && (
+                                <p className="text-xs text-[#8A8A8A] mt-0.5 truncate">
+                                  {p.email || p.telefone}
+                                </p>
+                              )}
+                            </div>
+                            {p.role && (
+                              <span className="shrink-0 text-xs px-2 py-0.5 rounded-full bg-[#D5E8D4] text-[#1F6B3A] font-medium">
+                                {p.role}
+                              </span>
+                            )}
+                          </div>
                         </button>
                       ))}
+                      {membros.length === 0 && (
+                        <p className="text-sm text-[#8A8A8A] py-1">Nenhum membro cadastrado.</p>
+                      )}
                     </div>
-                  )}
-                </div>
+                    <button
+                      onClick={() => openNewMember(c.slug)}
+                      className="mt-3 flex items-center gap-1.5 text-sm text-[#1F6B3A] hover:text-[#2D5A27] font-medium"
+                    >
+                      <Plus className="w-4 h-4" /> Adicionar Membro
+                    </button>
+                  </div>
+                )}
               </div>
             );
           })}
         </div>
       )}
 
-      {/* Cota dialog */}
+      {/* Cota edit dialog */}
       <Dialog open={cotaOpen} onOpenChange={setCotaOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{cotaEditing ? "Editar Bolinha" : "Nova Bolinha"}</DialogTitle>
-            <DialogDescription>
-              {cotaEditing ? "Atualize o nome da bolinha." : "Cadastre uma nova bolinha da comunidade."}
-            </DialogDescription>
+            <DialogTitle>Editar Bolinha</DialogTitle>
+            <DialogDescription>Atualize o nome da bolinha.</DialogDescription>
           </DialogHeader>
           {cotaError && <p className="text-sm text-red-600">{cotaError}</p>}
           <div className="space-y-4">
-            {!cotaEditing && (
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label>Número *</Label>
-                  <Input
-                    type="number"
-                    value={cotaForm.numero}
-                    onChange={(e) => setCotaForm({ ...cotaForm, numero: e.target.value })}
-                    placeholder="1"
-                  />
-                </div>
-                <div>
-                  <Label>Slug</Label>
-                  <Input
-                    value={cotaForm.slug}
-                    onChange={(e) => setCotaForm({ ...cotaForm, slug: e.target.value })}
-                    placeholder="cota-01"
-                  />
-                </div>
-              </div>
-            )}
             <div>
               <Label>Nome *</Label>
               <Input
@@ -299,7 +298,7 @@ export default function Cotas() {
             <DialogDescription>
               {memberEditing
                 ? "Atualize os dados do membro."
-                : `Novo membro para a cota @${memberCotaSlug}.`}
+                : `Novo membro para a bolinha @${memberCotaSlug}.`}
             </DialogDescription>
           </DialogHeader>
           {memberError && <p className="text-sm text-red-600">{memberError}</p>}
