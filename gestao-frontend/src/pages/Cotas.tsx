@@ -267,10 +267,10 @@ export default function Cotas() {
                             <img
                               src={p.foto_url}
                               alt={p.nome_completo}
-                              className="w-11 h-11 rounded-full object-cover"
+                              className="w-11 h-11 rounded-2xl object-cover"
                             />
                           ) : (
-                            <div className={`w-11 h-11 rounded-full flex items-center justify-center text-sm font-bold ${avatarColor(p.slug)}`}>
+                            <div className={`w-11 h-11 rounded-2xl flex items-center justify-center text-sm font-bold ${avatarColor(p.slug)}`}>
                               {initials(p.nome_completo)}
                             </div>
                           )}
@@ -342,7 +342,7 @@ export default function Cotas() {
               <button
                 type="button"
                 onClick={() => fileRef.current?.click()}
-                className="relative w-16 h-16 rounded-full overflow-hidden border-2 border-dashed border-[#88C9A1] hover:border-[#1F6B3A] transition-colors flex items-center justify-center bg-[#F8F7F4] shrink-0"
+                className="relative w-16 h-16 rounded-2xl overflow-hidden border-2 border-dashed border-[#88C9A1] hover:border-[#1F6B3A] transition-colors flex items-center justify-center bg-[#F8F7F4] shrink-0"
               >
                 {memberForm.foto_url ? (
                   <img src={memberForm.foto_url} className="w-full h-full object-cover" />
