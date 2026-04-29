@@ -15,7 +15,7 @@ import Eventos from "@/pages/Eventos";
 
 function App() {
   return (
-    <BrowserRouter>
+    <BrowserRouter basename="/terradecanaa">
       <Routes>
         <Route element={<Layout />}>
           <Route path="/" element={<Dashboard />} />

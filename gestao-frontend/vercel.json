@@ -1,0 +1,8 @@
+{
+  "redirects": [
+    { "source": "/", "destination": "/terradecanaa/", "permanent": false }
+  ],
+  "rewrites": [
+    { "source": "/terradecanaa/(.*)", "destination": "/index.html" }
+  ]
+}
