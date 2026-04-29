@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { api } from "@/api/client";
 import type { Space, Item, Booking, Alert, Cota } from "@/api/types";
 import { Home, Package, CalendarDays, Bell, AlertTriangle } from "lucide-react";
@@ -71,12 +72,12 @@ export default function Dashboard() {
   }
 
   const cards = [
-    { label: "Bolinhas Ativas",   value: stats.cotas,            icon: BallIcon,       color: "bg-[#D5E8D4] text-[#1F6B3A]" },
-    { label: "Espaços",           value: stats.spaces,           icon: Home,           color: "bg-green-50 text-green-600"  },
-    { label: "Itens no Acervo",   value: stats.items,            icon: Package,        color: "bg-amber-50 text-amber-600"  },
-    { label: "Reservas Ativas",   value: stats.bookings,         icon: CalendarDays,   color: "bg-purple-50 text-purple-600"},
-    { label: "Alertas Pendentes", value: stats.alertsUnread,     icon: Bell,           color: "bg-red-50 text-red-600"      },
-    { label: "Em Manutenção",     value: stats.itemsMaintenance, icon: AlertTriangle,  color: "bg-orange-50 text-orange-600"},
+    { label: "Bolinhas Ativas",   value: stats.cotas,            icon: BallIcon,       color: "bg-[#D5E8D4] text-[#1F6B3A]", to: "/cotas"    },
+    { label: "Espaços",           value: stats.spaces,           icon: Home,           color: "bg-green-50 text-green-600",   to: "/reservas" },
+    { label: "Itens no Acervo",   value: stats.items,            icon: Package,        color: "bg-amber-50 text-amber-600",   to: "/acervo"   },
+    { label: "Reservas Ativas",   value: stats.bookings,         icon: CalendarDays,   color: "bg-purple-50 text-purple-600", to: "/reservas" },
+    { label: "Alertas Pendentes", value: stats.alertsUnread,     icon: Bell,           color: "bg-red-50 text-red-600"                        },
+    { label: "Em Manutenção",     value: stats.itemsMaintenance, icon: AlertTriangle,  color: "bg-orange-50 text-orange-600"                  },
   ];
 
   const statusMap: Record<string, string> = {
@@ -92,17 +93,27 @@ export default function Dashboard() {
       <h1 className="text-2xl font-bold text-[#1A1A1A]">Painel</h1>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {cards.map((card) => (
-          <div key={card.label} className="bg-white rounded-xl border border-[#E7E5E4] p-5 flex items-center gap-4">
-            <div className={`p-3 rounded-xl ${card.color}`}>
-              <card.icon className="w-5 h-5" />
-            </div>
-            <div>
-              <p className="text-2xl font-bold text-[#1A1A1A]">{card.value}</p>
-              <p className="text-sm text-[#4D4D4D]">{card.label}</p>
-            </div>
-          </div>
-        ))}
+        {cards.map((card) => {
+          const inner = (
+            <>
+              <div className={`p-3 rounded-xl ${card.color}`}>
+                <card.icon className="w-5 h-5" />
+              </div>
+              <div>
+                <p className="text-2xl font-bold text-[#1A1A1A]">{card.value}</p>
+                <p className="text-sm text-[#4D4D4D]">{card.label}</p>
+              </div>
+            </>
+          );
+          const cls = "bg-white rounded-xl border border-[#E7E5E4] p-5 flex items-center gap-4";
+          return card.to ? (
+            <Link key={card.label} to={card.to} className={`${cls} hover:border-[#88C9A1] hover:shadow-sm transition-all`}>
+              {inner}
+            </Link>
+          ) : (
+            <div key={card.label} className={cls}>{inner}</div>
+          );
+        })}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
