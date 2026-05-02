@@ -10,22 +10,19 @@ from app.routers import profiles, spaces, items, bookings, logs, wiki, alerts, c
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    migrations = [
+        "ALTER TABLE spaces ADD COLUMN parent_slug VARCHAR",
+        "ALTER TABLE items ADD COLUMN tipo VARCHAR DEFAULT 'comum'",
+        "ALTER TABLE profiles ADD COLUMN cota_slug VARCHAR",
+        "ALTER TABLE bookings ADD COLUMN cota_slug VARCHAR",
+        "ALTER TABLE profiles ADD COLUMN foto_url TEXT",
+    ]
     async with engine.begin() as conn:
-        await conn.execute(text("""
-            ALTER TABLE spaces ADD COLUMN IF NOT EXISTS parent_slug VARCHAR
-        """))
-        await conn.execute(text("""
-            ALTER TABLE items ADD COLUMN IF NOT EXISTS tipo VARCHAR DEFAULT 'comum'
-        """))
-        await conn.execute(text("""
-            ALTER TABLE profiles ADD COLUMN IF NOT EXISTS cota_slug VARCHAR
-        """))
-        await conn.execute(text("""
-            ALTER TABLE bookings ADD COLUMN IF NOT EXISTS cota_slug VARCHAR
-        """))
-        await conn.execute(text("""
-            ALTER TABLE profiles ADD COLUMN IF NOT EXISTS foto_url TEXT
-        """))
+        for sql in migrations:
+            try:
+                await conn.execute(text(sql))
+            except OperationalError:
+                pass  # column already exists
     await init_db()
     yield
 
