@@ -12,6 +12,7 @@ import {
   X,
   Sprout,
   CalendarRange,
+  BarChart3,
 } from "lucide-react";
 
 function BallIcon({ className }: { className?: string }) {
@@ -45,6 +46,7 @@ const navItems = [
   { to: "/wiki",     icon: BookOpen,        label: "Wiki"       },
   { to: "/planilha", icon: CircleDollarSign,label: "Financeiro" },
   { to: "/chamados", icon: Wrench,          label: "Chamados"   },
+  { to: "/enquetes", icon: BarChart3,       label: "Enquetes"   },
   { to: "/eventos",  icon: CalendarRange,   label: "Eventos"    },
   { to: "/logs",     icon: ClipboardList,   label: "Logs"       },
 ];
