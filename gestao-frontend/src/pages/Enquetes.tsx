@@ -2,19 +2,29 @@ import { useEffect, useState } from "react";
 import { api } from "@/api/client";
 import type { Enquete, Profile } from "@/api/types";
 import { Plus, X, BarChart3, Trash2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 const categoriaColors: Record<string, string> = {
-  decisao: "bg-blue-100 text-blue-800",
-  feedback: "bg-purple-100 text-purple-800",
-  preferencia: "bg-amber-100 text-amber-800",
-  aprovacao: "bg-green-100 text-green-800",
+  decisao:    "bg-blue-50 text-blue-700",
+  feedback:   "bg-purple-50 text-purple-700",
+  preferencia:"bg-amber-50 text-amber-700",
+  aprovacao:  "bg-[#D5E8D4] text-[#1F6B3A]",
 };
 
 const categoriaLabels: Record<string, string> = {
-  decisao: "Decisao",
-  feedback: "Feedback",
-  preferencia: "Preferencia",
-  aprovacao: "Aprovacao",
+  decisao:    "Decisão",
+  feedback:   "Feedback",
+  preferencia:"Preferência",
+  aprovacao:  "Aprovação",
 };
 
 export default function Enquetes() {
@@ -44,16 +54,11 @@ export default function Enquetes() {
       ]);
       setEnquetes(es);
       setProfiles(ps);
-    } catch {
-      /* ignore */
-    } finally {
-      setLoading(false);
-    }
+    } catch { /* ignore */ }
+    finally { setLoading(false); }
   };
 
-  useEffect(() => {
-    load();
-  }, []);
+  useEffect(() => { load(); }, []);
 
   const filtered = enquetes.filter((e) => {
     if (categoriaFilter && e.categoria !== categoriaFilter) return false;
@@ -62,66 +67,39 @@ export default function Enquetes() {
   });
 
   const createEnquete = async () => {
+    const opcoes = form.opcoes.filter((o) => o.trim() !== "");
+    if (opcoes.length < 2) return;
     try {
-      const opcoes = form.opcoes.filter((o) => o.trim() !== "");
-      if (opcoes.length < 2) return;
       await api.post("/api/enquetes", { ...form, opcoes });
       setShowModal(false);
-      setForm({
-        titulo: "",
-        descricao: "",
-        categoria: "decisao",
-        opcoes: ["", ""],
-        criador: "",
-        multipla_escolha: false,
-      });
+      setForm({ titulo: "", descricao: "", categoria: "decisao", opcoes: ["", ""], criador: "", multipla_escolha: false });
       load();
-    } catch {
-      /* ignore */
-    }
+    } catch { /* ignore */ }
   };
 
   const votar = async (enqueteId: string, opcaoIndex: number) => {
     if (!selectedProfile) return;
     const profile = profiles.find((p) => p.slug === selectedProfile);
-    if (!profile?.cota_slug) {
-      setVotoError("Perfil selecionado não pertence a uma cota.");
-      return;
-    }
+    if (!profile?.cota_slug) { setVotoError("Perfil não pertence a uma bolinha."); return; }
     setVotoError("");
     try {
-      await api.post(`/api/enquetes/${enqueteId}/votar`, {
-        opcao_index: opcaoIndex,
-        cota_slug: profile.cota_slug,
-      });
+      await api.post(`/api/enquetes/${enqueteId}/votar`, { opcao_index: opcaoIndex, cota_slug: profile.cota_slug });
       load();
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : "";
-      setVotoError(msg.includes("409") || msg.toLowerCase().includes("cota") ? "Sua cota já votou nesta enquete." : msg || "Erro ao votar.");
+      setVotoError(msg.includes("409") || msg.toLowerCase().includes("cota") ? "Sua bolinha já votou nesta enquete." : msg || "Erro ao votar.");
     }
   };
 
   const encerrar = async (id: string) => {
-    try {
-      await api.put(`/api/enquetes/${id}`, { status: "encerrada" });
-      load();
-    } catch {
-      /* ignore */
-    }
+    try { await api.put(`/api/enquetes/${id}`, { status: "encerrada" }); load(); } catch { /* ignore */ }
   };
 
   const deletar = async (id: string) => {
-    try {
-      await api.del(`/api/enquetes/${id}`);
-      load();
-    } catch {
-      /* ignore */
-    }
+    try { await api.del(`/api/enquetes/${id}`); load(); } catch { /* ignore */ }
   };
 
-  const addOpcao = () => {
-    setForm({ ...form, opcoes: [...form.opcoes, ""] });
-  };
+  const addOpcao = () => setForm({ ...form, opcoes: [...form.opcoes, ""] });
 
   const updateOpcao = (index: number, value: string) => {
     const opcoes = [...form.opcoes];
@@ -131,31 +109,33 @@ export default function Enquetes() {
 
   const removeOpcao = (index: number) => {
     if (form.opcoes.length <= 2) return;
-    const opcoes = form.opcoes.filter((_, i) => i !== index);
-    setForm({ ...form, opcoes });
+    setForm({ ...form, opcoes: form.opcoes.filter((_, i) => i !== index) });
   };
 
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600" />
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#1F6B3A]" />
       </div>
     );
   }
+
+  const filterBtn = (active: boolean) =>
+    `px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${active ? "bg-[#1F6B3A] text-white" : "bg-[#F8F7F4] text-[#4D4D4D] hover:bg-[#E7E5E4]"}`;
 
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-800">Enquetes</h1>
-          <p className="text-sm text-gray-500 mt-1">{enquetes.length} enquetes registradas</p>
+          <h1 className="text-2xl font-bold text-[#1A1A1A]">Enquetes</h1>
+          <p className="text-sm text-[#8A8A8A] mt-1">{enquetes.length} enquetes registradas</p>
         </div>
         <div className="flex items-center gap-3 flex-wrap">
           <div className="flex flex-col gap-0.5">
             <select
               value={selectedProfile}
               onChange={(e) => { setSelectedProfile(e.target.value); setVotoError(""); }}
-              className="px-3 py-2 border border-[#E7E5E4] rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#1F6B3A]/20 focus:border-[#1F6B3A]"
+              className="px-3 py-2 border border-[#E7E5E4] rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#1F6B3A]/20 focus:border-[#1F6B3A] text-[#1A1A1A]"
             >
               <option value="">Quem está votando?</option>
               {profiles.filter((p) => p.ativo && p.cota_slug).map((p) => (
@@ -166,95 +146,54 @@ export default function Enquetes() {
             </select>
             {votoError && <span className="text-xs text-red-500">{votoError}</span>}
           </div>
-          <button
-            onClick={() => setShowModal(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700"
-          >
+          <Button onClick={() => setShowModal(true)} className="flex items-center gap-2 bg-[#1F6B3A] hover:bg-[#155A2A]">
             <Plus className="w-4 h-4" />
             Nova Enquete
-          </button>
+          </Button>
         </div>
       </div>
 
+      {/* Filtros */}
       <div className="flex flex-wrap gap-2">
         <div className="flex gap-2">
-          <button
-            onClick={() => setCategoriaFilter("")}
-            className={`px-3 py-1.5 rounded-lg text-sm font-medium ${!categoriaFilter ? "bg-green-600 text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}
-          >
-            Todas
-          </button>
+          <button onClick={() => setCategoriaFilter("")} className={filterBtn(!categoriaFilter)}>Todas</button>
           {Object.entries(categoriaLabels).map(([key, label]) => (
-            <button
-              key={key}
-              onClick={() => setCategoriaFilter(key)}
-              className={`px-3 py-1.5 rounded-lg text-sm font-medium ${categoriaFilter === key ? "bg-green-600 text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}
-            >
-              {label}
-            </button>
+            <button key={key} onClick={() => setCategoriaFilter(key)} className={filterBtn(categoriaFilter === key)}>{label}</button>
           ))}
         </div>
         <div className="flex gap-2 ml-4">
-          <button
-            onClick={() => setStatusFilter("")}
-            className={`px-3 py-1.5 rounded-lg text-sm font-medium ${!statusFilter ? "bg-blue-600 text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}
-          >
-            Todos
-          </button>
-          <button
-            onClick={() => setStatusFilter("aberta")}
-            className={`px-3 py-1.5 rounded-lg text-sm font-medium ${statusFilter === "aberta" ? "bg-blue-600 text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}
-          >
-            Abertas
-          </button>
-          <button
-            onClick={() => setStatusFilter("encerrada")}
-            className={`px-3 py-1.5 rounded-lg text-sm font-medium ${statusFilter === "encerrada" ? "bg-blue-600 text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}
-          >
-            Encerradas
-          </button>
+          <button onClick={() => setStatusFilter("")} className={filterBtn(!statusFilter)}>Todos</button>
+          <button onClick={() => setStatusFilter("aberta")} className={filterBtn(statusFilter === "aberta")}>Abertas</button>
+          <button onClick={() => setStatusFilter("encerrada")} className={filterBtn(statusFilter === "encerrada")}>Encerradas</button>
         </div>
       </div>
 
+      {/* Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {filtered.map((e) => {
           const maxVotos = Math.max(...Object.values(e.votos).map(Number), 1);
           return (
-            <div key={e.id} className="bg-white rounded-lg border p-5">
+            <div key={e.id} className="bg-white rounded-xl border border-[#E7E5E4] p-5">
               <div className="flex items-start justify-between mb-3">
                 <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-1">
-                    <span
-                      className={`px-2 py-0.5 rounded text-xs font-medium ${categoriaColors[e.categoria] || "bg-gray-100 text-gray-700"}`}
-                    >
+                  <div className="flex items-center gap-2 mb-1.5">
+                    <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${categoriaColors[e.categoria] || "bg-[#F8F7F4] text-[#4D4D4D]"}`}>
                       {categoriaLabels[e.categoria] || e.categoria}
                     </span>
-                    <span
-                      className={`px-2 py-0.5 rounded text-xs font-medium ${e.status === "aberta" ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-700"}`}
-                    >
+                    <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${e.status === "aberta" ? "bg-[#D5E8D4] text-[#1F6B3A]" : "bg-[#F8F7F4] text-[#8A8A8A]"}`}>
                       {e.status === "aberta" ? "Aberta" : "Encerrada"}
                     </span>
                   </div>
-                  <h3 className="font-semibold text-gray-800">{e.titulo}</h3>
-                  {e.descricao && (
-                    <p className="text-sm text-gray-600 mt-1">{e.descricao}</p>
-                  )}
+                  <h3 className="font-semibold text-[#1A1A1A]">{e.titulo}</h3>
+                  {e.descricao && <p className="text-sm text-[#4D4D4D] mt-1">{e.descricao}</p>}
                 </div>
                 <div className="flex items-center gap-1">
                   {e.status === "aberta" && (
-                    <button
-                      onClick={() => encerrar(e.id)}
-                      className="p-1.5 text-gray-400 hover:text-orange-600 rounded"
-                      title="Encerrar"
-                    >
+                    <button onClick={() => encerrar(e.id)} className="p-1.5 text-[#8A8A8A] hover:text-amber-600 rounded-lg hover:bg-[#F8F7F4]" title="Encerrar">
                       <BarChart3 className="w-4 h-4" />
                     </button>
                   )}
-                  <button
-                    onClick={() => deletar(e.id)}
-                    className="p-1.5 text-gray-400 hover:text-red-600 rounded"
-                    title="Excluir"
-                  >
+                  <button onClick={() => deletar(e.id)} className="p-1.5 text-[#8A8A8A] hover:text-red-600 rounded-lg hover:bg-[#F8F7F4]" title="Excluir">
                     <Trash2 className="w-4 h-4" />
                   </button>
                 </div>
@@ -272,23 +211,18 @@ export default function Enquetes() {
                           <button
                             onClick={() => votar(e.id, idx)}
                             disabled={!selectedProfile}
-                            className="px-2 py-1 text-xs bg-green-50 text-green-700 rounded hover:bg-green-100 disabled:opacity-50 shrink-0"
+                            className="px-2 py-1 text-xs bg-[#D5E8D4] text-[#1F6B3A] rounded-lg hover:bg-[#88C9A1]/30 disabled:opacity-40 shrink-0 font-medium"
                           >
                             Votar
                           </button>
                         )}
                         <div className="flex-1">
                           <div className="flex items-center justify-between text-sm mb-0.5">
-                            <span className="text-gray-700">{opcao}</span>
-                            <span className="text-gray-500 text-xs">
-                              {count} ({pct.toFixed(0)}%)
-                            </span>
+                            <span className="text-[#1A1A1A]">{opcao}</span>
+                            <span className="text-[#8A8A8A] text-xs">{count} ({pct.toFixed(0)}%)</span>
                           </div>
-                          <div className="w-full bg-gray-100 rounded-full h-2">
-                            <div
-                              className="bg-green-500 h-2 rounded-full transition-all"
-                              style={{ width: `${width}%` }}
-                            />
+                          <div className="w-full bg-[#F8F7F4] rounded-full h-2">
+                            <div className="bg-[#1F6B3A] h-2 rounded-full transition-all" style={{ width: `${width}%` }} />
                           </div>
                         </div>
                       </div>
@@ -297,12 +231,12 @@ export default function Enquetes() {
                 })}
               </div>
 
-              <div className="flex items-center justify-between mt-3 pt-3 border-t">
-                <span className="text-xs text-gray-400">
+              <div className="flex items-center justify-between mt-3 pt-3 border-t border-[#F5F5F4]">
+                <span className="text-xs text-[#8A8A8A]">
                   {e.total_votos} voto{e.total_votos !== 1 ? "s" : ""}
-                  {e.criador && ` - por ${e.criador}`}
+                  {e.criador && ` · ${e.criador}`}
                 </span>
-                <span className="text-xs text-gray-400">
+                <span className="text-xs text-[#8A8A8A]">
                   {new Date(e.created_at).toLocaleDateString("pt-BR")}
                 </span>
               </div>
@@ -310,110 +244,100 @@ export default function Enquetes() {
           );
         })}
         {filtered.length === 0 && (
-          <div className="col-span-2 text-center py-12 text-gray-500">
-            Nenhuma enquete encontrada
+          <div className="col-span-2 text-center py-12 text-[#8A8A8A]">
+            Nenhuma enquete encontrada.
           </div>
         )}
       </div>
 
-      {showModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-          <div className="bg-white rounded-xl shadow-xl w-full max-w-lg mx-4 p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-bold text-gray-800">Nova Enquete</h2>
-              <button
-                onClick={() => setShowModal(false)}
-                className="text-gray-400 hover:text-gray-600"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-            <div className="space-y-3">
-              <input
-                placeholder="Titulo da enquete"
+      {/* Dialog: Nova Enquete */}
+      <Dialog open={showModal} onOpenChange={setShowModal}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Nova Enquete</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 max-h-[70vh] overflow-y-auto pr-1">
+            <div>
+              <Label>Título *</Label>
+              <Input
+                placeholder="Título da enquete"
                 value={form.titulo}
                 onChange={(e) => setForm({ ...form, titulo: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
               />
-              <textarea
-                placeholder="Descricao (opcional)"
+            </div>
+            <div>
+              <Label>Descrição</Label>
+              <Textarea
+                placeholder="Descrição (opcional)"
                 value={form.descricao}
                 onChange={(e) => setForm({ ...form, descricao: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
                 rows={2}
               />
+            </div>
+            <div>
+              <Label>Categoria</Label>
               <select
                 value={form.categoria}
                 onChange={(e) => setForm({ ...form, categoria: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                className="w-full px-3 py-2 border border-[#E7E5E4] rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#1F6B3A]/20 focus:border-[#1F6B3A]"
               >
                 {Object.entries(categoriaLabels).map(([key, label]) => (
-                  <option key={key} value={key}>
-                    {label}
-                  </option>
+                  <option key={key} value={key}>{label}</option>
                 ))}
               </select>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Opcoes</label>
+            </div>
+            <div>
+              <Label>Opções *</Label>
+              <div className="space-y-2 mt-1">
                 {form.opcoes.map((opcao, idx) => (
-                  <div key={idx} className="flex items-center gap-2 mb-2">
-                    <input
-                      placeholder={`Opcao ${idx + 1}`}
+                  <div key={idx} className="flex items-center gap-2">
+                    <Input
+                      placeholder={`Opção ${idx + 1}`}
                       value={opcao}
                       onChange={(e) => updateOpcao(idx, e.target.value)}
-                      className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm"
                     />
                     {form.opcoes.length > 2 && (
-                      <button
-                        onClick={() => removeOpcao(idx)}
-                        className="p-2 text-gray-400 hover:text-red-500"
-                      >
+                      <button onClick={() => removeOpcao(idx)} className="p-1.5 text-[#8A8A8A] hover:text-red-500">
                         <X className="w-4 h-4" />
                       </button>
                     )}
                   </div>
                 ))}
-                <button
-                  onClick={addOpcao}
-                  className="text-sm text-green-600 hover:text-green-700 font-medium"
-                >
-                  + Adicionar opcao
-                </button>
-              </div>
-              <input
-                placeholder="Criador"
-                value={form.criador}
-                onChange={(e) => setForm({ ...form, criador: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
-              />
-              <label className="flex items-center gap-2 text-sm text-gray-700">
-                <input
-                  type="checkbox"
-                  checked={form.multipla_escolha}
-                  onChange={(e) => setForm({ ...form, multipla_escolha: e.target.checked })}
-                  className="rounded border-gray-300"
-                />
-                Permitir multipla escolha
-              </label>
-              <div className="flex justify-end gap-3 pt-2">
-                <button
-                  onClick={() => setShowModal(false)}
-                  className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50"
-                >
-                  Cancelar
-                </button>
-                <button
-                  onClick={createEnquete}
-                  disabled={!form.titulo || form.opcoes.filter((o) => o.trim()).length < 2}
-                  className="px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700 disabled:opacity-50"
-                >
-                  Criar Enquete
+                <button onClick={addOpcao} className="text-sm text-[#1F6B3A] hover:text-[#155A2A] font-medium">
+                  + Adicionar opção
                 </button>
               </div>
             </div>
+            <div>
+              <Label>Criador</Label>
+              <Input
+                placeholder="Nome do criador"
+                value={form.criador}
+                onChange={(e) => setForm({ ...form, criador: e.target.value })}
+              />
+            </div>
+            <label className="flex items-center gap-2 text-sm text-[#4D4D4D] cursor-pointer select-none">
+              <input
+                type="checkbox"
+                checked={form.multipla_escolha}
+                onChange={(e) => setForm({ ...form, multipla_escolha: e.target.checked })}
+                className="w-4 h-4 accent-[#1F6B3A]"
+              />
+              Permitir múltipla escolha
+            </label>
+            <div className="flex justify-end gap-2 pt-2">
+              <Button variant="outline" onClick={() => setShowModal(false)}>Cancelar</Button>
+              <Button
+                onClick={createEnquete}
+                disabled={!form.titulo || form.opcoes.filter((o) => o.trim()).length < 2}
+                className="bg-[#1F6B3A] hover:bg-[#155A2A]"
+              >
+                Criar Enquete
+              </Button>
+            </div>
           </div>
-        </div>
-      )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
