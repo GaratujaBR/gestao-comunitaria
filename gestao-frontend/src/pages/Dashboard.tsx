@@ -8,7 +8,8 @@ import type {
   Alert,
   Cota,
   Enquete,
-  Evento
+  Evento,
+  Profile
 } from "@/api/types"
 import {
   Package,
@@ -73,7 +74,8 @@ export default function Dashboard() {
           bookings,
           alertsData,
           enquetesData,
-          eventosData
+          eventosData,
+          profiles
         ] = await Promise.all([
           api.get<Cota[]>("/api/cotas"),
           api.get<Space[]>("/api/spaces"),
@@ -81,10 +83,11 @@ export default function Dashboard() {
           api.get<Booking[]>("/api/bookings"),
           api.get<Alert[]>("/api/alerts?lido=false"),
           api.get<Enquete[]>("/api/enquetes"),
-          api.get<Evento[]>("/api/eventos?publico=true")
+          api.get<Evento[]>("/api/eventos?publico=true"),
+          api.get<Profile[]>("/api/profiles")
         ])
         setStats({
-          cotas: cotas.filter((c) => c.ativo).length,
+          cotas: cotas.filter((c) => c.ativo && profiles.some((p) => p.cota_slug === c.slug)).length,
           spaces: spaces.filter((s) => !s.parent_slug).length,
           items: items.length,
           bookings: bookings.filter((b) =>

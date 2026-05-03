@@ -47,7 +47,7 @@ export default function Profiles() {
   const handleSave = async (payload: Record<string, unknown>) => {
     try {
       if (editing) {
-        const { slug, ...update } = payload
+        const { slug: _slug, ...update } = payload
         await api.put(`/api/profiles/${editing}`, update)
       } else {
         await api.post("/api/profiles", payload)
