@@ -11,6 +11,7 @@ class EventoCreate(BaseModel):
     local_slug: str | None = None
     criador_slug: str | None = None
     cor: str | None = None
+    publico: bool = True
 
 
 class EventoUpdate(BaseModel):
@@ -34,6 +35,7 @@ class EventoResponse(BaseModel):
     local_slug: str | None = None
     criador_slug: str | None = None
     cor: str | None = None
+    publico: bool
     created_at: datetime
 
     model_config = {"from_attributes": True}

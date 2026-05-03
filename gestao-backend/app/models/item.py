@@ -1,5 +1,5 @@
 import uuid
-from datetime import datetime, date
+from datetime import datetime, timezone, date
 from sqlalchemy import String, Integer, DateTime, Date, JSON
 from sqlalchemy.orm import Mapped, mapped_column
 from app.database import Base
@@ -8,7 +8,9 @@ from app.database import Base
 class Item(Base):
     __tablename__ = "items"
 
-    id: Mapped[str] = mapped_column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
+    id: Mapped[str] = mapped_column(
+        String, primary_key=True, default=lambda: str(uuid.uuid4())
+    )
     codigo: Mapped[str] = mapped_column(String, unique=True, nullable=False, index=True)
     nome: Mapped[str] = mapped_column(String, nullable=False)
     descricao: Mapped[str | None] = mapped_column(String, nullable=True)
@@ -22,7 +24,9 @@ class Item(Base):
     ultima_manutencao: Mapped[date | None] = mapped_column(Date, nullable=True)
     proxima_manutencao: Mapped[date | None] = mapped_column(Date, nullable=True)
     vezes_usado: Mapped[int] = mapped_column(Integer, default=0)
-    tags: Mapped[dict | None] = mapped_column(JSON, default=list)
-    fotos: Mapped[dict | None] = mapped_column(JSON, default=list)
+    tags: Mapped[list | None] = mapped_column(JSON, default=list)
+    fotos: Mapped[list | None] = mapped_column(JSON, default=list)
     qr_code_url: Mapped[str | None] = mapped_column(String, nullable=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, default=lambda: datetime.now(timezone.utc)
+    )

@@ -15,6 +15,7 @@ class BookingCreate(BaseModel):
     numero_pessoas: int | None = None
     status: str = "pendente"
     observacoes: str | None = None
+    evento_id: str | None = None
 
 
 class BookingUpdate(BaseModel):
@@ -50,6 +51,7 @@ class BookingResponse(BaseModel):
     checklist_entrada: dict[str, Any] | None = None
     checklist_saida: dict[str, Any] | None = None
     observacoes: str | None = None
+    evento_id: str | None = None
     created_at: datetime
 
     model_config = {"from_attributes": True}

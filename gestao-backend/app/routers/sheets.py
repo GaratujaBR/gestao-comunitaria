@@ -15,7 +15,11 @@ router = APIRouter(prefix="/api/sheets", tags=["sheets"])
 
 SHEET_CSV_URL = os.getenv(
     "GOOGLE_SHEET_CSV_URL",
-    "https://docs.google.com/spreadsheets/d/1Wa5cB_C3ABzE74ozj7l1dLLL3B3wXWVZ/export?format=csv&gid=1161263825",
+    "",
+)
+SHEET_FLUXO_CSV_URL = os.getenv(
+    "GOOGLE_SHEET_FLUXO_CSV_URL",
+    "https://docs.google.com/spreadsheets/d/1Wa5cB_C3ABzE74ozj7l1dLLL3B3wXWVZ/export?format=csv&gid=1997519213",
 )
 
 _cache: dict = {"data": None, "ts": 0.0}
@@ -25,7 +29,9 @@ CACHE_TTL = 300  # 5 minutos
 def _parse_brl(value: str) -> float | None:
     if not value:
         return None
-    cleaned = value.replace("R$", "").replace(" ", "").replace(".", "").replace(",", ".")
+    cleaned = (
+        value.replace("R$", "").replace(" ", "").replace(".", "").replace(",", ".")
+    )
     try:
         return float(cleaned)
     except ValueError:
@@ -40,7 +46,16 @@ async def _fetch_rows() -> list[SheetRowResponse]:
     async with httpx.AsyncClient(follow_redirects=True, timeout=15) as client:
         resp = await client.get(SHEET_CSV_URL)
         if resp.status_code != 200:
-            raise HTTPException(status_code=502, detail="Erro ao buscar planilha Google Sheets")
+            raise HTTPException(
+                status_code=502, detail="Erro ao buscar planilha Google Sheets"
+            )
+
+    async with httpx.AsyncClient(follow_redirects=True, timeout=15) as client:
+        resp = await client.get(SHEET_CSV_URL)
+        if resp.status_code != 200:
+            raise HTTPException(
+                status_code=502, detail="Erro ao buscar planilha Google Sheets"
+            )
 
     reader = csv.reader(io.StringIO(resp.text))
     rows_out: list[SheetRowResponse] = []
@@ -56,29 +71,76 @@ async def _fetch_rows() -> list[SheetRowResponse]:
             return row[idx].strip() if idx < len(row) else ""
 
         qtd = col(5)
-        rows_out.append(SheetRowResponse(
-            id=str(uuid.uuid4()),
-            area=col(0),
-            status=col(1),
-            responsavel=col(2) or None,
-            item=col(3),
-            descricao=col(4) or None,
-            quantidade=int(qtd) if qtd.isdigit() else None,
-            valor=_parse_brl(col(6)),
-            total=_parse_brl(col(7)),
-            created_at=None,  # type: ignore[arg-type]
-        ))
+        rows_out.append(
+            SheetRowResponse(
+                id=str(uuid.uuid4()),
+                area=col(0),
+                status=col(1),
+                responsavel=col(2) or None,
+                item=col(3),
+                descricao=col(4) or None,
+                quantidade=int(qtd) if qtd.isdigit() else None,
+                valor=_parse_brl(col(6)),
+                total=_parse_brl(col(7)),
+                created_at=None,  # type: ignore[arg-type]
+            )
+        )
 
     _cache["data"] = rows_out
     _cache["ts"] = now
     return rows_out
 
 
+async def _fetch_saldo() -> float | None:
+    async with httpx.AsyncClient(follow_redirects=True, timeout=15) as client:
+        resp = await client.get(SHEET_FLUXO_CSV_URL)
+        if resp.status_code != 200:
+            return None
+
+    reader = csv.reader(io.StringIO(resp.text))
+    saldo_idx = -1
+    last_saldo: float | None = None
+
+    for row in reader:
+        if not any(cell.strip() for cell in row):
+            continue
+
+        if saldo_idx < 0:
+            # ainda procurando o header
+            for idx, col in enumerate(row):
+                if "saldo" in col.strip().lower():
+                    saldo_idx = idx
+                    break
+            continue
+
+        if saldo_idx >= len(row):
+            continue
+
+        cell = row[saldo_idx].strip()
+        if cell:
+            val = _parse_brl(cell)
+            if val is not None:
+                last_saldo = val
+
+    return last_saldo
+
+
 @router.get("", response_model=SheetDataResponse)
 async def get_sheets():
+    if not SHEET_CSV_URL:
+        raise HTTPException(
+            status_code=503,
+            detail="Planilha não configurada. Defina GOOGLE_SHEET_CSV_URL no .env",
+        )
     rows = await _fetch_rows()
     total_compras = sum(r.total or 0 for r in rows if r.status == "Compras")
-    return SheetDataResponse(rows=rows, count=len(rows), total_compras=total_compras)
+    saldo = await _fetch_saldo()
+    return SheetDataResponse(
+        rows=rows,
+        count=len(rows),
+        total_compras=total_compras,
+        saldo_atual=saldo,
+    )
 
 
 @router.post("/refresh")

@@ -1,36 +1,36 @@
-import { useEffect, useState } from "react";
-import { api } from "@/api/client";
-import type { Chamado, Prestador } from "@/api/types";
-import { Plus, Phone, X } from "lucide-react";
+import { useEffect, useState, useCallback } from "react"
+import { api } from "@/api/client"
+import type { Chamado, Prestador } from "@/api/types"
+import { Plus, Phone, X } from "lucide-react"
 
 const statusColors: Record<string, string> = {
   aberto: "bg-yellow-100 text-yellow-800",
   em_andamento: "bg-blue-100 text-blue-800",
   concluido: "bg-green-100 text-green-800",
-  cancelado: "bg-red-100 text-red-800",
-};
+  cancelado: "bg-red-100 text-red-800"
+}
 
 const prioridadeColors: Record<string, string> = {
   baixa: "bg-gray-100 text-gray-700",
   normal: "bg-blue-100 text-blue-700",
   alta: "bg-orange-100 text-orange-700",
-  urgente: "bg-red-100 text-red-700",
-};
+  urgente: "bg-red-100 text-red-700"
+}
 
 const statusLabels: Record<string, string> = {
   aberto: "Aberto",
   em_andamento: "Em Andamento",
-  concluido: "Concluido",
-  cancelado: "Cancelado",
-};
+  concluido: "Concluído",
+  cancelado: "Cancelado"
+}
 
 export default function Chamados() {
-  const [chamados, setChamados] = useState<Chamado[]>([]);
-  const [prestadores, setPrestadores] = useState<Prestador[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [statusFilter, setStatusFilter] = useState("");
-  const [showModal, setShowModal] = useState(false);
-  const [showPrestadorModal, setShowPrestadorModal] = useState(false);
+  const [chamados, setChamados] = useState<Chamado[]>([])
+  const [prestadores, setPrestadores] = useState<Prestador[]>([])
+  const [loading, setLoading] = useState(true)
+  const [statusFilter, setStatusFilter] = useState("")
+  const [showModal, setShowModal] = useState(false)
+  const [showPrestadorModal, setShowPrestadorModal] = useState(false)
   const [form, setForm] = useState({
     estrutura: "",
     area: "",
@@ -38,43 +38,43 @@ export default function Chamados() {
     prioridade: "normal",
     tipo: "corretiva",
     prestador_id: "",
-    solicitante: "",
-  });
+    solicitante: ""
+  })
   const [prestadorForm, setPrestadorForm] = useState({
     nome: "",
     telefone: "",
     especialidade: "",
-    empresa: "",
-  });
+    empresa: ""
+  })
 
-  const load = async () => {
-    setLoading(true);
+  const load = useCallback(async () => {
+    setLoading(true)
     try {
       const [c, p] = await Promise.all([
         api.get<Chamado[]>("/api/chamados"),
-        api.get<Prestador[]>("/api/prestadores"),
-      ]);
-      setChamados(c);
-      setPrestadores(p);
+        api.get<Prestador[]>("/api/prestadores")
+      ])
+      setChamados(c)
+      setPrestadores(p)
     } catch {
       /* ignore */
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }, [])
 
   useEffect(() => {
-    load();
-  }, []);
+    load()
+  }, [load])
 
   const filtered = statusFilter
     ? chamados.filter((c) => c.status === statusFilter)
-    : chamados;
+    : chamados
 
   const createChamado = async () => {
     try {
-      await api.post("/api/chamados", form);
-      setShowModal(false);
+      await api.post("/api/chamados", form)
+      setShowModal(false)
       setForm({
         estrutura: "",
         area: "",
@@ -82,57 +82,68 @@ export default function Chamados() {
         prioridade: "normal",
         tipo: "corretiva",
         prestador_id: "",
-        solicitante: "",
-      });
-      load();
+        solicitante: ""
+      })
+      load()
     } catch {
       /* ignore */
     }
-  };
+  }
 
   const createPrestador = async () => {
     try {
-      await api.post("/api/prestadores", prestadorForm);
-      setShowPrestadorModal(false);
-      setPrestadorForm({ nome: "", telefone: "", especialidade: "", empresa: "" });
-      load();
+      await api.post("/api/prestadores", prestadorForm)
+      setShowPrestadorModal(false)
+      setPrestadorForm({
+        nome: "",
+        telefone: "",
+        especialidade: "",
+        empresa: ""
+      })
+      load()
     } catch {
       /* ignore */
     }
-  };
+  }
 
   const updateStatus = async (id: string, status: string) => {
     try {
-      await api.put(`/api/chamados/${id}`, { status });
-      load();
+      await api.put(`/api/chamados/${id}`, { status })
+      load()
     } catch {
       /* ignore */
     }
-  };
+  }
 
   const openWhatsApp = async (id: string) => {
     try {
-      const result = await api.get<{ url: string }>(`/api/chamados/${id}/whatsapp`);
-      window.open(result.url, "_blank");
+      const result = await api.get<{ url: string }>(
+        `/api/chamados/${id}/whatsapp`
+      )
+      window.open(result.url, "_blank")
     } catch {
       /* ignore */
     }
-  };
+  }
 
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600" />
       </div>
-    );
+    )
   }
 
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-800">Chamados de Manutencao</h1>
-          <p className="text-sm text-gray-500 mt-1">{chamados.length} chamados registrados</p>
+          <h1 className="text-2xl font-bold text-gray-800">
+            Chamados de Manutenção
+          </h1>
+          <p className="text-sm text-gray-500 mt-1">
+            {chamados.length} chamados registrados
+          </p>
         </div>
         <div className="flex items-center gap-3">
           <button
@@ -175,7 +186,9 @@ export default function Chamados() {
             <div className="flex items-start justify-between gap-4">
               <div className="flex-1">
                 <div className="flex items-center gap-3 mb-2">
-                  <span className="text-xs font-mono text-gray-400">#{c.numero}</span>
+                  <span className="text-xs font-mono text-gray-400">
+                    #{c.numero}
+                  </span>
                   <span
                     className={`px-2 py-0.5 rounded text-xs font-medium ${statusColors[c.status] || "bg-gray-100 text-gray-700"}`}
                   >
@@ -194,12 +207,15 @@ export default function Chamados() {
                 <p className="text-sm text-gray-600 mt-1">{c.descricao}</p>
                 {c.prestador_nome && (
                   <p className="text-sm text-gray-500 mt-2">
-                    Prestador: <span className="font-medium">{c.prestador_nome}</span>
+                    Prestador:{" "}
+                    <span className="font-medium">{c.prestador_nome}</span>
                     {c.prestador_telefone && ` (${c.prestador_telefone})`}
                   </p>
                 )}
                 {c.solicitante && (
-                  <p className="text-xs text-gray-400 mt-1">Solicitante: {c.solicitante}</p>
+                  <p className="text-xs text-gray-400 mt-1">
+                    Solicitante: {c.solicitante}
+                  </p>
                 )}
                 <p className="text-xs text-gray-400 mt-1">
                   {new Date(c.created_at).toLocaleDateString("pt-BR")}
@@ -236,7 +252,9 @@ export default function Chamados() {
           </div>
         ))}
         {filtered.length === 0 && (
-          <div className="text-center py-12 text-gray-500">Nenhum chamado encontrado</div>
+          <div className="text-center py-12 text-gray-500">
+            Nenhum chamado encontrado
+          </div>
         )}
       </div>
 
@@ -256,26 +274,32 @@ export default function Chamados() {
               <input
                 placeholder="Estrutura (ex: Telhado, Encanamento)"
                 value={form.estrutura}
-                onChange={(e) => setForm({ ...form, estrutura: e.target.value })}
+                onChange={(e) =>
+                  setForm({ ...form, estrutura: e.target.value })
+                }
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
               />
               <input
-                placeholder="Area"
+                placeholder="Área"
                 value={form.area}
                 onChange={(e) => setForm({ ...form, area: e.target.value })}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
               />
               <textarea
-                placeholder="Descricao do problema"
+                placeholder="Descrição do problema"
                 value={form.descricao}
-                onChange={(e) => setForm({ ...form, descricao: e.target.value })}
+                onChange={(e) =>
+                  setForm({ ...form, descricao: e.target.value })
+                }
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
                 rows={3}
               />
               <div className="grid grid-cols-2 gap-3">
                 <select
                   value={form.prioridade}
-                  onChange={(e) => setForm({ ...form, prioridade: e.target.value })}
+                  onChange={(e) =>
+                    setForm({ ...form, prioridade: e.target.value })
+                  }
                   className="px-3 py-2 border border-gray-300 rounded-lg text-sm"
                 >
                   <option value="baixa">Baixa</option>
@@ -295,7 +319,9 @@ export default function Chamados() {
               </div>
               <select
                 value={form.prestador_id}
-                onChange={(e) => setForm({ ...form, prestador_id: e.target.value })}
+                onChange={(e) =>
+                  setForm({ ...form, prestador_id: e.target.value })
+                }
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
               >
                 <option value="">Selecione um prestador</option>
@@ -308,7 +334,9 @@ export default function Chamados() {
               <input
                 placeholder="Solicitante"
                 value={form.solicitante}
-                onChange={(e) => setForm({ ...form, solicitante: e.target.value })}
+                onChange={(e) =>
+                  setForm({ ...form, solicitante: e.target.value })
+                }
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
               />
               <div className="flex justify-end gap-3 pt-2">
@@ -335,7 +363,9 @@ export default function Chamados() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
           <div className="bg-white rounded-xl shadow-xl w-full max-w-lg mx-4 p-6">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-bold text-gray-800">Prestadores de Servico</h2>
+              <h2 className="text-lg font-bold text-gray-800">
+                Prestadores de Serviço
+              </h2>
               <button
                 onClick={() => setShowPrestadorModal(false)}
                 className="text-gray-400 hover:text-gray-600"
@@ -352,7 +382,8 @@ export default function Chamados() {
                   <div>
                     <p className="font-medium text-sm">{p.nome}</p>
                     <p className="text-xs text-gray-500">
-                      {p.especialidade || "Geral"} {p.empresa && `- ${p.empresa}`}
+                      {p.especialidade || "Geral"}{" "}
+                      {p.empresa && `- ${p.empresa}`}
                     </p>
                     <p className="text-xs text-gray-400">{p.telefone}</p>
                   </div>
@@ -365,19 +396,26 @@ export default function Chamados() {
               )}
             </div>
             <hr className="my-4" />
-            <h3 className="font-medium text-sm text-gray-700 mb-3">Adicionar Prestador</h3>
+            <h3 className="font-medium text-sm text-gray-700 mb-3">
+              Adicionar Prestador
+            </h3>
             <div className="space-y-3">
               <input
                 placeholder="Nome"
                 value={prestadorForm.nome}
-                onChange={(e) => setPrestadorForm({ ...prestadorForm, nome: e.target.value })}
+                onChange={(e) =>
+                  setPrestadorForm({ ...prestadorForm, nome: e.target.value })
+                }
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
               />
               <input
                 placeholder="Telefone"
                 value={prestadorForm.telefone}
                 onChange={(e) =>
-                  setPrestadorForm({ ...prestadorForm, telefone: e.target.value })
+                  setPrestadorForm({
+                    ...prestadorForm,
+                    telefone: e.target.value
+                  })
                 }
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
               />
@@ -385,7 +423,10 @@ export default function Chamados() {
                 placeholder="Especialidade"
                 value={prestadorForm.especialidade}
                 onChange={(e) =>
-                  setPrestadorForm({ ...prestadorForm, especialidade: e.target.value })
+                  setPrestadorForm({
+                    ...prestadorForm,
+                    especialidade: e.target.value
+                  })
                 }
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
               />
@@ -393,7 +434,10 @@ export default function Chamados() {
                 placeholder="Empresa"
                 value={prestadorForm.empresa}
                 onChange={(e) =>
-                  setPrestadorForm({ ...prestadorForm, empresa: e.target.value })
+                  setPrestadorForm({
+                    ...prestadorForm,
+                    empresa: e.target.value
+                  })
                 }
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
               />
@@ -409,5 +453,5 @@ export default function Chamados() {
         </div>
       )}
     </div>
-  );
+  )
 }

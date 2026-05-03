@@ -3,29 +3,59 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import text
 from sqlalchemy.exc import OperationalError
+from dotenv import load_dotenv
+
+load_dotenv()
 
 from app.database import engine, init_db
-from app.routers import profiles, spaces, items, bookings, logs, wiki, alerts, chamados, prestadores, enquetes, sheets, cotas, eventos
+from app.routers import (
+    profiles,
+    spaces,
+    items,
+    bookings,
+    logs,
+    wiki,
+    alerts,
+    chamados,
+    prestadores,
+    enquetes,
+    sheets,
+    cotas,
+    eventos,
+)
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    migrations = [
+        "ALTER TABLE spaces ADD COLUMN parent_slug VARCHAR",
+        "ALTER TABLE items ADD COLUMN tipo VARCHAR DEFAULT 'comum'",
+        "ALTER TABLE profiles ADD COLUMN cota_slug VARCHAR",
+        "ALTER TABLE bookings ADD COLUMN cota_slug VARCHAR",
+        "ALTER TABLE profiles ADD COLUMN foto_url TEXT",
+        "ALTER TABLE enquetes ADD COLUMN tipo VARCHAR DEFAULT 'multipla'",
+        "ALTER TABLE enquetes ADD COLUMN quorum_required INTEGER DEFAULT 60",
+        "ALTER TABLE enquetes ADD COLUMN approval_threshold INTEGER DEFAULT 66",
+        "ALTER TABLE enquetes ADD COLUMN closes_at TIMESTAMP",
+        "ALTER TABLE enquetes ADD COLUMN voting_starts_at TIMESTAMP",
+        "ALTER TABLE enquetes ADD COLUMN result_action TEXT",
+        "ALTER TABLE enquetes ADD COLUMN respostas JSON DEFAULT '{}'",
+        """CREATE TABLE IF NOT EXISTS enquete_comentarios (
+            id VARCHAR PRIMARY KEY,
+            enquete_id VARCHAR NOT NULL REFERENCES enquetes(id) ON DELETE CASCADE,
+            autor VARCHAR NOT NULL,
+            conteudo TEXT NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )""",
+        "ALTER TABLE bookings ADD COLUMN evento_id VARCHAR",
+        "ALTER TABLE eventos ADD COLUMN publico BOOLEAN DEFAULT TRUE",
+    ]
     async with engine.begin() as conn:
-        await conn.execute(text("""
-            ALTER TABLE spaces ADD COLUMN IF NOT EXISTS parent_slug VARCHAR
-        """))
-        await conn.execute(text("""
-            ALTER TABLE items ADD COLUMN IF NOT EXISTS tipo VARCHAR DEFAULT 'comum'
-        """))
-        await conn.execute(text("""
-            ALTER TABLE profiles ADD COLUMN IF NOT EXISTS cota_slug VARCHAR
-        """))
-        await conn.execute(text("""
-            ALTER TABLE bookings ADD COLUMN IF NOT EXISTS cota_slug VARCHAR
-        """))
-        await conn.execute(text("""
-            ALTER TABLE profiles ADD COLUMN IF NOT EXISTS foto_url TEXT
-        """))
+        for sql in migrations:
+            try:
+                await conn.execute(text(sql))
+            except OperationalError:
+                pass  # column/table already exists
     await init_db()
     yield
 
@@ -36,7 +66,7 @@ app = FastAPI(title="Gestao Comunitaria API", lifespan=lifespan)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],  # Allows all origins
-    allow_credentials=True,
+    allow_credentials=False,
     allow_methods=["*"],  # Allows all methods
     allow_headers=["*"],  # Allows all headers
 )

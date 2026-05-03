@@ -1,29 +1,35 @@
-import { useEffect, useState } from "react";
-import { api } from "@/api/client";
-import type { WikiArticle } from "@/api/types";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+import { useEffect, useState, useCallback } from "react"
+import { api } from "@/api/client"
+import type { WikiArticle } from "@/api/types"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
+  DialogDescription
+} from "@/components/ui/dialog"
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Plus, Pencil, Trash2, BookOpen, Eye } from "lucide-react";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
+  SelectValue
+} from "@/components/ui/select"
+import { Plus, Pencil, Trash2, BookOpen, Eye } from "lucide-react"
+import ReactMarkdown from "react-markdown"
+import remarkGfm from "remark-gfm"
 
-const categorias = ["bioconstrucao", "regras", "sistemas", "manutencao", "historia"];
+const categorias = [
+  "bioconstrucao",
+  "regras",
+  "sistemas",
+  "manutencao",
+  "historia"
+]
 
 const emptyForm = {
   slug: "",
@@ -34,44 +40,44 @@ const emptyForm = {
   entidades: "",
   dificuldade: "",
   tempo_execucao_horas: "",
-  autor_slug: "",
-};
+  autor_slug: ""
+}
 
 export default function Wiki() {
-  const [articles, setArticles] = useState<WikiArticle[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [open, setOpen] = useState(false);
-  const [preview, setPreview] = useState(false);
-  const [viewing, setViewing] = useState<WikiArticle | null>(null);
-  const [editing, setEditing] = useState<string | null>(null);
-  const [form, setForm] = useState(emptyForm);
-  const [error, setError] = useState("");
-  const [catFilter, setCatFilter] = useState("");
+  const [articles, setArticles] = useState<WikiArticle[]>([])
+  const [loading, setLoading] = useState(true)
+  const [open, setOpen] = useState(false)
+  const [preview, setPreview] = useState(false)
+  const [viewing, setViewing] = useState<WikiArticle | null>(null)
+  const [editing, setEditing] = useState<string | null>(null)
+  const [form, setForm] = useState(emptyForm)
+  const [error, setError] = useState("")
+  const [catFilter, setCatFilter] = useState("")
 
-  const load = async () => {
-    setLoading(true);
+  const load = useCallback(async () => {
+    setLoading(true)
     try {
-      const url = catFilter ? `/api/wiki?categoria=${catFilter}` : "/api/wiki";
-      setArticles(await api.get<WikiArticle[]>(url));
+      const url = catFilter ? `/api/wiki?categoria=${catFilter}` : "/api/wiki"
+      setArticles(await api.get<WikiArticle[]>(url))
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }, [catFilter])
 
   useEffect(() => {
-    load();
-  }, [catFilter]);
+    load()
+  }, [load, catFilter])
 
   const openNew = () => {
-    setForm(emptyForm);
-    setEditing(null);
-    setError("");
-    setPreview(false);
-    setOpen(true);
-  };
+    setForm(emptyForm)
+    setEditing(null)
+    setError("")
+    setPreview(false)
+    setOpen(true)
+  }
 
   const openEdit = (a: WikiArticle) => {
-    setPreview(false);
+    setPreview(false)
     setForm({
       slug: a.slug,
       titulo: a.titulo,
@@ -81,12 +87,12 @@ export default function Wiki() {
       entidades: a.entidades?.join(", ") || "",
       dificuldade: a.dificuldade?.toString() || "",
       tempo_execucao_horas: a.tempo_execucao_horas?.toString() || "",
-      autor_slug: a.autor_slug || "",
-    });
-    setEditing(a.slug);
-    setError("");
-    setOpen(true);
-  };
+      autor_slug: a.autor_slug || ""
+    })
+    setEditing(a.slug)
+    setError("")
+    setOpen(true)
+  }
 
   const save = async () => {
     try {
@@ -94,37 +100,45 @@ export default function Wiki() {
         ...form,
         categoria: form.categoria || null,
         resumo_ia: form.resumo_ia || null,
-        entidades: form.entidades ? form.entidades.split(",").map((e) => e.trim()).filter(Boolean) : null,
+        entidades: form.entidades
+          ? form.entidades
+              .split(",")
+              .map((e) => e.trim())
+              .filter(Boolean)
+          : null,
         dificuldade: form.dificuldade ? parseInt(form.dificuldade) : null,
-        tempo_execucao_horas: form.tempo_execucao_horas ? parseInt(form.tempo_execucao_horas) : null,
-        autor_slug: form.autor_slug || null,
-      };
-      if (editing) {
-        const { slug: _slug, ...update } = payload; void _slug;
-        await api.put(`/api/wiki/${editing}`, update);
-      } else {
-        await api.post("/api/wiki", payload);
+        tempo_execucao_horas: form.tempo_execucao_horas
+          ? parseInt(form.tempo_execucao_horas)
+          : null,
+        autor_slug: form.autor_slug || null
       }
-      setOpen(false);
-      load();
+      if (editing) {
+        const { slug: _slug, ...update } = payload
+        void _slug
+        await api.put(`/api/wiki/${editing}`, update)
+      } else {
+        await api.post("/api/wiki", payload)
+      }
+      setOpen(false)
+      load()
     } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : "Erro ao salvar");
+      setError(e instanceof Error ? e.message : "Erro ao salvar")
     }
-  };
+  }
 
   const remove = async (slug: string) => {
-    if (!confirm("Remover este artigo?")) return;
-    await api.del(`/api/wiki/${slug}`);
-    load();
-  };
+    if (!confirm("Remover este artigo?")) return
+    await api.del(`/api/wiki/${slug}`)
+    load()
+  }
 
   const catColors: Record<string, string> = {
     bioconstrucao: "bg-green-100 text-green-700",
     regras: "bg-blue-100 text-blue-700",
     sistemas: "bg-purple-100 text-purple-700",
     manutencao: "bg-orange-100 text-orange-700",
-    historia: "bg-amber-100 text-amber-700",
-  };
+    historia: "bg-amber-100 text-amber-700"
+  }
 
   return (
     <div>
@@ -169,27 +183,40 @@ export default function Wiki() {
               <div className="flex items-start justify-between">
                 <div className="flex-1">
                   <h3 className="font-semibold text-gray-800">{a.titulo}</h3>
-                  <p className="text-sm text-gray-500 mt-1">{a.conteudo.slice(0, 120)}...</p>
+                  <p className="text-sm text-gray-500 mt-1">
+                    {a.conteudo.slice(0, 120)}...
+                  </p>
                 </div>
                 <div className="flex gap-1 ml-2">
-                  <button onClick={() => setViewing(a)} className="p-1.5 rounded-lg hover:bg-gray-100">
+                  <button
+                    onClick={() => setViewing(a)}
+                    className="p-1.5 rounded-lg hover:bg-gray-100"
+                  >
                     <Eye className="w-4 h-4 text-gray-500" />
                   </button>
-                  <button onClick={() => openEdit(a)} className="p-1.5 rounded-lg hover:bg-gray-100">
+                  <button
+                    onClick={() => openEdit(a)}
+                    className="p-1.5 rounded-lg hover:bg-gray-100"
+                  >
                     <Pencil className="w-4 h-4 text-gray-500" />
                   </button>
-                  <button onClick={() => remove(a.slug)} className="p-1.5 rounded-lg hover:bg-gray-100">
+                  <button
+                    onClick={() => remove(a.slug)}
+                    className="p-1.5 rounded-lg hover:bg-gray-100"
+                  >
                     <Trash2 className="w-4 h-4 text-red-500" />
                   </button>
                 </div>
               </div>
               <div className="flex gap-2 mt-3">
                 {a.categoria && (
-                  <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${catColors[a.categoria] || "bg-gray-100"}`}>
+                  <span
+                    className={`px-2 py-0.5 rounded-full text-xs font-medium ${catColors[a.categoria] || "bg-gray-100"}`}
+                  >
                     {a.categoria}
                   </span>
                 )}
-                {a.dificuldade && (
+                {a.dificuldade != null && (
                   <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
                     Dificuldade: {a.dificuldade}/5
                   </span>
@@ -201,7 +228,9 @@ export default function Wiki() {
                 )}
               </div>
               {a.autor_slug && (
-                <p className="text-xs text-gray-400 mt-2">Por @{a.autor_slug}</p>
+                <p className="text-xs text-gray-400 mt-2">
+                  Por @{a.autor_slug}
+                </p>
               )}
             </div>
           ))}
@@ -214,7 +243,9 @@ export default function Wiki() {
             <DialogTitle>{viewing?.titulo}</DialogTitle>
             <DialogDescription>
               {viewing?.categoria && (
-                <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${catColors[viewing.categoria] || "bg-gray-100"}`}>
+                <span
+                  className={`px-2 py-0.5 rounded-full text-xs font-medium ${catColors[viewing.categoria] || "bg-gray-100"}`}
+                >
                   {viewing.categoria}
                 </span>
               )}
@@ -231,9 +262,13 @@ export default function Wiki() {
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
-            <DialogTitle>{editing ? "Editar Artigo" : "Novo Artigo"}</DialogTitle>
+            <DialogTitle>
+              {editing ? "Editar Artigo" : "Novo Artigo"}
+            </DialogTitle>
             <DialogDescription>
-              {editing ? "Atualize o conteúdo do artigo." : "Crie um novo artigo na base de conhecimento."}
+              {editing
+                ? "Atualize o conteúdo do artigo."
+                : "Crie um novo artigo na base de conhecimento."}
             </DialogDescription>
           </DialogHeader>
           {error && <p className="text-sm text-red-600">{error}</p>}
@@ -241,32 +276,61 @@ export default function Wiki() {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label>Slug *</Label>
-                <Input value={form.slug} onChange={(e) => setForm({ ...form, slug: e.target.value })} placeholder="como-fazer-taipa" disabled={!!editing} />
+                <Input
+                  value={form.slug}
+                  onChange={(e) => setForm({ ...form, slug: e.target.value })}
+                  placeholder="como-fazer-taipa"
+                  disabled={!!editing}
+                />
               </div>
               <div>
                 <Label>Título *</Label>
-                <Input value={form.titulo} onChange={(e) => setForm({ ...form, titulo: e.target.value })} />
+                <Input
+                  value={form.titulo}
+                  onChange={(e) => setForm({ ...form, titulo: e.target.value })}
+                />
               </div>
             </div>
             <div className="grid grid-cols-3 gap-4">
               <div>
                 <Label>Categoria</Label>
-                <Select value={form.categoria} onValueChange={(v) => setForm({ ...form, categoria: v })}>
-                  <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
+                <Select
+                  value={form.categoria}
+                  onValueChange={(v) => setForm({ ...form, categoria: v })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione" />
+                  </SelectTrigger>
                   <SelectContent>
                     {categorias.map((c) => (
-                      <SelectItem key={c} value={c}>{c}</SelectItem>
+                      <SelectItem key={c} value={c}>
+                        {c}
+                      </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
               <div>
                 <Label>Dificuldade (1-5)</Label>
-                <Input type="number" min="1" max="5" value={form.dificuldade} onChange={(e) => setForm({ ...form, dificuldade: e.target.value })} />
+                <Input
+                  type="number"
+                  min="1"
+                  max="5"
+                  value={form.dificuldade}
+                  onChange={(e) =>
+                    setForm({ ...form, dificuldade: e.target.value })
+                  }
+                />
               </div>
               <div>
                 <Label>Tempo (horas)</Label>
-                <Input type="number" value={form.tempo_execucao_horas} onChange={(e) => setForm({ ...form, tempo_execucao_horas: e.target.value })} />
+                <Input
+                  type="number"
+                  value={form.tempo_execucao_horas}
+                  onChange={(e) =>
+                    setForm({ ...form, tempo_execucao_horas: e.target.value })
+                  }
+                />
               </div>
             </div>
             <div>
@@ -289,27 +353,44 @@ export default function Wiki() {
               ) : (
                 <Textarea
                   value={form.conteudo}
-                  onChange={(e) => setForm({ ...form, conteudo: e.target.value })}
+                  onChange={(e) =>
+                    setForm({ ...form, conteudo: e.target.value })
+                  }
                   rows={8}
-                  placeholder={"Escreva em Markdown.\n## Título  **negrito**  - lista\n> citação  | tabela |"}
+                  placeholder={
+                    "Escreva em Markdown.\n## Título  **negrito**  - lista\n> citação  | tabela |"
+                  }
                 />
               )}
             </div>
             <div>
               <Label>Entidades (separadas por vírgula)</Label>
-              <Input value={form.entidades} onChange={(e) => setForm({ ...form, entidades: e.target.value })} placeholder="cob, taipa, bananeira" />
+              <Input
+                value={form.entidades}
+                onChange={(e) =>
+                  setForm({ ...form, entidades: e.target.value })
+                }
+                placeholder="cob, taipa, bananeira"
+              />
             </div>
             <div>
               <Label>Autor (slug)</Label>
-              <Input value={form.autor_slug} onChange={(e) => setForm({ ...form, autor_slug: e.target.value })} />
+              <Input
+                value={form.autor_slug}
+                onChange={(e) =>
+                  setForm({ ...form, autor_slug: e.target.value })
+                }
+              />
             </div>
             <div className="flex justify-end gap-2 pt-2">
-              <Button variant="outline" onClick={() => setOpen(false)}>Cancelar</Button>
+              <Button variant="outline" onClick={() => setOpen(false)}>
+                Cancelar
+              </Button>
               <Button onClick={save}>Salvar</Button>
             </div>
           </div>
         </DialogContent>
       </Dialog>
     </div>
-  );
+  )
 }

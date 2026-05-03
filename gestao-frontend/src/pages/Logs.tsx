@@ -1,46 +1,98 @@
-import { useEffect, useState } from "react";
-import { api } from "@/api/client";
-import type { Log } from "@/api/types";
-import { ClipboardList } from "lucide-react";
+import { useEffect, useState, useCallback } from "react"
+import { api } from "@/api/client"
+import type { Log } from "@/api/types"
+import { ClipboardList } from "lucide-react"
 
 const acoes = [
-  "reserva_criada", "chamado_aberto",
-  "retirou", "devolveu", "danificou", "manutencao_realizada", "perda",
-];
+  "reserva_criada",
+  "chamado_aberto",
+  "compra_realizada",
+  "doacao_recebida",
+  "investimento_planejado",
+  "reposicao_caixinha",
+  "retirou",
+  "devolveu",
+  "danificou",
+  "manutencao_realizada",
+  "perda"
+]
 
 const acaoColors: Record<string, string> = {
   reserva_criada: "bg-[#D5E8D4] text-[#1F6B3A]",
   chamado_aberto: "bg-orange-100 text-orange-700",
+  compra_realizada: "bg-blue-100 text-blue-700",
+  doacao_recebida: "bg-green-100 text-green-700",
+  investimento_planejado: "bg-amber-100 text-amber-700",
+  reposicao_caixinha: "bg-purple-100 text-purple-700",
   retirou: "bg-blue-100 text-blue-700",
   devolveu: "bg-green-100 text-green-700",
   danificou: "bg-red-100 text-red-700",
   manutencao_realizada: "bg-purple-100 text-purple-700",
-  perda: "bg-red-200 text-red-800",
-};
+  perda: "bg-red-200 text-red-800"
+}
 
 export default function Logs() {
-  const [logs, setLogs] = useState<Log[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [acaoFilter, setAcaoFilter] = useState("");
+  const [logs, setLogs] = useState<Log[]>([])
+  const [loading, setLoading] = useState(true)
+  const [syncing, setSyncing] = useState(false)
+  const [syncError, setSyncError] = useState("")
+  const [acaoFilter, setAcaoFilter] = useState("")
 
-  const load = async () => {
-    setLoading(true);
+  const load = useCallback(async () => {
+    setLoading(true)
     try {
-      const url = acaoFilter ? `/api/logs?acao=${acaoFilter}` : "/api/logs";
-      setLogs(await api.get<Log[]>(url));
+      const url = acaoFilter ? `/api/logs?acao=${acaoFilter}` : "/api/logs"
+      setLogs(await api.get<Log[]>(url))
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }, [acaoFilter])
 
-  useEffect(() => { load(); }, [acaoFilter]);
+  useEffect(() => {
+    load()
+  }, [load, acaoFilter])
+
+  useEffect(() => {
+    async function syncAndLoad() {
+      setSyncing(true)
+      setSyncError("")
+      try {
+        await api.post("/api/logs/sync-sheet", {})
+      } catch (e) {
+        setSyncError(e instanceof Error ? e.message : "Erro ao sincronizar")
+      } finally {
+        setSyncing(false)
+        load()
+      }
+    }
+    syncAndLoad()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   return (
     <div>
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-gray-800">Logs de Atividade</h1>
-        <p className="text-sm text-[#4D4D4D] mt-1">Registros gerados automaticamente pelas ações no sistema.</p>
+        <p className="text-sm text-[#4D4D4D] mt-1">
+          Registros gerados automaticamente pelas ações no sistema.
+        </p>
       </div>
+
+      {syncing && (
+        <div className="flex items-center gap-3 mb-4 px-4 py-3 bg-blue-50 text-blue-700 rounded-xl border border-blue-100">
+          <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600" />
+          <span className="text-sm font-medium">
+            Sincronizando registros da planilha...
+          </span>
+        </div>
+      )}
+
+      {syncError && !syncing && (
+        <div className="mb-4 px-4 py-3 bg-amber-50 text-amber-700 rounded-xl border border-amber-100 text-sm">
+          <span className="font-medium">⚠️ Sincronização não concluída:</span>{" "}
+          {syncError}
+        </div>
+      )}
 
       <div className="flex gap-2 mb-4 flex-wrap">
         <button
@@ -55,7 +107,7 @@ export default function Logs() {
             onClick={() => setAcaoFilter(a)}
             className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${acaoFilter === a ? "bg-[#1F6B3A] text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}
           >
-            {a.replace("_", " ")}
+            {a.replace(/_/g, " ")}
           </button>
         ))}
       </div>
@@ -83,17 +135,26 @@ export default function Logs() {
             </thead>
             <tbody>
               {logs.map((log) => (
-                <tr key={log.id} className="border-b last:border-0 hover:bg-[#F8F7F4]">
+                <tr
+                  key={log.id}
+                  className="border-b last:border-0 hover:bg-[#F8F7F4]"
+                >
                   <td className="px-4 py-3 text-xs text-[#8A8A8A]">
                     {new Date(log.timestamp).toLocaleString("pt-BR")}
                   </td>
                   <td className="px-4 py-3">
-                    <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${acaoColors[log.acao] || "bg-gray-100 text-gray-600"}`}>
+                    <span
+                      className={`px-2 py-0.5 rounded-full text-xs font-medium ${acaoColors[log.acao] || "bg-gray-100 text-gray-600"}`}
+                    >
                       {log.acao.replace("_", " ")}
                     </span>
                   </td>
-                  <td className="px-4 py-3 font-mono text-xs">{log.item_codigo || log.local_uso || "-"}</td>
-                  <td className="px-4 py-3 text-xs">{log.profile_slug || "-"}</td>
+                  <td className="px-4 py-3 font-mono text-xs">
+                    {log.item_codigo || log.local_uso || "-"}
+                  </td>
+                  <td className="px-4 py-3 text-xs">
+                    {log.profile_slug || "-"}
+                  </td>
                   <td className="px-4 py-3 text-xs text-[#4D4D4D] max-w-[200px] truncate">
                     {log.descricao_incidente || log.condicao_saida || "-"}
                   </td>
@@ -104,5 +165,5 @@ export default function Logs() {
         </div>
       )}
     </div>
-  );
+  )
 }

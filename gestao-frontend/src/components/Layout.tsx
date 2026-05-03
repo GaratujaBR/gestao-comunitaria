@@ -1,4 +1,4 @@
-import { NavLink, Outlet } from "react-router-dom";
+import { NavLink, Outlet } from "react-router-dom"
 import {
   Package,
   CalendarDays,
@@ -12,7 +12,8 @@ import {
   X,
   Sprout,
   CalendarRange,
-} from "lucide-react";
+  BarChart3
+} from "lucide-react"
 
 function BallIcon({ className }: { className?: string }) {
   return (
@@ -30,60 +31,66 @@ function BallIcon({ className }: { className?: string }) {
       <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
       <line x1="2" y1="12" x2="22" y2="12" />
     </svg>
-  );
+  )
 }
-import { useEffect, useRef, useState } from "react";
-import { api } from "@/api/client";
-import type { Alert } from "@/api/types";
-import caliandraLogo from "../../imgs/caliandra-logo.png";
+import { useEffect, useRef, useState } from "react"
+import { api } from "@/api/client"
+import type { Alert } from "@/api/types"
+import caliandraLogo from "../../imgs/caliandra-logo.png"
 
 const navItems = [
-  { to: "/",         icon: LayoutDashboard, label: "Painel"     },
-  { to: "/cotas",    icon: BallIcon,        label: "Bolinhas"   },
-  { to: "/reservas", icon: CalendarDays,    label: "Reservas"   },
-  { to: "/acervo",   icon: Package,         label: "Acervo"     },
-  { to: "/wiki",     icon: BookOpen,        label: "Wiki"       },
-  { to: "/planilha", icon: CircleDollarSign,label: "Financeiro" },
-  { to: "/chamados", icon: Wrench,          label: "Chamados"   },
-  { to: "/eventos",  icon: CalendarRange,   label: "Eventos"    },
-  { to: "/logs",     icon: ClipboardList,   label: "Logs"       },
-];
+  { to: "/", icon: LayoutDashboard, label: "Painel" },
+  { to: "/cotas", icon: BallIcon, label: "Bolinhas" },
+  { to: "/perfis", icon: Package, label: "Perfis" },
+  { to: "/enquetes", icon: BarChart3, label: "Enquetes" },
+  { to: "/eventos", icon: CalendarRange, label: "Eventos" },
+  { to: "/reservas", icon: CalendarDays, label: "Reservas" },
+  { to: "/wiki", icon: BookOpen, label: "Wiki" },
+  { to: "/acervo", icon: Package, label: "Acervo" },
+  { to: "/chamados", icon: Wrench, label: "Chamados" },
+  { to: "/planilha", icon: CircleDollarSign, label: "Financeiro" },
+  { to: "/logs", icon: ClipboardList, label: "Logs" }
+]
 
 function BellMenu() {
-  const [alerts, setAlerts] = useState<Alert[]>([]);
-  const [open, setOpen] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
+  const [alerts, setAlerts] = useState<Alert[]>([])
+  const [open, setOpen] = useState(false)
+  const ref = useRef<HTMLDivElement>(null)
 
   const loadAlerts = async () => {
     try {
-      setAlerts(await api.get<Alert[]>("/api/alerts?lido=false"));
-    } catch { /* ignore */ }
-  };
+      setAlerts(await api.get<Alert[]>("/api/alerts?lido=false"))
+    } catch {
+      /* ignore */
+    }
+  }
 
   useEffect(() => {
-    loadAlerts();
-    const id = setInterval(loadAlerts, 30000);
-    return () => clearInterval(id);
-  }, []);
+    loadAlerts()
+    const id = setInterval(loadAlerts, 30000)
+    return () => clearInterval(id)
+  }, [])
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
-    };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, []);
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
+    }
+    document.addEventListener("mousedown", handler)
+    return () => document.removeEventListener("mousedown", handler)
+  }, [])
 
   const markRead = async (id: string) => {
-    await api.put(`/api/alerts/${id}`, { lido: true });
-    setAlerts((prev) => prev.filter((a) => a.id !== id));
-  };
+    await api.put(`/api/alerts/${id}`, { lido: true })
+    setAlerts((prev) => prev.filter((a) => a.id !== id))
+  }
 
   const markAllRead = async () => {
-    await Promise.all(alerts.map((a) => api.put(`/api/alerts/${a.id}`, { lido: true })));
-    setAlerts([]);
-    setOpen(false);
-  };
+    await Promise.all(
+      alerts.map((a) => api.put(`/api/alerts/${a.id}`, { lido: true }))
+    )
+    setAlerts([])
+    setOpen(false)
+  }
 
   return (
     <div ref={ref} className="relative">
@@ -102,24 +109,38 @@ function BellMenu() {
       {open && (
         <div className="absolute right-0 top-full mt-2 w-80 bg-white border border-[#E7E5E4] rounded-xl shadow-lg z-50">
           <div className="flex items-center justify-between px-4 py-3 border-b border-[#E7E5E4]">
-            <span className="text-sm font-semibold text-[#1A1A1A]">Notificações</span>
+            <span className="text-sm font-semibold text-[#1A1A1A]">
+              Notificações
+            </span>
             {alerts.length > 0 && (
-              <button onClick={markAllRead} className="text-xs text-[#1F6B3A] hover:underline font-medium">
+              <button
+                onClick={markAllRead}
+                className="text-xs text-[#1F6B3A] hover:underline font-medium"
+              >
                 Marcar todas como lidas
               </button>
             )}
           </div>
           <div className="max-h-72 overflow-y-auto">
             {alerts.length === 0 ? (
-              <p className="text-sm text-[#8A8A8A] px-4 py-6 text-center">Sem notificações pendentes</p>
+              <p className="text-sm text-[#8A8A8A] px-4 py-6 text-center">
+                Sem notificações pendentes
+              </p>
             ) : (
               alerts.map((a) => (
-                <div key={a.id} className="px-4 py-3 border-b border-[#F5F5F4] last:border-0 hover:bg-[#F8F7F4]">
+                <div
+                  key={a.id}
+                  className="px-4 py-3 border-b border-[#F5F5F4] last:border-0 hover:bg-[#F8F7F4]"
+                >
                   <div className="flex items-start justify-between gap-2">
                     <div className="min-w-0">
-                      <p className="text-sm font-medium text-[#1A1A1A] leading-snug">{a.titulo}</p>
+                      <p className="text-sm font-medium text-[#1A1A1A] leading-snug">
+                        {a.titulo}
+                      </p>
                       {a.mensagem && (
-                        <p className="text-xs text-[#4D4D4D] mt-0.5 truncate">{a.mensagem}</p>
+                        <p className="text-xs text-[#4D4D4D] mt-0.5 truncate">
+                          {a.mensagem}
+                        </p>
                       )}
                     </div>
                     <button
@@ -136,11 +157,11 @@ function BellMenu() {
         </div>
       )}
     </div>
-  );
+  )
 }
 
 export default function Layout() {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false)
 
   return (
     <div className="flex h-screen bg-[#F8F7F4]">
@@ -208,9 +229,15 @@ export default function Layout() {
         {/* Header mobile */}
         <header className="flex items-center gap-4 px-6 py-4 bg-white border-b border-[#E7E5E4] lg:hidden">
           <button onClick={() => setSidebarOpen(!sidebarOpen)}>
-            {sidebarOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            {sidebarOpen ? (
+              <X className="w-6 h-6" />
+            ) : (
+              <Menu className="w-6 h-6" />
+            )}
           </button>
-          <span className="flex-1 font-bold text-[#1A1A1A]">Terra de Canaã</span>
+          <span className="flex-1 font-bold text-[#1A1A1A]">
+            Terra de Canaã
+          </span>
           <BellMenu />
         </header>
         {/* Topbar desktop */}
@@ -222,5 +249,5 @@ export default function Layout() {
         </main>
       </div>
     </div>
-  );
+  )
 }
