@@ -21,6 +21,18 @@ import type { Profile, Cota } from "@/api/types"
 
 const roles = ["fundador", "construtor", "cotista", "visitante"]
 
+const emptyForm = {
+  slug: "",
+  nome_completo: "",
+  nome_curto: "",
+  email: "",
+  telefone: "",
+  role: "",
+  lote: "",
+  cota_slug: "",
+  foto_url: ""
+}
+
 function resizeToBase64(file: File, maxPx = 300): Promise<string> {
   return new Promise((resolve) => {
     const reader = new FileReader()
@@ -64,18 +76,6 @@ export default function ProfileForm({
   error
 }: ProfileFormProps) {
   const fileRef = useRef<HTMLInputElement>(null)
-
-  const emptyForm = {
-    slug: "",
-    nome_completo: "",
-    nome_curto: "",
-    email: "",
-    telefone: "",
-    role: "",
-    lote: "",
-    cota_slug: "",
-    foto_url: ""
-  }
 
   const [form, setForm] = useState(emptyForm)
   const [localError, setLocalError] = useState("")

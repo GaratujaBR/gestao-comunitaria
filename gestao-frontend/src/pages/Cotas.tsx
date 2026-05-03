@@ -39,7 +39,13 @@ export default function Cotas() {
         api.get<Cota[]>("/api/cotas"),
         api.get<Profile[]>("/api/profiles")
       ])
-      setCotas(cs)
+      const hasMembers = (cota: Cota) => ps.some((p) => p.cota_slug === cota.slug)
+      setCotas(
+        [...cs].sort(
+          (a, b) =>
+            (hasMembers(b) ? 1 : 0) - (hasMembers(a) ? 1 : 0) || a.numero - b.numero
+        )
+      )
       setProfiles(ps)
     } finally {
       setLoading(false)
@@ -79,7 +85,7 @@ export default function Cotas() {
   }
 
   // ── Profile handlers ───────────────────────────────────────
-  const openNewMember = (_cotaSlug: string) => {
+  const openNewMember = () => {
     setProfileEditing(null)
     setProfileError("")
     setProfileOpen(true)
@@ -142,7 +148,7 @@ export default function Cotas() {
             return (
               <div
                 key={c.id}
-                className="bg-white rounded-xl border border-[#E7E5E4] flex flex-col"
+                className={`bg-white rounded-xl border border-[#E7E5E4] flex flex-col ${membros.length === 0 ? "opacity-60" : ""}`}
               >
                 <div
                   className="p-4 flex items-start justify-between cursor-pointer select-none lg:cursor-default"
@@ -153,9 +159,12 @@ export default function Cotas() {
                       <span className="text-xs font-bold text-[#1F6B3A] bg-[#D5E8D4] px-2 py-0.5 rounded-full">
                         #{c.numero}
                       </span>
-                      {!c.ativo && (
+                      {membros.length > 0 && (
+                        <span className="w-2 h-2 rounded-full bg-[#4CAF50]" />
+                      )}
+                      {membros.length === 0 && (
                         <span className="text-xs text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">
-                          inativa
+                          sem membros
                         </span>
                       )}
                     </div>
@@ -227,7 +236,7 @@ export default function Cotas() {
                   <button
                     onClick={(e) => {
                       e.stopPropagation()
-                      openNewMember(c.slug)
+                      openNewMember()
                     }}
                     className="mt-3 flex items-center gap-1 text-xs text-[#1F6B3A] hover:text-[#2D5A27] font-medium"
                   >

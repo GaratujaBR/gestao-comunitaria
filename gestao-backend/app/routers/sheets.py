@@ -17,10 +17,7 @@ SHEET_CSV_URL = os.getenv(
     "GOOGLE_SHEET_CSV_URL",
     "",
 )
-SHEET_FLUXO_CSV_URL = os.getenv(
-    "GOOGLE_SHEET_FLUXO_CSV_URL",
-    "https://docs.google.com/spreadsheets/d/1Wa5cB_C3ABzE74ozj7l1dLLL3B3wXWVZ/export?format=csv&gid=1997519213",
-)
+SHEET_FLUXO_CSV_URL = os.getenv("GOOGLE_SHEET_FLUXO_CSV_URL", "")
 
 _cache: dict = {"data": None, "ts": 0.0}
 CACHE_TTL = 300  # 5 minutos
@@ -95,6 +92,7 @@ async def _fetch_saldo() -> float | None:
     async with httpx.AsyncClient(follow_redirects=True, timeout=15) as client:
         resp = await client.get(SHEET_FLUXO_CSV_URL)
         if resp.status_code != 200:
+            print(f"[saldo] HTTP {resp.status_code} url={SHEET_FLUXO_CSV_URL} body={resp.text[:300]}")
             return None
 
     reader = csv.reader(io.StringIO(resp.text))
@@ -134,7 +132,17 @@ async def get_sheets():
         )
     rows = await _fetch_rows()
     total_compras = sum(r.total or 0 for r in rows if r.status == "Compras")
-    saldo = await _fetch_saldo()
+
+    if not SHEET_FLUXO_CSV_URL:
+        print("[saldo] GOOGLE_SHEET_FLUXO_CSV_URL nao configurada")
+        saldo = None
+    else:
+        try:
+            saldo = await _fetch_saldo()
+        except Exception as e:
+            print(f"[saldo] excecao: {e}")
+            saldo = None
+
     return SheetDataResponse(
         rows=rows,
         count=len(rows),

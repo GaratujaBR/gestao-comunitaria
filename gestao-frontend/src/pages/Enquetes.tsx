@@ -1353,7 +1353,11 @@ export default function Enquetes() {
                     onClick={() =>
                       setExpandedComments((prev) => {
                         const next = new Set(prev)
-                        next.has(e.id) ? next.delete(e.id) : next.add(e.id)
+                        if (next.has(e.id)) {
+                          next.delete(e.id)
+                        } else {
+                          next.add(e.id)
+                        }
                         return next
                       })
                     }
