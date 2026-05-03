@@ -1,5 +1,5 @@
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 from sqlalchemy import String, DateTime
 from sqlalchemy.orm import Mapped, mapped_column
 from app.database import Base
@@ -8,10 +8,14 @@ from app.database import Base
 class Prestador(Base):
     __tablename__ = "prestadores"
 
-    id: Mapped[str] = mapped_column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
+    id: Mapped[str] = mapped_column(
+        String, primary_key=True, default=lambda: str(uuid.uuid4())
+    )
     nome: Mapped[str] = mapped_column(String, nullable=False)
     telefone: Mapped[str] = mapped_column(String, nullable=False)
     especialidade: Mapped[str | None] = mapped_column(String, nullable=True)
     empresa: Mapped[str | None] = mapped_column(String, nullable=True)
     notas: Mapped[str | None] = mapped_column(String, nullable=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, default=lambda: datetime.now(timezone.utc)
+    )

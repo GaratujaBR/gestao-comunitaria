@@ -33,3 +33,4 @@ class SheetDataResponse(BaseModel):
     rows: list[SheetRowResponse]
     count: int
     total_compras: float
+    saldo_atual: float | None = None

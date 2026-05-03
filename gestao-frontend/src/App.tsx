@@ -1,17 +1,18 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Layout from "@/components/Layout";
-import Dashboard from "@/pages/Dashboard";
-import Spaces from "@/pages/Spaces";
-import Items from "@/pages/Items";
-import Bookings from "@/pages/Bookings";
-import Logs from "@/pages/Logs";
-import Wiki from "@/pages/Wiki";
-import Alerts from "@/pages/Alerts";
-import Spreadsheet from "@/pages/Spreadsheet";
-import Chamados from "@/pages/Chamados";
-import Enquetes from "@/pages/Enquetes";
-import Cotas from "@/pages/Cotas";
-import Eventos from "@/pages/Eventos";
+import { BrowserRouter, Routes, Route } from "react-router-dom"
+import Layout from "@/components/Layout"
+import Dashboard from "@/pages/Dashboard"
+import Spaces from "@/pages/Spaces"
+import Items from "@/pages/Items"
+import Bookings from "@/pages/Bookings"
+import Logs from "@/pages/Logs"
+import Wiki from "@/pages/Wiki"
+import Alerts from "@/pages/Alerts"
+import Spreadsheet from "@/pages/Spreadsheet"
+import Chamados from "@/pages/Chamados"
+import Enquetes from "@/pages/Enquetes"
+import Cotas from "@/pages/Cotas"
+import Eventos from "@/pages/Eventos"
+import Profiles from "@/pages/Profiles"
 
 function App() {
   return (
@@ -30,10 +31,11 @@ function App() {
           <Route path="/enquetes" element={<Enquetes />} />
           <Route path="/cotas" element={<Cotas />} />
           <Route path="/eventos" element={<Eventos />} />
+          <Route path="/perfis" element={<Profiles />} />
         </Route>
       </Routes>
     </BrowserRouter>
-  );
+  )
 }
 
-export default App;
+export default App

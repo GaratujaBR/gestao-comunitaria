@@ -50,10 +50,10 @@ export default {
 
         // ─── Terra de Canaã — Design System ──────────────────────────────────
         // App transacional
-        "app-bg":        "#F8F7F4",
-        "ds-primary":    "#1F6B3A",
+        "app-bg": "#F8F7F4",
+        "ds-primary": "#1F6B3A",
         "ds-primary-dk": "#154B28",
-        "ds-border":     "#E7E5E4",
+        "ds-border": "#E7E5E4",
         "ds-nav-active": "#ECF7EE",
 
         // Promo / marketing
@@ -116,5 +116,5 @@ export default {
       }
     }
   },
-  plugins: [import("tailwindcss-animate")]
+  plugins: [require("tailwindcss-animate")]
 }

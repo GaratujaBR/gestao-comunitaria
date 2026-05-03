@@ -1,92 +1,187 @@
-import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
-import { api } from "@/api/client";
-import type { Space, Item, Booking, Alert, Cota } from "@/api/types";
-import { Home, Package, CalendarDays, Bell, AlertTriangle } from "lucide-react";
+import { useEffect, useState } from "react"
+import { Link } from "react-router-dom"
+import { api } from "@/api/client"
+import type {
+  Space,
+  Item,
+  Booking,
+  Alert,
+  Cota,
+  Enquete,
+  Evento
+} from "@/api/types"
+import {
+  Package,
+  CalendarDays,
+  Bell,
+  AlertTriangle,
+  BarChart3,
+  Calendar
+} from "lucide-react"
 
 function BallIcon({ className }: { className?: string }) {
   return (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+    >
       <circle cx="12" cy="12" r="10" />
       <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
       <line x1="2" y1="12" x2="22" y2="12" />
     </svg>
-  );
+  )
 }
 
 interface Stats {
-  cotas: number;
-  spaces: number;
-  items: number;
-  bookings: number;
-  alertsUnread: number;
-  itemsMaintenance: number;
+  cotas: number
+  spaces: number
+  items: number
+  bookings: number
+  alertsUnread: number
+  itemsMaintenance: number
+  enquetes: number
 }
 
 export default function Dashboard() {
   const [stats, setStats] = useState<Stats>({
-    cotas: 0, spaces: 0, items: 0, bookings: 0, alertsUnread: 0, itemsMaintenance: 0,
-  });
-  const [recentBookings, setRecentBookings] = useState<Booking[]>([]);
-  const [alerts, setAlerts] = useState<Alert[]>([]);
-  const [loading, setLoading] = useState(true);
+    cotas: 0,
+    spaces: 0,
+    items: 0,
+    bookings: 0,
+    alertsUnread: 0,
+    itemsMaintenance: 0,
+    enquetes: 0
+  })
+  const [recentBookings, setRecentBookings] = useState<Booking[]>([])
+  const [alerts, setAlerts] = useState<Alert[]>([])
+  const [upcomingEvents, setUpcomingEvents] = useState<Evento[]>([])
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     async function load() {
       try {
-        const [cotas, spaces, items, bookings, alertsData] = await Promise.all([
+        const [
+          cotas,
+          spaces,
+          items,
+          bookings,
+          alertsData,
+          enquetesData,
+          eventosData
+        ] = await Promise.all([
           api.get<Cota[]>("/api/cotas"),
           api.get<Space[]>("/api/spaces"),
           api.get<Item[]>("/api/items?tipo=comum"),
           api.get<Booking[]>("/api/bookings"),
           api.get<Alert[]>("/api/alerts?lido=false"),
-        ]);
+          api.get<Enquete[]>("/api/enquetes"),
+          api.get<Evento[]>("/api/eventos?publico=true")
+        ])
         setStats({
           cotas: cotas.filter((c) => c.ativo).length,
           spaces: spaces.filter((s) => !s.parent_slug).length,
           items: items.length,
-          bookings: bookings.filter((b) => ["pendente", "confirmada", "em_andamento"].includes(b.status)).length,
+          bookings: bookings.filter((b) =>
+            ["pendente", "confirmada", "em_andamento"].includes(b.status)
+          ).length,
           alertsUnread: alertsData.length,
-          itemsMaintenance: items.filter((i) => i.estado === "manutencao").length,
-        });
-        setRecentBookings(bookings.slice(0, 5));
-        setAlerts(alertsData.slice(0, 5));
-      } catch { /* ignore */ }
-      finally { setLoading(false); }
+          itemsMaintenance: items.filter((i) => i.estado === "manutencao")
+            .length,
+          enquetes: enquetesData.filter((e) =>
+            ["votacao", "aberta"].includes(e.status)
+          ).length
+        })
+        setRecentBookings(bookings.slice(0, 5))
+        setAlerts(alertsData.slice(0, 5))
+        setUpcomingEvents(
+          eventosData
+            .filter((e) => new Date(e.data_inicio) >= new Date())
+            .sort(
+              (a, b) =>
+                new Date(a.data_inicio).getTime() -
+                new Date(b.data_inicio).getTime()
+            )
+            .slice(0, 3)
+        )
+      } catch {
+        /* ignore */
+      } finally {
+        setLoading(false)
+      }
     }
-    load();
-  }, []);
+    load()
+  }, [])
 
   const markRead = async (id: string) => {
-    await api.put(`/api/alerts/${id}`, { lido: true });
-    setAlerts((prev) => prev.filter((a) => a.id !== id));
-    setStats((s) => ({ ...s, alertsUnread: Math.max(0, s.alertsUnread - 1) }));
-  };
+    await api.put(`/api/alerts/${id}`, { lido: true })
+    setAlerts((prev) => prev.filter((a) => a.id !== id))
+    setStats((s) => ({ ...s, alertsUnread: Math.max(0, s.alertsUnread - 1) }))
+  }
 
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#1F6B3A]" />
       </div>
-    );
+    )
   }
 
   const cards = [
-    { label: "Bolinhas Ativas",   value: stats.cotas,            icon: BallIcon,       color: "bg-[#D5E8D4] text-[#1F6B3A]", to: "/cotas"    },
-    { label: "Espaços",           value: stats.spaces,           icon: Home,           color: "bg-green-50 text-green-600",   to: "/reservas" },
-    { label: "Itens no Acervo",   value: stats.items,            icon: Package,        color: "bg-amber-50 text-amber-600",   to: "/acervo"   },
-    { label: "Reservas Ativas",   value: stats.bookings,         icon: CalendarDays,   color: "bg-purple-50 text-purple-600", to: "/reservas" },
-    { label: "Alertas Pendentes", value: stats.alertsUnread,     icon: Bell,           color: "bg-red-50 text-red-600"                        },
-    { label: "Em Manutenção",     value: stats.itemsMaintenance, icon: AlertTriangle,  color: "bg-orange-50 text-orange-600"                  },
-  ];
+    {
+      label: "Bolinhas Ativas",
+      value: stats.cotas,
+      icon: BallIcon,
+      color: "bg-[#D5E8D4] text-[#1F6B3A]",
+      to: "/cotas"
+    },
+    {
+      label: "Reservas Ativas",
+      value: stats.bookings,
+      icon: CalendarDays,
+      color: "bg-purple-50 text-purple-600",
+      to: "/reservas"
+    },
+    {
+      label: "Enquetes Abertas",
+      value: stats.enquetes,
+      icon: BarChart3,
+      color: "bg-blue-50 text-blue-600",
+      to: "/enquetes"
+    },
+    {
+      label: "Alertas Pendentes",
+      value: stats.alertsUnread,
+      icon: Bell,
+      color: "bg-red-50 text-red-600"
+    },
+    {
+      label: "Em Manutenção",
+      value: stats.itemsMaintenance,
+      icon: AlertTriangle,
+      color: "bg-orange-50 text-orange-600"
+    },
+    {
+      label: "Itens no Acervo",
+      value: stats.items,
+      icon: Package,
+      color: "bg-amber-50 text-amber-600",
+      to: "/acervo"
+    }
+  ]
 
   const statusMap: Record<string, string> = {
     pendente: "bg-yellow-100 text-yellow-800",
     confirmada: "bg-green-100 text-green-800",
     em_andamento: "bg-blue-100 text-blue-800",
     concluida: "bg-gray-100 text-gray-800",
-    cancelada: "bg-red-100 text-red-800",
-  };
+    cancelada: "bg-red-100 text-red-800"
+  }
 
   return (
     <div className="space-y-6">
@@ -100,39 +195,104 @@ export default function Dashboard() {
                 <card.icon className="w-5 h-5" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-[#1A1A1A]">{card.value}</p>
+                <p className="text-2xl font-bold text-[#1A1A1A]">
+                  {card.value}
+                </p>
                 <p className="text-sm text-[#4D4D4D]">{card.label}</p>
               </div>
             </>
-          );
-          const cls = "bg-white rounded-xl border border-[#E7E5E4] p-5 flex items-center gap-4";
+          )
+          const cls =
+            "bg-white rounded-xl border border-[#E7E5E4] p-5 flex items-center gap-4"
           return card.to ? (
-            <Link key={card.label} to={card.to} className={`${cls} hover:border-[#88C9A1] hover:shadow-sm transition-all`}>
+            <Link
+              key={card.label}
+              to={card.to}
+              className={`${cls} hover:border-[#88C9A1] hover:shadow-sm transition-all`}
+            >
               {inner}
             </Link>
           ) : (
-            <div key={card.label} className={cls}>{inner}</div>
-          );
+            <div key={card.label} className={cls}>
+              {inner}
+            </div>
+          )
         })}
       </div>
+
+      {/* Próximos Eventos Públicos */}
+      {upcomingEvents.length > 0 && (
+        <div>
+          <h2 className="text-base font-semibold text-[#1A1A1A] mb-3 flex items-center gap-2">
+            <Calendar className="w-4 h-4 text-[#1F6B3A]" />
+            Próximos Eventos
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {upcomingEvents.map((e) => (
+              <Link
+                key={e.id}
+                to="/eventos"
+                className="bg-white rounded-xl border border-[#E7E5E4] p-4 hover:border-[#88C9A1] hover:shadow-sm transition-all"
+              >
+                <div className="flex items-start gap-3">
+                  <div
+                    className="w-3 h-3 rounded-full shrink-0 mt-1"
+                    style={{
+                      background: e.cor || "#88C9A1"
+                    }}
+                  />
+                  <div className="min-w-0">
+                    <h3 className="font-semibold text-[#1A1A1A] truncate">
+                      {e.titulo}
+                    </h3>
+                    <p className="text-xs text-[#4D4D4D] mt-0.5">
+                      {new Date(e.data_inicio).toLocaleDateString("pt-BR", {
+                        day: "2-digit",
+                        month: "short",
+                        hour: "2-digit",
+                        minute: "2-digit"
+                      })}
+                    </p>
+                    {e.local_slug && (
+                      <p className="text-xs text-[#8A8A8A] mt-0.5 truncate">
+                        {e.local_slug}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* Últimas reservas */}
         <div className="bg-white rounded-xl border border-[#E7E5E4] p-5">
-          <h2 className="text-base font-semibold text-[#1A1A1A] mb-4">Últimas Reservas</h2>
+          <h2 className="text-base font-semibold text-[#1A1A1A] mb-4">
+            Últimas Reservas
+          </h2>
           {recentBookings.length === 0 ? (
             <p className="text-[#8A8A8A] text-sm">Nenhuma reserva.</p>
           ) : (
             <div className="space-y-2">
               {recentBookings.map((b) => (
-                <div key={b.id} className="flex items-center justify-between py-2 border-b border-[#F5F5F4] last:border-0">
+                <div
+                  key={b.id}
+                  className="flex items-center justify-between py-2 border-b border-[#F5F5F4] last:border-0"
+                >
                   <div>
-                    <p className="text-sm font-medium text-[#1A1A1A]">{b.space_slug || "-"}</p>
+                    <p className="text-sm font-medium text-[#1A1A1A]">
+                      {b.space_slug || "-"}
+                    </p>
                     <p className="text-xs text-[#8A8A8A]">
-                      {b.cota_slug || b.profile_slug} · {new Date(b.data_inicio).toLocaleDateString("pt-BR")}
+                      {b.cota_slug || b.profile_slug} ·{" "}
+                      {new Date(b.data_inicio).toLocaleDateString("pt-BR")}
                     </p>
                   </div>
-                  <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${statusMap[b.status] || ""}`}>
+                  <span
+                    className={`px-2 py-0.5 rounded-full text-xs font-medium ${statusMap[b.status] || ""}`}
+                  >
                     {b.status}
                   </span>
                 </div>
@@ -144,7 +304,9 @@ export default function Dashboard() {
         {/* Alertas recentes */}
         <div className="bg-white rounded-xl border border-[#E7E5E4] p-5">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-base font-semibold text-[#1A1A1A]">Alertas Recentes</h2>
+            <h2 className="text-base font-semibold text-[#1A1A1A]">
+              Alertas Recentes
+            </h2>
             {alerts.length > 0 && (
               <span className="text-xs bg-red-50 text-red-600 font-medium px-2 py-0.5 rounded-full">
                 {alerts.length} não lidos
@@ -159,11 +321,18 @@ export default function Dashboard() {
           ) : (
             <div className="space-y-2">
               {alerts.map((a) => (
-                <div key={a.id} className="flex items-start justify-between gap-2 py-2 border-b border-[#F5F5F4] last:border-0">
+                <div
+                  key={a.id}
+                  className="flex items-start justify-between gap-2 py-2 border-b border-[#F5F5F4] last:border-0"
+                >
                   <div className="min-w-0">
-                    <p className="text-sm font-medium text-[#1A1A1A] leading-snug">{a.titulo}</p>
+                    <p className="text-sm font-medium text-[#1A1A1A] leading-snug">
+                      {a.titulo}
+                    </p>
                     {a.mensagem && (
-                      <p className="text-xs text-[#4D4D4D] mt-0.5 truncate">{a.mensagem}</p>
+                      <p className="text-xs text-[#4D4D4D] mt-0.5 truncate">
+                        {a.mensagem}
+                      </p>
                     )}
                   </div>
                   <button
@@ -179,5 +348,5 @@ export default function Dashboard() {
         </div>
       </div>
     </div>
-  );
+  )
 }
