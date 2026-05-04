@@ -47,13 +47,6 @@ async def _fetch_rows() -> list[SheetRowResponse]:
                 status_code=502, detail="Erro ao buscar planilha Google Sheets"
             )
 
-    async with httpx.AsyncClient(follow_redirects=True, timeout=15) as client:
-        resp = await client.get(SHEET_CSV_URL)
-        if resp.status_code != 200:
-            raise HTTPException(
-                status_code=502, detail="Erro ao buscar planilha Google Sheets"
-            )
-
     reader = csv.reader(io.StringIO(resp.text))
     rows_out: list[SheetRowResponse] = []
 
@@ -149,6 +142,57 @@ async def get_sheets():
         total_compras=total_compras,
         saldo_atual=saldo,
     )
+
+
+@router.get("/debug-saldo")
+async def debug_saldo():
+    url = SHEET_FLUXO_CSV_URL
+    masked_url = (url[:40] + "...") if len(url) > 40 else url
+    if not url:
+        return {"configured": False, "url": None, "error": "GOOGLE_SHEET_FLUXO_CSV_URL nao configurada"}
+
+    async with httpx.AsyncClient(follow_redirects=True, timeout=15) as client:
+        try:
+            resp = await client.get(url)
+        except Exception as e:
+            return {"configured": True, "url": masked_url, "error": str(e)}
+
+    if resp.status_code != 200:
+        return {"configured": True, "url": masked_url, "http_status": resp.status_code, "body_preview": resp.text[:300]}
+
+    reader = csv.reader(io.StringIO(resp.text))
+    saldo_idx = -1
+    rows_preview = []
+    last_saldo = None
+    all_rows = list(reader)
+
+    for i, row in enumerate(all_rows):
+        if not any(cell.strip() for cell in row):
+            continue
+        if saldo_idx < 0:
+            for idx, col in enumerate(row):
+                if "saldo" in col.strip().lower():
+                    saldo_idx = idx
+                    break
+            rows_preview.append({"row_index": i, "type": "header", "cells": row[:6]})
+            continue
+        if i < 5:
+            rows_preview.append({"row_index": i, "type": "data", "cells": row[:6]})
+        if saldo_idx < len(row) and row[saldo_idx].strip():
+            val = _parse_brl(row[saldo_idx].strip())
+            if val is not None:
+                last_saldo = val
+
+    return {
+        "configured": True,
+        "url": masked_url,
+        "http_status": resp.status_code,
+        "saldo_col_index": saldo_idx,
+        "saldo_col_found": saldo_idx >= 0,
+        "last_saldo": last_saldo,
+        "rows_preview": rows_preview,
+        "total_rows": len(all_rows),
+    }
 
 
 @router.post("/refresh")
