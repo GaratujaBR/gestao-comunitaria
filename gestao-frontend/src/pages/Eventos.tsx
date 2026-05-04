@@ -27,12 +27,13 @@ import listPlugin from "@fullcalendar/list"
 import interactionPlugin from "@fullcalendar/interaction"
 import type { DateSelectArg, EventClickArg } from "@fullcalendar/core"
 
-const tipos = ["assembleia", "mutirao", "evento", "manutencao", "celebracao"]
+const tipos = ["assembleia", "mutirao", "evento", "oficina", "manutencao", "celebracao"]
 
 const tipoCores: Record<string, string> = {
   assembleia: "#1F6B3A",
   mutirao: "#D97706",
   evento: "#2563EB",
+  oficina: "#0891B2",
   manutencao: "#7C3AED",
   celebracao: "#DB2777"
 }
@@ -40,10 +41,13 @@ const tipoCores: Record<string, string> = {
 const tipoLabels: Record<string, string> = {
   assembleia: "Assembleia",
   mutirao: "Mutirão",
-  evento: "Evento",
+  evento: "Evento Particular",
+  oficina: "Oficina",
   manutencao: "Manutenção",
   celebracao: "Celebração"
 }
+
+const ONLINE_SENTINEL = "__online__"
 
 const locais = [
   { value: "churrasqueira-piscina", label: "Churrasqueira + Piscina" },
@@ -52,12 +56,13 @@ const locais = [
   { value: "casa-apoio-2-quarto1", label: "Casa de Apoio 2 - Quarto 1" },
   { value: "casa-apoio-2-quarto2", label: "Casa de Apoio 2 - Quarto 2" },
   { value: "casa-apoio-2-casa3", label: "Casa de Apoio 2 - Casa 3" },
-  { value: "", label: "Evento Online" }
+  { value: ONLINE_SENTINEL, label: "Evento Online" }
 ]
 
-const localLabelMap: Record<string, string> = Object.fromEntries(
-  locais.map((l) => [l.value, l.label])
-)
+const localLabelMap: Record<string, string> = {
+  ...Object.fromEntries(locais.map((l) => [l.value, l.label])),
+  "": "Evento Online"
+}
 
 const emptyForm = {
   titulo: "",
@@ -405,8 +410,8 @@ export default function Eventos() {
               <div>
                 <Label>Local</Label>
                 <Select
-                  value={form.local_slug}
-                  onValueChange={(v) => setForm({ ...form, local_slug: v })}
+                  value={form.local_slug || ONLINE_SENTINEL}
+                  onValueChange={(v) => setForm({ ...form, local_slug: v === ONLINE_SENTINEL ? "" : v })}
                 >
                   <SelectTrigger className="border-[#6B8E23] rounded-[12px]">
                     <SelectValue placeholder="Selecione um espaço (opcional)" />
