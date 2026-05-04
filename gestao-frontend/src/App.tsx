@@ -26,7 +26,7 @@ function App() {
           <Route path="/logs" element={<Logs />} />
           <Route path="/wiki" element={<Wiki />} />
           <Route path="/alertas" element={<Alerts />} />
-          <Route path="/planilha" element={<Spreadsheet />} />
+          <Route path="/financeiro" element={<Spreadsheet />} />
           <Route path="/chamados" element={<Chamados />} />
           <Route path="/enquetes" element={<Enquetes />} />
           <Route path="/cotas" element={<Cotas />} />
