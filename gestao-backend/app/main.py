@@ -8,6 +8,7 @@ load_dotenv()
 
 from app.database import engine, init_db
 from app.routers import (
+    auth,
     profiles,
     spaces,
     items,
@@ -27,18 +28,18 @@ from app.routers import (
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     migrations = [
-        "ALTER TABLE spaces ADD COLUMN IF NOT EXISTS parent_slug VARCHAR",
-        "ALTER TABLE items ADD COLUMN IF NOT EXISTS tipo VARCHAR DEFAULT 'comum'",
-        "ALTER TABLE profiles ADD COLUMN IF NOT EXISTS cota_slug VARCHAR",
-        "ALTER TABLE bookings ADD COLUMN IF NOT EXISTS cota_slug VARCHAR",
-        "ALTER TABLE profiles ADD COLUMN IF NOT EXISTS foto_url TEXT",
-        "ALTER TABLE enquetes ADD COLUMN IF NOT EXISTS tipo VARCHAR DEFAULT 'multipla'",
-        "ALTER TABLE enquetes ADD COLUMN IF NOT EXISTS quorum_required INTEGER DEFAULT 60",
-        "ALTER TABLE enquetes ADD COLUMN IF NOT EXISTS approval_threshold INTEGER DEFAULT 66",
-        "ALTER TABLE enquetes ADD COLUMN IF NOT EXISTS closes_at TIMESTAMP",
-        "ALTER TABLE enquetes ADD COLUMN IF NOT EXISTS voting_starts_at TIMESTAMP",
-        "ALTER TABLE enquetes ADD COLUMN IF NOT EXISTS result_action TEXT",
-        "ALTER TABLE enquetes ADD COLUMN IF NOT EXISTS respostas JSON DEFAULT '{}'",
+        "ALTER TABLE spaces ADD COLUMN parent_slug VARCHAR",
+        "ALTER TABLE items ADD COLUMN tipo VARCHAR DEFAULT 'comum'",
+        "ALTER TABLE profiles ADD COLUMN cota_slug VARCHAR",
+        "ALTER TABLE bookings ADD COLUMN cota_slug VARCHAR",
+        "ALTER TABLE profiles ADD COLUMN foto_url TEXT",
+        "ALTER TABLE enquetes ADD COLUMN tipo VARCHAR DEFAULT 'multipla'",
+        "ALTER TABLE enquetes ADD COLUMN quorum_required INTEGER DEFAULT 60",
+        "ALTER TABLE enquetes ADD COLUMN approval_threshold INTEGER DEFAULT 66",
+        "ALTER TABLE enquetes ADD COLUMN closes_at TIMESTAMP",
+        "ALTER TABLE enquetes ADD COLUMN voting_starts_at TIMESTAMP",
+        "ALTER TABLE enquetes ADD COLUMN result_action TEXT",
+        "ALTER TABLE enquetes ADD COLUMN respostas JSON DEFAULT '{}'",
         """CREATE TABLE IF NOT EXISTS enquete_comentarios (
             id VARCHAR PRIMARY KEY,
             enquete_id VARCHAR NOT NULL REFERENCES enquetes(id) ON DELETE CASCADE,
@@ -46,12 +47,17 @@ async def lifespan(app: FastAPI):
             conteudo TEXT NOT NULL,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )""",
-        "ALTER TABLE bookings ADD COLUMN IF NOT EXISTS evento_id VARCHAR",
-        "ALTER TABLE eventos ADD COLUMN IF NOT EXISTS publico BOOLEAN DEFAULT TRUE",
+        "ALTER TABLE bookings ADD COLUMN evento_id VARCHAR",
+        "ALTER TABLE eventos ADD COLUMN publico BOOLEAN DEFAULT TRUE",
+        "ALTER TABLE enquetes ADD COLUMN anonima BOOLEAN DEFAULT FALSE",
+        "ALTER TABLE profiles ADD COLUMN senha_hash TEXT",
     ]
     async with engine.begin() as conn:
         for sql in migrations:
-            await conn.execute(text(sql))
+            try:
+                await conn.execute(text(sql))
+            except Exception:
+                pass  # column/table already exists
     await init_db()
     yield
 
@@ -67,6 +73,7 @@ app.add_middleware(
     allow_headers=["*"],  # Allows all headers
 )
 
+app.include_router(auth.router)
 app.include_router(profiles.router)
 app.include_router(spaces.router)
 app.include_router(items.router)

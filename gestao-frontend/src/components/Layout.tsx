@@ -1,4 +1,4 @@
-import { NavLink, Outlet } from "react-router-dom"
+import { NavLink, Outlet, useNavigate } from "react-router-dom"
 import {
   Package,
   CalendarDays,
@@ -12,8 +12,11 @@ import {
   X,
   Sprout,
   CalendarRange,
-  BarChart3
+  BarChart3,
+  LogOut,
+  UserCircle
 } from "lucide-react"
+import { useAuth } from "@/context/AuthContext"
 
 function BallIcon({ className }: { className?: string }) {
   return (
@@ -162,6 +165,13 @@ function BellMenu() {
 
 export default function Layout() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const { nome, logout } = useAuth()
+  const navigate = useNavigate()
+
+  const handleLogout = () => {
+    logout()
+    navigate("/login", { replace: true })
+  }
 
   return (
     <div className="flex h-screen bg-[#F8F7F4]">
@@ -210,10 +220,27 @@ export default function Layout() {
           ))}
         </nav>
 
-        <div className="px-5 py-4 border-t border-[#F5F5F4]">
-          <div className="flex items-center gap-2 text-[#8A8A8A]">
-            <Sprout className="w-3.5 h-3.5 shrink-0 text-[#88C9A1]" />
-            <span className="text-xs italic">Crescendo juntos</span>
+        <div className="px-4 py-3 border-t border-[#F5F5F4] space-y-2">
+          {nome && (
+            <div className="flex items-center gap-2 px-1">
+              <UserCircle className="w-4 h-4 shrink-0 text-[#88C9A1]" />
+              <span className="text-xs font-medium text-[#4D4D4D] truncate">
+                {nome}
+              </span>
+            </div>
+          )}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2 text-[#8A8A8A] px-1">
+              <Sprout className="w-3.5 h-3.5 shrink-0 text-[#88C9A1]" />
+              <span className="text-xs italic">Crescendo juntos</span>
+            </div>
+            <button
+              onClick={handleLogout}
+              className="p-1.5 rounded-lg hover:bg-[#F5F5F4] text-[#8A8A8A] hover:text-red-500 transition-colors"
+              title="Sair"
+            >
+              <LogOut className="w-4 h-4" />
+            </button>
           </div>
         </div>
       </aside>

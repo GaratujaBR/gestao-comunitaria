@@ -1,6 +1,6 @@
 import uuid
 from datetime import datetime, timezone
-from sqlalchemy import String, Boolean, DateTime
+from sqlalchemy import String, Boolean, DateTime, Text
 from sqlalchemy.orm import Mapped, mapped_column
 from app.database import Base
 
@@ -20,6 +20,7 @@ class Profile(Base):
     lote: Mapped[str | None] = mapped_column(String, nullable=True)
     cota_slug: Mapped[str | None] = mapped_column(String, nullable=True)
     foto_url: Mapped[str | None] = mapped_column(String, nullable=True)
+    senha_hash: Mapped[str | None] = mapped_column(Text, nullable=True)
     ativo: Mapped[bool] = mapped_column(Boolean, default=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime, default=lambda: datetime.now(timezone.utc)

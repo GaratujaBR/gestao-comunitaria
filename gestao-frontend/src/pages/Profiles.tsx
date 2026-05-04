@@ -4,7 +4,7 @@ import type { Profile, Cota } from "@/api/types"
 import { Button } from "@/components/ui/button"
 import Avatar from "@/components/Avatar"
 import ProfileForm from "@/components/ProfileForm"
-import { Plus, Pencil, Trash2 } from "lucide-react"
+import { Plus, Pencil, Trash2, Mail } from "lucide-react"
 
 export default function Profiles() {
   const [profiles, setProfiles] = useState<Profile[]>([])
@@ -13,6 +13,8 @@ export default function Profiles() {
   const [open, setOpen] = useState(false)
   const [editing, setEditing] = useState<string | null>(null)
   const [error, setError] = useState("")
+  const [invitingSlugs, setInvitingSlugs] = useState<Set<string>>(new Set())
+  const [invitedSlugs, setInvitedSlugs] = useState<Set<string>>(new Set())
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -66,6 +68,23 @@ export default function Profiles() {
     load()
   }
 
+  const sendInvite = async (p: Profile) => {
+    if (!p.email) return
+    setInvitingSlugs((s) => new Set(s).add(p.slug))
+    try {
+      await api.post("/api/auth/request-reset", { email: p.email })
+      setInvitedSlugs((s) => new Set(s).add(p.slug))
+    } catch {
+      /* silencia */
+    } finally {
+      setInvitingSlugs((s) => {
+        const n = new Set(s)
+        n.delete(p.slug)
+        return n
+      })
+    }
+  }
+
   const getInitialData = () => {
     if (!editing) return null
     const p = profiles.find((x) => x.slug === editing)
@@ -114,6 +133,16 @@ export default function Profiles() {
                   </div>
                 </div>
                 <div className="flex gap-1">
+                  {p.email && (
+                    <button
+                      onClick={() => sendInvite(p)}
+                      disabled={invitingSlugs.has(p.slug)}
+                      className="p-1.5 rounded-lg hover:bg-gray-100"
+                      title={invitedSlugs.has(p.slug) ? "Convite enviado" : "Enviar convite por email"}
+                    >
+                      <Mail className={`w-4 h-4 ${invitedSlugs.has(p.slug) ? "text-[#1F6B3A]" : "text-gray-400"}`} />
+                    </button>
+                  )}
                   <button
                     onClick={() => openEdit(p)}
                     className="p-1.5 rounded-lg hover:bg-gray-100"

@@ -11,6 +11,7 @@ class EnqueteCreate(BaseModel):
     opcoes: list[str]
     criador: str | None = None
     multipla_escolha: bool = False
+    anonima: bool = False
     quorum_required: int = 60
     approval_threshold: int = 66
     closes_at: datetime | None = None
@@ -47,6 +48,7 @@ class EnqueteResponse(BaseModel):
     total_votos: int
     criador: str | None = None
     multipla_escolha: bool
+    anonima: bool = False
     status: str
     quorum_required: int = 60
     approval_threshold: int = 66

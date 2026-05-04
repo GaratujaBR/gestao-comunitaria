@@ -5,8 +5,7 @@ import type {
   EnqueteComentario,
   EnqueteStatus,
   EnqueteTipo,
-  Profile,
-  QuadranteType
+  Profile
 } from "@/api/types"
 import {
   Plus,
@@ -21,7 +20,6 @@ import {
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import {
   Dialog,
@@ -29,18 +27,9 @@ import {
   DialogHeader,
   DialogTitle
 } from "@/components/ui/dialog"
-import DecisionQuadrant from "@/components/DecisionQuadrant"
 import PollBadge from "@/components/PollBadge"
 import LegitimacyMeter from "@/components/LegitimacyMeter"
-import {
-  suggestConfig,
-  getOverrideWarning,
-  getQuadrantBadge
-} from "@/lib/decisionFramework"
-
 // ── constants ────────────────────────────────────────────────────────────────
-
-const OPCOES_BINARIA = ["Sim", "Não", "Abstenção"]
 
 const categoriaColors: Record<string, string> = {
   decisao: "bg-blue-50 text-blue-700",
@@ -115,24 +104,6 @@ function nextTransitions(
 }
 
 // ── sub-components ────────────────────────────────────────────────────────────
-
-function SuggestionButton() {
-  const [confirmed, setConfirmed] = useState(false)
-  return (
-    <Button
-      size="sm"
-      className={`bg-[#1F6B3A] hover:bg-[#155A2A] transition-all duration-200 ${
-        confirmed ? "scale-95" : ""
-      }`}
-      onClick={() => {
-        setConfirmed(true)
-        setTimeout(() => setConfirmed(false), 600)
-      }}
-    >
-      {confirmed ? "✓ Aplicado" : "✓ Usar sugestão"}
-    </Button>
-  )
-}
 
 function QuorumBar({
   quorumPercent,
@@ -850,23 +821,12 @@ export default function Enquetes() {
 
   const [form, setForm] = useState({
     titulo: "",
-    descricao: "",
-    categoria: "decisao",
-    tipo: "binaria" as EnqueteTipo,
-    opcoes: ["", ""],
-    criador: "",
+    tipo: "" as "" | EnqueteTipo,
     multipla_escolha: false,
-    quorum_required: 60,
-    approval_threshold: 66,
-    closes_at: "",
-    result_action: "",
-    quadrante: "" as QuadranteType | "",
-    weight_level: 5,
-    override_reason: ""
+    opcoes: ["", ""] as string[],
+    anonima: false,
+    prazo_dias: "" as number | ""
   })
-
-  const [customizing, setCustomizing] = useState(false)
-  const [quadrantPos, setQuadrantPos] = useState({ x: 75, y: 75 })
 
   const load = async () => {
     setLoading(true)
@@ -904,52 +864,31 @@ export default function Enquetes() {
   })
 
   const createEnquete = async () => {
+    if (!form.titulo.trim() || !form.tipo) return
     const opcoes =
       form.tipo === "binaria"
         ? ["Sim", "Não", "Abstenção"]
         : form.tipo === "escala"
           ? ["1", "2", "3", "4", "5"]
-          : form.tipo === "texto"
-            ? []
-            : form.opcoes.filter((o) => o.trim() !== "")
+          : form.opcoes.filter((o) => o.trim() !== "")
     if (form.tipo === "multipla" && opcoes.length < 2) return
+    const closes_at =
+      form.prazo_dias !== "" && Number(form.prazo_dias) > 0
+        ? new Date(Date.now() + Number(form.prazo_dias) * 86400000).toISOString()
+        : null
     setSaving(true)
     try {
       await api.post("/api/enquetes", {
         titulo: form.titulo,
-        descricao: form.descricao || null,
-        categoria: form.categoria,
+        categoria: "decisao",
         tipo: form.tipo,
         opcoes,
-        criador: form.criador || null,
         multipla_escolha: form.tipo === "multipla" && form.multipla_escolha,
-        quorum_required: form.quorum_required,
-        approval_threshold: form.approval_threshold,
-        closes_at: form.closes_at || null,
-        result_action: form.result_action || null,
-        quadrante: form.quadrante || null,
-        weight_level: form.weight_level,
-        override_reason: form.override_reason || null
+        anonima: form.anonima,
+        closes_at
       })
       setShowModal(false)
-      setForm({
-        titulo: "",
-        descricao: "",
-        categoria: "decisao",
-        tipo: "binaria",
-        opcoes: ["", ""],
-        criador: "",
-        multipla_escolha: false,
-        quorum_required: 60,
-        approval_threshold: 66,
-        closes_at: "",
-        result_action: "",
-        quadrante: "",
-        weight_level: 5,
-        override_reason: ""
-      })
-      setCustomizing(false)
-      setQuadrantPos({ x: 75, y: 75 })
+      setForm({ titulo: "", tipo: "", multipla_escolha: false, opcoes: ["", ""], anonima: false, prazo_dias: "" })
       load()
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : "Erro ao criar enquete."
@@ -1415,337 +1354,116 @@ export default function Enquetes() {
       )}
 
       {/* create dialog */}
-      <Dialog
-        open={showModal}
-        onOpenChange={(open) => {
-          setShowModal(open)
-          if (!open) setCustomizing(false)
-        }}
-      >
-        <DialogContent>
+      <Dialog open={showModal} onOpenChange={setShowModal}>
+        <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle>Nova Enquete</DialogTitle>
           </DialogHeader>
-          <div className="space-y-4 max-h-[70vh] overflow-y-auto pr-1">
+          <div className="space-y-5">
+
+            {/* Passo 1 */}
             <div>
-              <Label>Título *</Label>
+              <p className="text-xs font-semibold text-[#4D4D4D] uppercase tracking-wide mb-1.5">Passo 1 — Pergunta</p>
               <Input
-                placeholder="Título da enquete"
+                placeholder="Escreva a pergunta..."
                 value={form.titulo}
                 onChange={(e) => setForm({ ...form, titulo: e.target.value })}
+                className="rounded-xl"
               />
             </div>
+
+            {/* Passo 2 */}
             <div>
-              <Label>Descrição</Label>
-              <Textarea
-                placeholder="Descrição (opcional)"
-                value={form.descricao}
-                onChange={(e) =>
-                  setForm({ ...form, descricao: e.target.value })
-                }
-                rows={2}
-              />
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <Label>Categoria</Label>
-                <select
-                  value={form.categoria}
-                  onChange={(e) => {
-                    const cat = e.target.value
-                    const tipoDefault: Record<string, EnqueteTipo> = {
-                      decisao: "binaria",
-                      aprovacao: "binaria",
-                      preferencia: "multipla",
-                      feedback: "escala"
-                    }
-                    setForm({
-                      ...form,
-                      categoria: cat,
-                      tipo: tipoDefault[cat] ?? form.tipo
-                    })
-                  }}
-                  className="w-full px-3 py-2 border border-[#E7E5E4] rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#1F6B3A]/20 focus:border-[#1F6B3A]"
-                >
-                  {Object.entries(categoriaLabels).map(([key, label]) => (
-                    <option key={key} value={key}>
-                      {label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <Label>Tipo</Label>
-                <select
-                  value={form.tipo}
-                  onChange={(e) =>
-                    setForm({ ...form, tipo: e.target.value as EnqueteTipo })
-                  }
-                  className="w-full px-3 py-2 border border-[#E7E5E4] rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#1F6B3A]/20 focus:border-[#1F6B3A]"
-                >
-                  {Object.entries(tipoLabels).map(([key, label]) => (
-                    <option key={key} value={key}>
-                      {label}
-                    </option>
-                  ))}
-                </select>
+              <p className="text-xs font-semibold text-[#4D4D4D] uppercase tracking-wide mb-2">Passo 2 — Tipo</p>
+              <div className="grid grid-cols-2 gap-2">
+                {([
+                  { label: "Escolha Única", tipo: "multipla" as const, multi: false },
+                  { label: "Múltipla",      tipo: "multipla" as const, multi: true  },
+                  { label: "Sim / Não",     tipo: "binaria"  as const, multi: false },
+                  { label: "Escala 1–5",   tipo: "escala"   as const, multi: false },
+                ] as const).map((opt) => {
+                  const active = form.tipo === opt.tipo && form.multipla_escolha === opt.multi
+                  return (
+                    <button
+                      key={opt.label}
+                      onClick={() => setForm({ ...form, tipo: opt.tipo, multipla_escolha: opt.multi, opcoes: ["", ""] })}
+                      className={`px-3 py-2 rounded-xl text-sm font-medium border transition-colors ${
+                        active
+                          ? "bg-[#1F6B3A] text-white border-[#1F6B3A]"
+                          : "bg-white text-[#1A1A1A] border-[#E7E5E4] hover:border-[#88C9A1]"
+                      }`}
+                    >
+                      {opt.label}
+                    </button>
+                  )
+                })}
               </div>
             </div>
 
-            {form.tipo === "binaria" ? (
-              <p className="text-xs text-[#8A8A8A] bg-[#F8F7F4] rounded-lg px-3 py-2">
-                Opções fixas: {OPCOES_BINARIA.join(" / ")}
-              </p>
-            ) : form.tipo === "escala" ? (
-              <p className="text-xs text-[#8A8A8A] bg-[#F8F7F4] rounded-lg px-3 py-2">
-                Escala de 1 a 5 · inclui campo "O que pode melhorar?" opcional
-              </p>
-            ) : form.tipo === "texto" ? (
-              <p className="text-xs text-[#8A8A8A] bg-[#F8F7F4] rounded-lg px-3 py-2">
-                Cada bolinha escreve uma resposta aberta (máx. 300 caracteres)
-              </p>
-            ) : (
+            {/* Passo 3 — opções (só multipla) */}
+            {form.tipo === "multipla" && (
               <div>
-                <Label>Opções *</Label>
-                <div className="space-y-2 mt-1">
+                <p className="text-xs font-semibold text-[#4D4D4D] uppercase tracking-wide mb-2">Passo 3 — Opções</p>
+                <div className="space-y-2">
                   {form.opcoes.map((opcao, idx) => (
                     <div key={idx} className="flex items-center gap-2">
                       <Input
                         placeholder={`Opção ${idx + 1}`}
                         value={opcao}
                         onChange={(e) => updateOpcao(idx, e.target.value)}
+                        className="rounded-xl"
                       />
                       {form.opcoes.length > 2 && (
-                        <button
-                          onClick={() => removeOpcao(idx)}
-                          className="p-1.5 text-[#8A8A8A] hover:text-red-500"
-                        >
+                        <button onClick={() => removeOpcao(idx)} className="p-1.5 text-[#8A8A8A] hover:text-red-500">
                           <X className="w-4 h-4" />
                         </button>
                       )}
                     </div>
                   ))}
-                  <button
-                    onClick={addOpcao}
-                    className="text-sm text-[#1F6B3A] hover:text-[#155A2A] font-medium"
-                  >
+                  <button onClick={addOpcao} className="text-sm text-[#1F6B3A] hover:text-[#155A2A] font-medium">
                     + Adicionar opção
                   </button>
                 </div>
               </div>
             )}
 
-            {/* ── Decision Quadrant ── */}
-            <div className="border-t border-[#E7E5E4] pt-4">
-              <Label className="mb-2 block">
-                Onde essa decisão se encaixa?
-              </Label>
-              <DecisionQuadrant
-                onChange={(x, y, quadrante) => {
-                  setQuadrantPos({ x, y })
-                  const config = suggestConfig(x, y)
-                  setForm({
-                    ...form,
-                    quadrante,
-                    weight_level: Math.round((x + y) / 2),
-                    quorum_required: config.quorum_required,
-                    approval_threshold: config.approval_threshold,
-                    tipo: config.tipo,
-                    override_reason: ""
-                  })
-                }}
-              />
+            {/* Footer: anônima + prazo */}
+            <div className="flex items-center gap-6 pt-1">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={form.anonima}
+                  onChange={(e) => setForm({ ...form, anonima: e.target.checked })}
+                  className="w-4 h-4 rounded border-[#E7E5E4] text-[#1F6B3A] focus:ring-[#1F6B3A]"
+                />
+                <span className="text-sm text-[#1A1A1A]">Anônima</span>
+              </label>
+              <label className="flex items-center gap-2">
+                <span className="text-sm text-[#1A1A1A]">Prazo:</span>
+                <Input
+                  type="number"
+                  min={1}
+                  placeholder="dias"
+                  value={form.prazo_dias}
+                  onChange={(e) => setForm({ ...form, prazo_dias: e.target.value === "" ? "" : Number(e.target.value) })}
+                  className="w-20 rounded-xl text-sm"
+                />
+                <span className="text-sm text-[#8A8A8A]">dias</span>
+              </label>
             </div>
 
-            {/* ── Suggestion panel ── */}
-            {form.quadrante && (
-              <div className="rounded-[20px] bg-[#F8F7F4] border border-[#E7E5E4] p-4 space-y-3">
-                <div className="flex items-start gap-2">
-                  <span className="text-lg">
-                    {getQuadrantBadge(form.quadrante as QuadranteType).emoji}
-                  </span>
-                  <div>
-                    <p className="text-sm font-semibold text-[#1A1A1A]">
-                      {getQuadrantBadge(form.quadrante as QuadranteType).label}
-                    </p>
-                    <p className="text-xs text-[#4D4D4D] mt-0.5">
-                      Configuração sugerida: Quorum {form.quorum_required}% ·
-                      Aprovação {form.approval_threshold}% · Tipo{" "}
-                      {tipoLabels[form.tipo]} · Discussão{" "}
-                      {
-                        suggestConfig(quadrantPos.x, quadrantPos.y)
-                          .discussion_days
-                      }{" "}
-                      dias
-                    </p>
-                    {suggestConfig(quadrantPos.x, quadrantPos.y)
-                      .regra_especial && (
-                      <p className="text-xs text-[#8A8A8A] mt-1 italic">
-                        {
-                          suggestConfig(quadrantPos.x, quadrantPos.y)
-                            .regra_especial
-                        }
-                      </p>
-                    )}
-                  </div>
-                </div>
-
-                {!customizing ? (
-                  <div className="flex gap-2">
-                    <SuggestionButton />
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => setCustomizing(true)}
-                    >
-                      ✎ Personalizar
-                    </Button>
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    {/* override warning */}
-                    {(() => {
-                      const suggested = suggestConfig(
-                        quadrantPos.x,
-                        quadrantPos.y
-                      )
-                      const warning = getOverrideWarning(
-                        {
-                          quorum_required: suggested.quorum_required,
-                          approval_threshold: suggested.approval_threshold
-                        },
-                        {
-                          quorum_required: form.quorum_required,
-                          approval_threshold: form.approval_threshold
-                        }
-                      )
-                      return warning ? (
-                        <div className="bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 flex items-start gap-2">
-                          <AlertCircle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
-                          <p className="text-xs text-amber-800">{warning}</p>
-                        </div>
-                      ) : null
-                    })()}
-
-                    <div className="grid grid-cols-2 gap-3">
-                      <div>
-                        <Label>Quorum mínimo (%)</Label>
-                        <Input
-                          type="number"
-                          min={1}
-                          max={100}
-                          value={form.quorum_required}
-                          onChange={(e) =>
-                            setForm({
-                              ...form,
-                              quorum_required: Number(e.target.value)
-                            })
-                          }
-                        />
-                      </div>
-                      <div>
-                        <Label>Threshold aprovação (%)</Label>
-                        <Input
-                          type="number"
-                          min={1}
-                          max={100}
-                          value={form.approval_threshold}
-                          onChange={(e) =>
-                            setForm({
-                              ...form,
-                              approval_threshold: Number(e.target.value)
-                            })
-                          }
-                        />
-                      </div>
-                    </div>
-
-                    <div>
-                      <Label>Justificativa da alteração</Label>
-                      <Textarea
-                        placeholder="Explique por que essa configuração é adequada..."
-                        value={form.override_reason}
-                        onChange={(e) =>
-                          setForm({ ...form, override_reason: e.target.value })
-                        }
-                        rows={2}
-                      />
-                    </div>
-
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      className="text-[#1F6B3A]"
-                      onClick={() => {
-                        const config = suggestConfig(
-                          quadrantPos.x,
-                          quadrantPos.y
-                        )
-                        setForm({
-                          ...form,
-                          quorum_required: config.quorum_required,
-                          approval_threshold: config.approval_threshold,
-                          tipo: config.tipo,
-                          override_reason: ""
-                        })
-                        setCustomizing(false)
-                      }}
-                    >
-                      ← Voltar à sugestão
-                    </Button>
-                  </div>
-                )}
-              </div>
-            )}
-
-            <div>
-              <Label>Se aprovada, o que acontece?</Label>
-              <Input
-                placeholder="Ex: Comprar o terreno adjacente"
-                value={form.result_action}
-                onChange={(e) =>
-                  setForm({ ...form, result_action: e.target.value })
-                }
-              />
-            </div>
-
-            <div>
-              <Label>Data de encerramento</Label>
-              <Input
-                type="date"
-                value={form.closes_at}
-                onChange={(e) =>
-                  setForm({ ...form, closes_at: e.target.value })
-                }
-              />
-            </div>
-
-            <div>
-              <Label>Criador</Label>
-              <Input
-                placeholder="Nome do criador"
-                value={form.criador}
-                onChange={(e) => setForm({ ...form, criador: e.target.value })}
-              />
-            </div>
-
-            <div className="flex justify-end gap-2 pt-2">
-              <Button variant="outline" onClick={() => setShowModal(false)}>
-                Cancelar
-              </Button>
-              <Button
-                onClick={createEnquete}
-                disabled={
-                  saving ||
-                  !form.titulo.trim() ||
-                  (form.tipo === "multipla" &&
-                    form.opcoes.filter((o) => o.trim()).length < 2)
-                }
-                className="bg-[#1F6B3A] hover:bg-[#155A2A]"
-              >
-                {saving ? "Criando..." : "Criar Enquete"}
-              </Button>
-            </div>
+            <Button
+              onClick={createEnquete}
+              disabled={
+                saving ||
+                !form.titulo.trim() ||
+                !form.tipo ||
+                (form.tipo === "multipla" && form.opcoes.filter((o) => o.trim()).length < 2)
+              }
+              className="w-full bg-[#1F6B3A] hover:bg-[#155A2A] rounded-xl"
+            >
+              {saving ? "Publicando..." : "Publicar Enquete"}
+            </Button>
           </div>
         </DialogContent>
       </Dialog>

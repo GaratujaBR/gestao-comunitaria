@@ -1,10 +1,26 @@
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000"
 
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
+  const token = localStorage.getItem("auth_token")
+  const headers: Record<string, string> = { "Content-Type": "application/json" }
+  if (token) headers["Authorization"] = `Bearer ${token}`
+
   const res = await fetch(`${API_URL}${path}`, {
-    headers: { "Content-Type": "application/json" },
+    headers,
     ...options
   })
+
+  if (res.status === 401) {
+    const err = await res.json().catch(() => ({ detail: "Não autorizado" }))
+    if (token) {
+      localStorage.removeItem("auth_token")
+      localStorage.removeItem("auth_slug")
+      localStorage.removeItem("auth_nome")
+      window.location.href = "/terradecanaa/login"
+    }
+    throw new Error(err.detail || "Credenciais inválidas.")
+  }
+
   if (!res.ok) {
     const err = await res.json().catch(() => ({ detail: res.statusText }))
     throw new Error(err.detail || "Request failed")
