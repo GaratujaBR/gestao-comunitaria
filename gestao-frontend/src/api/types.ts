@@ -214,6 +214,7 @@ export interface Enquete {
   total_votos: number
   criador: string | null
   multipla_escolha: boolean
+  anonima?: boolean
   status: EnqueteStatus
   quorum_required: number
   approval_threshold: number

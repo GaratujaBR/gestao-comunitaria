@@ -21,6 +21,7 @@ class Enquete(Base):
     total_votos: Mapped[int] = mapped_column(Integer, default=0)
     criador: Mapped[str | None] = mapped_column(String, nullable=True)
     multipla_escolha: Mapped[bool] = mapped_column(Boolean, default=False)
+    anonima: Mapped[bool] = mapped_column(Boolean, default=False)
     status: Mapped[str] = mapped_column(String, default="rascunho")
     quorum_required: Mapped[int] = mapped_column(Integer, default=60)
     approval_threshold: Mapped[int] = mapped_column(Integer, default=66)
