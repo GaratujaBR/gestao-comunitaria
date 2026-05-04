@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import React, { useEffect, useState } from "react"
 import { Link } from "react-router-dom"
 import { api } from "@/api/client"
 import type {
@@ -9,15 +9,16 @@ import type {
   Cota,
   Enquete,
   Evento,
-  Profile
+  Profile,
+  Chamado
 } from "@/api/types"
 import {
   Package,
   CalendarDays,
   Bell,
-  AlertTriangle,
   BarChart3,
-  Calendar
+  Calendar,
+  Wrench
 } from "lucide-react"
 
 function BallIcon({ className }: { className?: string }) {
@@ -45,7 +46,7 @@ interface Stats {
   items: number
   bookings: number
   alertsUnread: number
-  itemsMaintenance: number
+  chamadosAbertos: number
   enquetes: number
 }
 
@@ -56,7 +57,7 @@ export default function Dashboard() {
     items: 0,
     bookings: 0,
     alertsUnread: 0,
-    itemsMaintenance: 0,
+    chamadosAbertos: 0,
     enquetes: 0
   })
   const [recentBookings, setRecentBookings] = useState<Booking[]>([])
@@ -75,7 +76,8 @@ export default function Dashboard() {
           alertsData,
           enquetesData,
           eventosData,
-          profiles
+          profiles,
+          chamadosData
         ] = await Promise.all([
           api.get<Cota[]>("/api/cotas"),
           api.get<Space[]>("/api/spaces"),
@@ -84,7 +86,8 @@ export default function Dashboard() {
           api.get<Alert[]>("/api/alerts?lido=false"),
           api.get<Enquete[]>("/api/enquetes"),
           api.get<Evento[]>("/api/eventos?publico=true"),
-          api.get<Profile[]>("/api/profiles")
+          api.get<Profile[]>("/api/profiles"),
+          api.get<Chamado[]>("/api/chamados")
         ])
         setStats({
           cotas: cotas.filter((c) => c.ativo && profiles.some((p) => p.cota_slug === c.slug)).length,
@@ -94,8 +97,7 @@ export default function Dashboard() {
             ["pendente", "confirmada", "em_andamento"].includes(b.status)
           ).length,
           alertsUnread: alertsData.length,
-          itemsMaintenance: items.filter((i) => i.estado === "manutencao")
-            .length,
+          chamadosAbertos: chamadosData.filter((c) => c.status === "aberto").length,
           enquetes: enquetesData.filter((e) =>
             ["votacao", "aberta"].includes(e.status)
           ).length
@@ -164,10 +166,11 @@ export default function Dashboard() {
       color: "bg-red-50 text-red-600"
     },
     {
-      label: "Em Manutenção",
-      value: stats.itemsMaintenance,
-      icon: AlertTriangle,
-      color: "bg-orange-50 text-orange-600"
+      label: "Chamados Abertos",
+      value: stats.chamadosAbertos,
+      icon: Wrench,
+      color: "bg-orange-50 text-orange-600",
+      to: "/chamados"
     },
     {
       label: "Itens no Acervo",
@@ -177,6 +180,12 @@ export default function Dashboard() {
       to: "/acervo"
     }
   ]
+
+  const alertIconMap: Record<string, React.ElementType> = {
+    reserva: CalendarDays,
+    chamado: Wrench,
+    enquete: BarChart3
+  }
 
   const statusMap: Record<string, string> = {
     pendente: "bg-yellow-100 text-yellow-800",
@@ -329,9 +338,15 @@ export default function Dashboard() {
                   className="flex items-start justify-between gap-2 py-2 border-b border-[#F5F5F4] last:border-0"
                 >
                   <div className="min-w-0">
-                    <p className="text-sm font-medium text-[#1A1A1A] leading-snug">
-                      {a.titulo}
-                    </p>
+                    <div className="flex items-start gap-1.5">
+                      {a.tipo && alertIconMap[a.tipo] && (() => {
+                        const Icon = alertIconMap[a.tipo!]
+                        return <Icon className="w-3 h-3 text-[#8A8A8A] shrink-0 mt-0.5" />
+                      })()}
+                      <p className="text-sm font-medium text-[#1A1A1A] leading-snug">
+                        {a.titulo}
+                      </p>
+                    </div>
                     {a.mensagem && (
                       <p className="text-xs text-[#4D4D4D] mt-0.5 truncate">
                         {a.mensagem}
