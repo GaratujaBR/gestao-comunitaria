@@ -100,3 +100,36 @@
   .fc-toolbar-chunk { display: flex; gap: 0.25rem; }
   .fc-list-event { cursor: pointer; }
 }
+
+/* ── FullCalendar — botões ───────────────────────────────────────────────── */
+.fc .fc-button-primary {
+  background-color: #4CAF50 !important;
+  border-color: #4CAF50 !important;
+  color: #fff !important;
+  font-weight: 600;
+  border-radius: 0.5rem;
+}
+.fc .fc-button-primary:hover {
+  background-color: #3d9140 !important;
+  border-color: #3d9140 !important;
+}
+.fc .fc-button-primary:focus,
+.fc .fc-button-primary:not(:disabled):active {
+  background-color: #3d9140 !important;
+  border-color: #3d9140 !important;
+  box-shadow: 0 0 0 2px #4CAF5055 !important;
+}
+.fc .fc-button-primary:disabled {
+  background-color: #4CAF50 !important;
+  border-color: #4CAF50 !important;
+  opacity: 0.75;
+}
+.fc .fc-button-primary.fc-button-active {
+  background-color: #1F6B3A !important;
+  border-color: #1F6B3A !important;
+  color: #fff !important;
+}
+.fc .fc-button-primary.fc-button-active:hover {
+  background-color: #175430 !important;
+  border-color: #175430 !important;
+}
