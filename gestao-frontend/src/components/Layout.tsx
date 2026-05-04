@@ -48,7 +48,7 @@ const navItems = [
   { to: "/wiki", icon: BookOpen, label: "Wiki" },
   { to: "/acervo", icon: Package, label: "Acervo" },
   { to: "/chamados", icon: Wrench, label: "Chamados" },
-  { to: "/planilha", icon: CircleDollarSign, label: "Financeiro" },
+  { to: "/financeiro", icon: CircleDollarSign, label: "Financeiro" },
   { to: "/logs", icon: ClipboardList, label: "Logs" }
 ]
 
