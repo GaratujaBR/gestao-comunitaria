@@ -30,6 +30,7 @@ import {
 import PollBadge from "@/components/PollBadge"
 import LegitimacyMeter from "@/components/LegitimacyMeter"
 import { useAdmin } from "@/hooks/useAdmin"
+import Avatar from "@/components/Avatar"
 // ── constants ────────────────────────────────────────────────────────────────
 
 const categoriaColors: Record<string, string> = {
@@ -1118,6 +1119,11 @@ export default function Enquetes() {
             "arquivada"
           ].includes(e.status)
           const showComments = expandedComments.has(e.id)
+          const criadorProfile = profiles.find((p) => p.slug === e.criador) ?? null
+          const participantCotaSlugs = new Set(Object.keys(e.votantes ?? {}))
+          const participantProfiles = profiles.filter(
+            (p) => p.cota_slug && participantCotaSlugs.has(p.cota_slug)
+          )
 
           return (
             <div
@@ -1134,7 +1140,7 @@ export default function Enquetes() {
               }`}
             >
               {/* card header */}
-              <div className="flex items-start justify-between">
+              <div className="flex items-start justify-between gap-2">
                 <div
                   className="flex-1 min-w-0 cursor-pointer"
                   onClick={() => setDetailEnquete(e)}
@@ -1152,15 +1158,58 @@ export default function Enquetes() {
                       {statusLabels[e.status as EnqueteStatus] || e.status}
                     </span>
                   </div>
-                  <h3 className="font-semibold text-[#1A1A1A] hover:text-[#1F6B3A] transition-colors">
-                    {e.titulo}
-                  </h3>
+
+                  {/* título com criador à esquerda e participantes à direita */}
+                  <div className="flex items-center gap-2">
+                    {criadorProfile && (
+                      <Avatar
+                        slug={criadorProfile.slug}
+                        nome={criadorProfile.nome_completo}
+                        foto_url={criadorProfile.foto_url}
+                        size="sm"
+                        className="shrink-0"
+                      />
+                    )}
+                    <h3 className="font-semibold text-[#1A1A1A] hover:text-[#1F6B3A] transition-colors flex-1 min-w-0">
+                      {e.titulo}
+                    </h3>
+                    {participantProfiles.length > 0 && (
+                      <div className="flex items-center shrink-0">
+                        {participantProfiles.slice(0, 6).map((p, i) => (
+                          <div
+                            key={p.slug}
+                            className={i > 0 ? "-ml-2" : ""}
+                            style={{ zIndex: 10 - i }}
+                            title={p.nome_curto || p.nome_completo}
+                          >
+                            <Avatar
+                              slug={p.slug}
+                              nome={p.nome_completo}
+                              foto_url={p.foto_url}
+                              size="sm"
+                              className="ring-2 ring-white"
+                            />
+                          </div>
+                        ))}
+                        {participantProfiles.length > 6 && (
+                          <div
+                            className="-ml-2 w-8 h-8 rounded-xl bg-[#E7E5E4] text-[#4D4D4D] text-xs font-semibold flex items-center justify-center ring-2 ring-white"
+                            style={{ zIndex: 1 }}
+                          >
+                            +{participantProfiles.length - 6}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+
                   {e.descricao && (
                     <p className="text-sm text-[#4D4D4D] mt-1 line-clamp-2">
                       {e.descricao}
                     </p>
                   )}
                 </div>
+
                 {isAdmin && (
                   <button
                     onClick={() => {
