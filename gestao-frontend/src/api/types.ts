@@ -18,6 +18,7 @@ export interface Profile {
   lote: string | null
   cota_slug: string | null
   foto_url: string | null
+  is_admin: boolean
   ativo: boolean
   created_at: string
 }

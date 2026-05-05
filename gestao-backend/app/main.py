@@ -51,6 +51,7 @@ async def lifespan(app: FastAPI):
         "ALTER TABLE eventos ADD COLUMN publico BOOLEAN DEFAULT TRUE",
         "ALTER TABLE enquetes ADD COLUMN anonima BOOLEAN DEFAULT FALSE",
         "ALTER TABLE profiles ADD COLUMN senha_hash TEXT",
+        "ALTER TABLE profiles ADD COLUMN is_admin BOOLEAN DEFAULT FALSE",
     ]
     async with engine.begin() as conn:
         for sql in migrations:

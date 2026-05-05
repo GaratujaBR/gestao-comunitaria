@@ -4,10 +4,18 @@ import type { Profile, Cota } from "@/api/types"
 import { Button } from "@/components/ui/button"
 import Avatar from "@/components/Avatar"
 import ProfileForm from "@/components/ProfileForm"
-import { Plus, Pencil, Trash2, Mail, ToggleLeft, ToggleRight } from "lucide-react"
+import { Plus, Pencil, Trash2, Mail, ToggleLeft, ToggleRight, ShieldCheck } from "lucide-react"
 import { useAdmin } from "@/hooks/useAdmin"
 
-const ALL_ROLES = ["fundador", "construtor", "cotista", "visitante", "admin"]
+const ALL_ROLES = ["fundador", "construtor", "cotista", "visitante", "parceiro"]
+
+const roleColors: Record<string, string> = {
+  fundador:   "bg-[#D5E8D4] text-[#1F6B3A]",
+  construtor: "bg-blue-100 text-blue-700",
+  cotista:    "bg-[#ECF7EE] text-[#2D5A27]",
+  visitante:  "bg-gray-100 text-gray-600",
+  parceiro:   "bg-[#FEE9B0] text-[#8A5C00]",
+}
 
 export default function Profiles() {
   const isAdmin = useAdmin()
@@ -94,6 +102,11 @@ export default function Profiles() {
     load()
   }
 
+  const toggleAdmin = async (p: Profile) => {
+    await api.put(`/api/profiles/${p.slug}`, { is_admin: !p.is_admin })
+    load()
+  }
+
   const handleRoleChange = async (slug: string, role: string) => {
     await api.put(`/api/profiles/${slug}`, { role: role || null })
     load()
@@ -159,6 +172,15 @@ export default function Profiles() {
                   )}
                   {isAdmin && (
                     <button
+                      onClick={() => toggleAdmin(p)}
+                      className="p-1.5 rounded-lg hover:bg-gray-100"
+                      title={p.is_admin ? "Remover admin" : "Tornar admin"}
+                    >
+                      <ShieldCheck className={`w-4 h-4 ${p.is_admin ? "text-purple-500" : "text-gray-300"}`} />
+                    </button>
+                  )}
+                  {isAdmin && (
+                    <button
                       onClick={() => toggleAtivo(p)}
                       className="p-1.5 rounded-lg hover:bg-gray-100"
                       title={p.ativo ? "Desativar perfil" : "Ativar perfil"}
@@ -188,18 +210,13 @@ export default function Profiles() {
 
               <div className="flex flex-wrap gap-1 mt-3">
                 {p.role && (
-                  <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-[#D5E8D4] text-[#1F6B3A]">
+                  <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${roleColors[p.role] ?? "bg-gray-100 text-gray-600"}`}>
                     {p.role}
-                  </span>
-                )}
-                {p.cota_slug && (
-                  <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-[#ECF7EE] text-[#2D5A27]">
-                    {p.cota_slug}
                   </span>
                 )}
                 {p.lote && (
                   <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
-                    lote {p.lote}
+                    bolinha {p.lote}
                   </span>
                 )}
               </div>

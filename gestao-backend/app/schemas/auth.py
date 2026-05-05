@@ -10,6 +10,8 @@ class TokenResponse(BaseModel):
     access_token: str
     nome: str
     slug: str
+    role: str | None = None
+    is_admin: bool = False
 
 
 class RequestResetRequest(BaseModel):

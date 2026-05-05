@@ -12,6 +12,7 @@ interface AuthState {
   slug: string | null
   nome: string | null
   role: string | null
+  is_admin: boolean
 }
 
 interface AuthContextValue extends AuthState {
@@ -26,7 +27,8 @@ function readStorage(): AuthState {
     token: localStorage.getItem("auth_token"),
     slug: localStorage.getItem("auth_slug"),
     nome: localStorage.getItem("auth_nome"),
-    role: localStorage.getItem("auth_role")
+    role: localStorage.getItem("auth_role"),
+    is_admin: localStorage.getItem("auth_is_admin") === "true"
   }
 }
 
@@ -34,7 +36,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<AuthState>(readStorage)
 
   const login = useCallback(async (email: string, senha: string) => {
-    const res = await api.post<{ access_token: string; nome: string; slug: string; role: string | null }>(
+    const res = await api.post<{ access_token: string; nome: string; slug: string; role: string | null; is_admin: boolean }>(
       "/api/auth/login",
       { email, senha }
     )
@@ -43,7 +45,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.setItem("auth_nome", res.nome)
     if (res.role) localStorage.setItem("auth_role", res.role)
     else localStorage.removeItem("auth_role")
-    setState({ token: res.access_token, slug: res.slug, nome: res.nome, role: res.role ?? null })
+    localStorage.setItem("auth_is_admin", String(res.is_admin ?? false))
+    setState({ token: res.access_token, slug: res.slug, nome: res.nome, role: res.role ?? null, is_admin: res.is_admin ?? false })
   }, [])
 
   const logout = useCallback(() => {
@@ -51,7 +54,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.removeItem("auth_slug")
     localStorage.removeItem("auth_nome")
     localStorage.removeItem("auth_role")
-    setState({ token: null, slug: null, nome: null, role: null })
+    localStorage.removeItem("auth_is_admin")
+    setState({ token: null, slug: null, nome: null, role: null, is_admin: false })
   }, [])
 
   return (
