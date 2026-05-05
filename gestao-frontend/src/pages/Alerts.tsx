@@ -20,6 +20,7 @@ import {
   SelectValue
 } from "@/components/ui/select"
 import { Plus, Bell, Check, Trash2 } from "lucide-react"
+import { useAdmin } from "@/hooks/useAdmin"
 
 const tipos = ["manutencao", "reserva", "sistema"]
 
@@ -32,6 +33,7 @@ const emptyForm = {
 }
 
 export default function Alerts() {
+  const isAdmin = useAdmin()
   const [alerts, setAlerts] = useState<Alert[]>([])
   const [loading, setLoading] = useState(true)
   const [open, setOpen] = useState(false)
@@ -164,13 +166,15 @@ export default function Alerts() {
                     <Check className="w-4 h-4 text-green-600" />
                   </button>
                 )}
-                <button
-                  onClick={() => remove(a.id)}
-                  className="p-1.5 rounded-lg hover:bg-gray-100"
-                  title="Remover"
-                >
-                  <Trash2 className="w-4 h-4 text-red-500" />
-                </button>
+                {isAdmin && (
+                  <button
+                    onClick={() => remove(a.id)}
+                    className="p-1.5 rounded-lg hover:bg-gray-100"
+                    title="Remover"
+                  >
+                    <Trash2 className="w-4 h-4 text-red-500" />
+                  </button>
+                )}
               </div>
             </div>
           ))}

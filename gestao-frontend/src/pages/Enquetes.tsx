@@ -29,6 +29,7 @@ import {
 } from "@/components/ui/dialog"
 import PollBadge from "@/components/PollBadge"
 import LegitimacyMeter from "@/components/LegitimacyMeter"
+import { useAdmin } from "@/hooks/useAdmin"
 // ── constants ────────────────────────────────────────────────────────────────
 
 const categoriaColors: Record<string, string> = {
@@ -802,6 +803,7 @@ function DetailDialog({
 // ── main page ─────────────────────────────────────────────────────────────────
 
 export default function Enquetes() {
+  const isAdmin = useAdmin()
   const [enquetes, setEnquetes] = useState<Enquete[]>([])
   const [profiles, setProfiles] = useState<Profile[]>([])
   const [loading, setLoading] = useState(true)
@@ -1159,20 +1161,22 @@ export default function Enquetes() {
                     </p>
                   )}
                 </div>
-                <button
-                  onClick={() => {
-                    if (
-                      window.confirm("Deseja realmente excluir esta enquete?")
-                    ) {
-                      deletar(e.id)
-                    }
-                  }}
-                  disabled={deletingId === e.id}
-                  className="p-1.5 text-[#8A8A8A] hover:text-red-600 rounded-lg hover:bg-[#F8F7F4] shrink-0 ml-2 disabled:opacity-40"
-                  title="Excluir"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
+                {isAdmin && (
+                  <button
+                    onClick={() => {
+                      if (
+                        window.confirm("Deseja realmente excluir esta enquete?")
+                      ) {
+                        deletar(e.id)
+                      }
+                    }}
+                    disabled={deletingId === e.id}
+                    className="p-1.5 text-[#8A8A8A] hover:text-red-600 rounded-lg hover:bg-[#F8F7F4] shrink-0 ml-2 disabled:opacity-40"
+                    title="Excluir"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                )}
               </div>
 
               {/* result badge */}

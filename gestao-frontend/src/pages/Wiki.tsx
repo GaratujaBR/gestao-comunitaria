@@ -20,6 +20,7 @@ import {
   SelectValue
 } from "@/components/ui/select"
 import { Plus, Pencil, Trash2, BookOpen, Eye } from "lucide-react"
+import { useAdmin } from "@/hooks/useAdmin"
 import ReactMarkdown from "react-markdown"
 import remarkGfm from "remark-gfm"
 
@@ -44,6 +45,7 @@ const emptyForm = {
 }
 
 export default function Wiki() {
+  const isAdmin = useAdmin()
   const [articles, setArticles] = useState<WikiArticle[]>([])
   const [loading, setLoading] = useState(true)
   const [open, setOpen] = useState(false)
@@ -200,12 +202,14 @@ export default function Wiki() {
                   >
                     <Pencil className="w-4 h-4 text-gray-500" />
                   </button>
-                  <button
-                    onClick={() => remove(a.slug)}
-                    className="p-1.5 rounded-lg hover:bg-gray-100"
-                  >
-                    <Trash2 className="w-4 h-4 text-red-500" />
-                  </button>
+                  {isAdmin && (
+                    <button
+                      onClick={() => remove(a.slug)}
+                      className="p-1.5 rounded-lg hover:bg-gray-100"
+                    >
+                      <Trash2 className="w-4 h-4 text-red-500" />
+                    </button>
+                  )}
                 </div>
               </div>
               <div className="flex gap-2 mt-3">

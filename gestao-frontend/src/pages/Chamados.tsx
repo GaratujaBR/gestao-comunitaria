@@ -1,7 +1,8 @@
 import { useEffect, useState, useCallback } from "react"
 import { api } from "@/api/client"
 import type { Chamado, Prestador } from "@/api/types"
-import { Plus, Phone, X } from "lucide-react"
+import { Plus, Phone, X, Trash2 } from "lucide-react"
+import { useAdmin } from "@/hooks/useAdmin"
 
 const statusColors: Record<string, string> = {
   aberto: "bg-yellow-100 text-yellow-800",
@@ -25,6 +26,7 @@ const statusLabels: Record<string, string> = {
 }
 
 export default function Chamados() {
+  const isAdmin = useAdmin()
   const [chamados, setChamados] = useState<Chamado[]>([])
   const [prestadores, setPrestadores] = useState<Prestador[]>([])
   const [loading, setLoading] = useState(true)
@@ -109,6 +111,16 @@ export default function Chamados() {
   const updateStatus = async (id: string, status: string) => {
     try {
       await api.put(`/api/chamados/${id}`, { status })
+      load()
+    } catch {
+      /* ignore */
+    }
+  }
+
+  const deleteChamado = async (id: string) => {
+    if (!confirm("Remover este chamado?")) return
+    try {
+      await api.del(`/api/chamados/${id}`)
       load()
     } catch {
       /* ignore */
@@ -245,6 +257,15 @@ export default function Chamados() {
                     className="px-3 py-1 text-xs bg-green-50 text-green-700 rounded-lg hover:bg-green-100"
                   >
                     Concluir
+                  </button>
+                )}
+                {isAdmin && (
+                  <button
+                    onClick={() => deleteChamado(c.id)}
+                    className="p-2 text-red-400 hover:bg-red-50 rounded-lg"
+                    title="Remover"
+                  >
+                    <Trash2 className="w-4 h-4" />
                   </button>
                 )}
               </div>

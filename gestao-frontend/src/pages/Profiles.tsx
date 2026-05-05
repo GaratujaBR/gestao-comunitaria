@@ -4,9 +4,13 @@ import type { Profile, Cota } from "@/api/types"
 import { Button } from "@/components/ui/button"
 import Avatar from "@/components/Avatar"
 import ProfileForm from "@/components/ProfileForm"
-import { Plus, Pencil, Trash2, Mail } from "lucide-react"
+import { Plus, Pencil, Trash2, Mail, ToggleLeft, ToggleRight } from "lucide-react"
+import { useAdmin } from "@/hooks/useAdmin"
+
+const ALL_ROLES = ["fundador", "construtor", "cotista", "visitante", "admin"]
 
 export default function Profiles() {
+  const isAdmin = useAdmin()
   const [profiles, setProfiles] = useState<Profile[]>([])
   const [cotas, setCotas] = useState<Cota[]>([])
   const [loading, setLoading] = useState(true)
@@ -85,6 +89,16 @@ export default function Profiles() {
     }
   }
 
+  const toggleAtivo = async (p: Profile) => {
+    await api.put(`/api/profiles/${p.slug}`, { ativo: !p.ativo })
+    load()
+  }
+
+  const handleRoleChange = async (slug: string, role: string) => {
+    await api.put(`/api/profiles/${slug}`, { role: role || null })
+    load()
+  }
+
   const getInitialData = () => {
     if (!editing) return null
     const p = profiles.find((x) => x.slug === editing)
@@ -116,7 +130,7 @@ export default function Profiles() {
           {profiles.map((p) => (
             <div
               key={p.id}
-              className="bg-white rounded-xl border border-[#E7E5E4] p-5 hover:shadow-md transition-shadow"
+              className={`bg-white rounded-xl border border-[#E7E5E4] p-5 hover:shadow-md transition-shadow ${!p.ativo ? "opacity-60" : ""}`}
             >
               <div className="flex items-start justify-between">
                 <div className="flex items-center gap-3">
@@ -143,18 +157,32 @@ export default function Profiles() {
                       <Mail className={`w-4 h-4 ${invitedSlugs.has(p.slug) ? "text-[#1F6B3A]" : "text-gray-400"}`} />
                     </button>
                   )}
+                  {isAdmin && (
+                    <button
+                      onClick={() => toggleAtivo(p)}
+                      className="p-1.5 rounded-lg hover:bg-gray-100"
+                      title={p.ativo ? "Desativar perfil" : "Ativar perfil"}
+                    >
+                      {p.ativo
+                        ? <ToggleRight className="w-4 h-4 text-[#1F6B3A]" />
+                        : <ToggleLeft className="w-4 h-4 text-gray-400" />
+                      }
+                    </button>
+                  )}
                   <button
                     onClick={() => openEdit(p)}
                     className="p-1.5 rounded-lg hover:bg-gray-100"
                   >
                     <Pencil className="w-4 h-4 text-gray-500" />
                   </button>
-                  <button
-                    onClick={() => handleDelete(p.slug)}
-                    className="p-1.5 rounded-lg hover:bg-gray-100"
-                  >
-                    <Trash2 className="w-4 h-4 text-red-500" />
-                  </button>
+                  {isAdmin && (
+                    <button
+                      onClick={() => handleDelete(p.slug)}
+                      className="p-1.5 rounded-lg hover:bg-gray-100"
+                    >
+                      <Trash2 className="w-4 h-4 text-red-500" />
+                    </button>
+                  )}
                 </div>
               </div>
 
@@ -175,6 +203,19 @@ export default function Profiles() {
                   </span>
                 )}
               </div>
+
+              {isAdmin && (
+                <select
+                  value={p.role || ""}
+                  onChange={(e) => handleRoleChange(p.slug, e.target.value)}
+                  className="mt-3 w-full text-xs px-2 py-1.5 border border-[#E7E5E4] rounded-lg text-gray-600 bg-[#F8F7F4] focus:outline-none focus:border-[#88C9A1]"
+                >
+                  <option value="">Sem role</option>
+                  {ALL_ROLES.map((r) => (
+                    <option key={r} value={r}>{r}</option>
+                  ))}
+                </select>
+              )}
 
               {(p.email || p.telefone) && (
                 <div className="mt-2 text-sm text-gray-500 space-y-0.5">
