@@ -103,18 +103,28 @@ export default function SpaceMap({ spaces, onSelect }: Props) {
 
         {/* Hotspots clicáveis */}
         {zones.map((zone) => {
-          const exists = spaces.some((s) => s.slug === zone.slug);
+          const space = spaces.find((s) => s.slug === zone.slug);
+          const isAtivo = space?.status === "ativo";
           return (
             <div
               key={`hs-${zone.id}`}
               className={`absolute z-10 rounded-lg transition-all duration-150 ${
-                !exists && "opacity-50"
+                !space ? "opacity-50" : ""
               }`}
-              style={{ ...zone.area, cursor: "pointer" }}
+              style={{
+                ...zone.area,
+                cursor: isAtivo ? "pointer" : space ? "not-allowed" : "default",
+              }}
               onMouseEnter={() => !isTouchDevice() && setHovered(zone.id)}
               onMouseLeave={() => !isTouchDevice() && setHovered(null)}
-              onClick={() => handleClick(zone)}
-              title={exists ? zone.label : `${zone.label} (não cadastrado)`}
+              onClick={() => isAtivo && handleClick(zone)}
+              title={
+                isAtivo
+                  ? zone.label
+                  : space
+                  ? `${zone.label} (não disponível)`
+                  : `${zone.label} (não cadastrado)`
+              }
             />
           );
         })}
@@ -159,21 +169,30 @@ export default function SpaceMap({ spaces, onSelect }: Props) {
       {/* Legenda */}
       <div className="max-w-4xl mx-auto mt-2 flex flex-wrap gap-3 justify-center">
         {zones.map((zone) => {
-          const exists = spaces.some((s) => s.slug === zone.slug);
+          const space = spaces.find((s) => s.slug === zone.slug);
+          const isAtivo = space?.status === "ativo";
+          const isIndisponivel = space && !isAtivo;
           return (
             <span
               key={zone.id}
               className={`flex items-center gap-1.5 text-xs ${
-                exists ? "text-stone-500" : "text-stone-400"
+                isAtivo ? "text-stone-500" : "text-stone-400"
               }`}
             >
               <span
                 className={`inline-block w-2.5 h-2.5 rounded-full ${
-                  exists ? "bg-green-500" : "bg-stone-300"
+                  isAtivo
+                    ? "bg-green-500"
+                    : isIndisponivel
+                    ? "bg-amber-400"
+                    : "bg-stone-300"
                 }`}
               />
               {zone.label}
-              {!exists && (
+              {isIndisponivel && (
+                <span className="text-stone-400 italic">(não disponível)</span>
+              )}
+              {!space && (
                 <span className="text-stone-400 italic">(não cadastrado)</span>
               )}
             </span>

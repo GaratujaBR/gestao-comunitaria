@@ -19,7 +19,7 @@ import {
 import { Camera, Trash2 } from "lucide-react"
 import type { Profile, Cota } from "@/api/types"
 
-const roles = ["fundador", "construtor", "cotista", "visitante"]
+const roles = ["fundador", "construtor", "cotista", "visitante", "parceiro"]
 
 const emptyForm = {
   slug: "",
@@ -265,60 +265,64 @@ export default function ProfileForm({
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label>Papel</Label>
-              <Select
-                value={form.role}
-                onValueChange={(v) => setForm((f) => ({ ...f, role: v }))}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecione" />
-                </SelectTrigger>
-                <SelectContent>
-                  {roles.map((r) => (
-                    <SelectItem key={r} value={r}>
-                      {r}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label>Lote</Label>
-              <Input
-                value={form.lote}
-                onChange={(e) =>
-                  setForm((f) => ({ ...f, lote: e.target.value }))
-                }
-              />
-            </div>
+          <div>
+            <Label>Papel</Label>
+            <Select
+              value={form.role}
+              onValueChange={(v) => setForm((f) => ({ ...f, role: v }))}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Selecione" />
+              </SelectTrigger>
+              <SelectContent>
+                {roles.map((r) => (
+                  <SelectItem key={r} value={r}>
+                    {r}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
-          <div>
-            <Label>Bolinha</Label>
-            <div className="mt-1.5 flex flex-wrap gap-1.5 max-h-32 overflow-y-auto p-1">
-              {cotas.map((c) => (
-                <button
-                  key={c.slug}
-                  type="button"
-                  onClick={() => setForm((f) => ({ ...f, cota_slug: c.slug }))}
-                  className={`w-8 h-8 rounded-full border text-xs font-semibold transition-colors flex items-center justify-center shrink-0 ${
-                    form.cota_slug === c.slug
-                      ? "bg-[#1F6B3A] text-white border-[#1F6B3A]"
-                      : "border-[#E7E5E4] text-[#4D4D4D] hover:border-[#88C9A1] hover:text-[#1F6B3A]"
-                  }`}
-                >
-                  {c.numero}
-                </button>
-              ))}
-            </div>
-            {form.cota_slug && (
-              <p className="text-xs text-[#1F6B3A] mt-1 font-medium">
-                {cotas.find((c) => c.slug === form.cota_slug)?.nome}
-              </p>
-            )}
-          </div>
+          {form.role === "cotista" && (
+            <>
+              <div>
+                <Label>Nº da Bolinha</Label>
+                <Input
+                  value={form.lote}
+                  onChange={(e) =>
+                    setForm((f) => ({ ...f, lote: e.target.value }))
+                  }
+                  placeholder="ex: 7"
+                />
+              </div>
+
+              <div>
+                <Label>Bolinha</Label>
+                <div className="mt-1.5 flex flex-wrap gap-1.5 max-h-32 overflow-y-auto p-1">
+                  {cotas.map((c) => (
+                    <button
+                      key={c.slug}
+                      type="button"
+                      onClick={() => setForm((f) => ({ ...f, cota_slug: c.slug }))}
+                      className={`w-8 h-8 rounded-full border text-xs font-semibold transition-colors flex items-center justify-center shrink-0 ${
+                        form.cota_slug === c.slug
+                          ? "bg-[#1F6B3A] text-white border-[#1F6B3A]"
+                          : "border-[#E7E5E4] text-[#4D4D4D] hover:border-[#88C9A1] hover:text-[#1F6B3A]"
+                      }`}
+                    >
+                      {c.numero}
+                    </button>
+                  ))}
+                </div>
+                {form.cota_slug && (
+                  <p className="text-xs text-[#1F6B3A] mt-1 font-medium">
+                    {cotas.find((c) => c.slug === form.cota_slug)?.nome}
+                  </p>
+                )}
+              </div>
+            </>
+          )}
 
           <div className="flex justify-between pt-2">
             {editing && onDelete && (

@@ -68,13 +68,15 @@ async def login(data: LoginRequest, db: AsyncSession = Depends(get_db)):
         raise HTTPException(status_code=403, detail="Perfil inativo.")
 
     token = _make_token(
-        {"sub": profile.slug, "email": profile.email, "nome": profile.nome_curto or profile.nome_completo},
+        {"sub": profile.slug, "email": profile.email, "nome": profile.nome_curto or profile.nome_completo, "role": profile.role, "is_admin": profile.is_admin},
         timedelta(days=ACCESS_TOKEN_EXPIRE_DAYS),
     )
     return TokenResponse(
         access_token=token,
         nome=profile.nome_curto or profile.nome_completo,
         slug=profile.slug,
+        role=profile.role,
+        is_admin=profile.is_admin,
     )
 
 
