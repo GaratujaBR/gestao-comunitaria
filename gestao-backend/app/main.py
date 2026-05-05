@@ -53,12 +53,12 @@ async def lifespan(app: FastAPI):
         "ALTER TABLE profiles ADD COLUMN senha_hash TEXT",
         "ALTER TABLE profiles ADD COLUMN is_admin BOOLEAN DEFAULT FALSE",
     ]
-    async with engine.begin() as conn:
-        for sql in migrations:
-            try:
+    for sql in migrations:
+        try:
+            async with engine.begin() as conn:
                 await conn.execute(text(sql))
-            except Exception:
-                pass  # column/table already exists
+        except Exception:
+            pass  # column/table already exists
     await init_db()
     yield
 
