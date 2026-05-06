@@ -9,11 +9,12 @@ from app.schemas.enquete import (
     EnqueteCreate, EnqueteUpdate, VotoCreate, EnqueteResponse,
     ComentarioCreate, ComentarioResponse,
 )
+from app.routers.auth import get_current_user
+from app.models.profile import Profile
 from pydantic import BaseModel
 
 
 class RespostaCreate(BaseModel):
-    cota_slug: str
     texto: str
 
 router = APIRouter(prefix="/api/enquetes", tags=["enquetes"])
@@ -111,31 +112,39 @@ async def create_enquete(data: EnqueteCreate, db: AsyncSession = Depends(get_db)
 
 
 @router.post("/{enquete_id}/votar", response_model=EnqueteResponse)
-async def votar(enquete_id: str, data: VotoCreate, db: AsyncSession = Depends(get_db)):
+async def votar(
+    enquete_id: str,
+    data: VotoCreate,
+    db: AsyncSession = Depends(get_db),
+    current_user: Profile = Depends(get_current_user),
+):
     result = await db.execute(select(Enquete).where(Enquete.id == enquete_id))
     enquete = result.scalar_one_or_none()
     if not enquete:
         raise HTTPException(status_code=404, detail="Enquete not found")
-    # allow legacy "aberta" (old records) and new "votacao" status
     if enquete.status not in ("aberta", "votacao"):
         raise HTTPException(status_code=400, detail="Enquete não está aberta para votação")
     if data.opcao_index < 0 or data.opcao_index >= len(enquete.opcoes):
         raise HTTPException(status_code=400, detail="Opção inválida")
 
+    if not current_user.cota_slug:
+        raise HTTPException(status_code=400, detail="Usuário não pertence a uma bolinha")
+
+    cota_slug = current_user.cota_slug
     votantes = dict(enquete.votantes)
     votos = dict(enquete.votos)
 
     if enquete.tipo == "binaria" or not enquete.multipla_escolha:
-        if data.cota_slug in votantes:
+        if cota_slug in votantes:
             raise HTTPException(status_code=409, detail="Bolinha já votou nesta enquete")
-        votantes[data.cota_slug] = [data.opcao_index]
+        votantes[cota_slug] = [data.opcao_index]
     else:
-        if data.cota_slug in votantes:
-            if data.opcao_index in votantes[data.cota_slug]:
+        if cota_slug in votantes:
+            if data.opcao_index in votantes[cota_slug]:
                 raise HTTPException(status_code=409, detail="Bolinha já votou nesta opção")
-            votantes[data.cota_slug].append(data.opcao_index)
+            votantes[cota_slug].append(data.opcao_index)
         else:
-            votantes[data.cota_slug] = [data.opcao_index]
+            votantes[cota_slug] = [data.opcao_index]
 
     key = str(data.opcao_index)
     votos[key] = votos.get(key, 0) + 1
@@ -146,7 +155,7 @@ async def votar(enquete_id: str, data: VotoCreate, db: AsyncSession = Depends(ge
 
     if enquete.tipo == "escala" and data.melhoria:
         respostas = dict(enquete.respostas or {})
-        respostas[data.cota_slug] = data.melhoria[:300]
+        respostas[cota_slug] = data.melhoria[:300]
         enquete.respostas = respostas
 
     await db.commit()
@@ -160,7 +169,12 @@ async def votar(enquete_id: str, data: VotoCreate, db: AsyncSession = Depends(ge
 
 
 @router.post("/{enquete_id}/responder", response_model=EnqueteResponse)
-async def responder(enquete_id: str, data: RespostaCreate, db: AsyncSession = Depends(get_db)):
+async def responder(
+    enquete_id: str,
+    data: RespostaCreate,
+    db: AsyncSession = Depends(get_db),
+    current_user: Profile = Depends(get_current_user),
+):
     result = await db.execute(select(Enquete).where(Enquete.id == enquete_id))
     enquete = result.scalar_one_or_none()
     if not enquete:
@@ -169,10 +183,14 @@ async def responder(enquete_id: str, data: RespostaCreate, db: AsyncSession = De
         raise HTTPException(status_code=400, detail="Enquete não é do tipo texto")
     if enquete.status not in ("aberta", "votacao"):
         raise HTTPException(status_code=400, detail="Enquete não está aberta para respostas")
-    if data.cota_slug in (enquete.respostas or {}):
+    if not current_user.cota_slug:
+        raise HTTPException(status_code=400, detail="Usuário não pertence a uma bolinha")
+
+    cota_slug = current_user.cota_slug
+    if cota_slug in (enquete.respostas or {}):
         raise HTTPException(status_code=409, detail="Bolinha já respondeu esta enquete")
     respostas = dict(enquete.respostas or {})
-    respostas[data.cota_slug] = data.texto[:300]
+    respostas[cota_slug] = data.texto[:300]
     enquete.respostas = respostas
 
     await db.commit()
