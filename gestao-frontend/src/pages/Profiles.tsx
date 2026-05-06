@@ -6,6 +6,7 @@ import Avatar from "@/components/Avatar"
 import ProfileForm from "@/components/ProfileForm"
 import { Plus, Pencil, Trash2, Mail, ToggleLeft, ToggleRight, ShieldCheck } from "lucide-react"
 import { useAdmin } from "@/hooks/useAdmin"
+import { useAuth } from "@/context/AuthContext"
 
 const ALL_ROLES = ["fundador", "construtor", "cotista", "visitante", "parceiro"]
 
@@ -19,6 +20,7 @@ const roleColors: Record<string, string> = {
 
 export default function Profiles() {
   const isAdmin = useAdmin()
+  const { slug: currentSlug } = useAuth()
   const [profiles, setProfiles] = useState<Profile[]>([])
   const [cotas, setCotas] = useState<Cota[]>([])
   const [loading, setLoading] = useState(true)
@@ -191,12 +193,14 @@ export default function Profiles() {
                       }
                     </button>
                   )}
-                  <button
-                    onClick={() => openEdit(p)}
-                    className="p-1.5 rounded-lg hover:bg-gray-100"
-                  >
-                    <Pencil className="w-4 h-4 text-gray-500" />
-                  </button>
+                  {(isAdmin || currentSlug === p.slug) && (
+                    <button
+                      onClick={() => openEdit(p)}
+                      className="p-1.5 rounded-lg hover:bg-gray-100"
+                    >
+                      <Pencil className="w-4 h-4 text-gray-500" />
+                    </button>
+                  )}
                   {isAdmin && (
                     <button
                       onClick={() => handleDelete(p.slug)}
