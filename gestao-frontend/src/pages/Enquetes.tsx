@@ -30,6 +30,7 @@ import {
 import PollBadge from "@/components/PollBadge"
 import LegitimacyMeter from "@/components/LegitimacyMeter"
 import { useAdmin } from "@/hooks/useAdmin"
+import { useAuth } from "@/context/AuthContext"
 import Avatar from "@/components/Avatar"
 // ── constants ────────────────────────────────────────────────────────────────
 
@@ -183,22 +184,18 @@ function ResultBadge({
 
 function VotarEscalaPanel({
   enquete,
-  profiles,
-  selectedProfile,
+  currentCotaSlug,
   onVotar,
   votoError
 }: {
   enquete: Enquete
-  profiles: Profile[]
-  selectedProfile: string
+  currentCotaSlug: string | null
   onVotar: (enqueteId: string, opcaoIndex: number, melhoria?: string) => void
   votoError: string
 }) {
   const [melhoria, setMelhoria] = useState("")
-  const profile = profiles.find((p) => p.slug === selectedProfile)
-  const cotaSlug = profile?.cota_slug ?? null
-  const jaVotou = cotaSlug
-    ? Object.keys(enquete.votantes ?? {}).includes(cotaSlug)
+  const jaVotou = currentCotaSlug
+    ? Object.keys(enquete.votantes ?? {}).includes(currentCotaSlug)
     : false
 
   // compute avg
@@ -227,7 +224,7 @@ function VotarEscalaPanel({
               {[1, 2, 3, 4, 5].map((n) => (
                 <button
                   key={n}
-                  disabled={!selectedProfile}
+                  disabled={!currentCotaSlug}
                   onClick={() =>
                     onVotar(enquete.id, n - 1, melhoria || undefined)
                   }
@@ -411,22 +408,18 @@ function DiscussaoSection({
 
 function RespostaAbertaPanel({
   enquete,
-  profiles,
-  selectedProfile,
+  currentCotaSlug,
   onResponder,
   votoError
 }: {
   enquete: Enquete
-  profiles: Profile[]
-  selectedProfile: string
+  currentCotaSlug: string | null
   onResponder: (enqueteId: string, texto: string) => void
   votoError: string
 }) {
   const [texto, setTexto] = useState("")
   const [saving, setSaving] = useState(false)
-  const profile = profiles.find((p) => p.slug === selectedProfile)
-  const cotaSlug = profile?.cota_slug ?? null
-  const jaRespondeu = cotaSlug ? cotaSlug in (enquete.respostas ?? {}) : false
+  const jaRespondeu = currentCotaSlug ? currentCotaSlug in (enquete.respostas ?? {}) : false
   const respostas = Object.entries(enquete.respostas ?? {})
 
   const handleSubmit = async () => {
@@ -462,9 +455,9 @@ function RespostaAbertaPanel({
       {!jaRespondeu && (
         <div className="space-y-2 pt-2 border-t border-[#F5F5F4]">
           {votoError && <p className="text-xs text-red-500">{votoError}</p>}
-          {!selectedProfile && (
+          {!currentCotaSlug && (
             <p className="text-xs text-amber-600">
-              Selecione uma bolinha para responder.
+              Você não pertence a uma bolinha e não pode responder.
             </p>
           )}
           <Textarea
@@ -478,7 +471,7 @@ function RespostaAbertaPanel({
             <Button
               size="sm"
               onClick={handleSubmit}
-              disabled={!selectedProfile || !texto.trim() || saving}
+              disabled={!currentCotaSlug || !texto.trim() || saving}
               className="bg-[#1F6B3A] hover:bg-[#155A2A]"
             >
               {saving ? "Enviando..." : "Enviar resposta"}
@@ -502,22 +495,20 @@ type Tab = "proposta" | "discussao" | "votar" | "resultado"
 function DetailDialog({
   enquete,
   profiles,
-  selectedProfile,
+  currentCotaSlug,
   onVotar,
   onResponder,
   onTransition,
-  onChangeProfile,
   onClose,
   votoError,
   transitioningId
 }: {
   enquete: Enquete
   profiles: Profile[]
-  selectedProfile: string
+  currentCotaSlug: string | null
   onVotar: (enqueteId: string, opcaoIndex: number, melhoria?: string) => void
   onResponder: (enqueteId: string, texto: string) => void
   onTransition: (enqueteId: string, status: EnqueteStatus) => void
-  onChangeProfile: (slug: string) => void
   onClose: () => void
   votoError: string
   transitioningId: string | null
@@ -640,36 +631,27 @@ function DetailDialog({
           {/* ── VOTAR / RESPOSTAS / AVALIAÇÃO ── */}
           {tab === "votar" && (
             <div className="space-y-3">
-              {/* inline profile selector */}
-              <div>
-                <select
-                  value={selectedProfile}
-                  onChange={(e) => onChangeProfile(e.target.value)}
-                  className="w-full px-3 py-2 border border-[#E7E5E4] rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#1F6B3A]/20 focus:border-[#1F6B3A] text-[#1A1A1A]"
-                >
-                  <option value="">Quem está votando?</option>
-                  {profiles
-                    .filter((p) => p.ativo && p.cota_slug)
-                    .map((p) => (
-                      <option key={p.slug} value={p.slug}>
-                        {p.nome_curto || p.nome_completo} ({p.cota_slug})
-                      </option>
-                    ))}
-                </select>
-              </div>
+              {!currentCotaSlug && canVote(enquete.status) && (
+                <p className="text-xs text-amber-600 bg-amber-50 rounded-lg px-3 py-2">
+                  Você não pertence a uma bolinha e não pode votar.
+                </p>
+              )}
+              {currentCotaSlug && Object.keys(enquete.votantes ?? {}).includes(currentCotaSlug) && canVote(enquete.status) && (
+                <p className="text-xs text-[#1F6B3A] bg-[#D5E8D4]/30 rounded-lg px-3 py-2">
+                  ✓ Sua bolinha já votou nesta enquete.
+                </p>
+              )}
               {isTexto ? (
                 <RespostaAbertaPanel
                   enquete={enquete}
-                  profiles={profiles}
-                  selectedProfile={selectedProfile}
+                  currentCotaSlug={currentCotaSlug}
                   onResponder={onResponder}
                   votoError={votoError}
                 />
               ) : enquete.tipo === "escala" ? (
                 <VotarEscalaPanel
                   enquete={enquete}
-                  profiles={profiles}
-                  selectedProfile={selectedProfile}
+                  currentCotaSlug={currentCotaSlug}
                   onVotar={onVotar}
                   votoError={votoError}
                 />
@@ -688,21 +670,15 @@ function DetailDialog({
                           ? (count / enquete.total_votos) * 100
                           : 0
                       const width = maxVotos > 0 ? (count / maxVotos) * 100 : 0
-                      const profileVotante = profiles.find(
-                        (p) => p.slug === selectedProfile
-                      )
-                      const cotaSlugVotante = profileVotante?.cota_slug
-                      const jaVotou = cotaSlugVotante
-                        ? Object.keys(enquete.votantes).includes(
-                            cotaSlugVotante
-                          )
+                      const jaVotou = currentCotaSlug
+                        ? Object.keys(enquete.votantes).includes(currentCotaSlug)
                         : false
                       return (
                         <div key={idx}>
                           <div className="flex items-center gap-2">
                             <button
                               onClick={() => onVotar(enquete.id, idx)}
-                              disabled={!selectedProfile || jaVotou}
+                              disabled={!currentCotaSlug || jaVotou}
                               className="px-3 py-1.5 text-xs bg-[#D5E8D4] text-[#1F6B3A] rounded-lg hover:bg-[#88C9A1]/30 disabled:opacity-40 shrink-0 font-medium"
                             >
                               {jaVotou ? "Votado" : "Votar"}
@@ -805,6 +781,7 @@ function DetailDialog({
 
 export default function Enquetes() {
   const isAdmin = useAdmin()
+  const { slug: currentSlug } = useAuth()
   const [enquetes, setEnquetes] = useState<Enquete[]>([])
   const [profiles, setProfiles] = useState<Profile[]>([])
   const [loading, setLoading] = useState(true)
@@ -812,7 +789,6 @@ export default function Enquetes() {
   const [detailEnquete, setDetailEnquete] = useState<Enquete | null>(null)
   const [categoriaFilter, setCategoriaFilter] = useState("")
   const [statusFilter, setStatusFilter] = useState("")
-  const [selectedProfile, setSelectedProfile] = useState("")
   const [votoError, setVotoError] = useState("")
   const [expandedComments, setExpandedComments] = useState<Set<string>>(
     new Set()
@@ -901,22 +877,22 @@ export default function Enquetes() {
     }
   }
 
+  const currentUserProfile = profiles.find((p) => p.slug === currentSlug)
+  const currentCotaSlug = currentUserProfile?.cota_slug ?? null
+
   const votar = async (
     enqueteId: string,
     opcaoIndex: number,
     melhoria?: string
   ) => {
-    if (!selectedProfile) return
-    const profile = profiles.find((p) => p.slug === selectedProfile)
-    if (!profile?.cota_slug) {
-      setVotoError("Perfil não pertence a uma bolinha.")
+    if (!currentCotaSlug) {
+      setVotoError("Você não pertence a uma bolinha.")
       return
     }
     setVotoError("")
     try {
       await api.post(`/api/enquetes/${enqueteId}/votar`, {
         opcao_index: opcaoIndex,
-        cota_slug: profile.cota_slug,
         ...(melhoria ? { melhoria } : {})
       })
       load()
@@ -931,16 +907,13 @@ export default function Enquetes() {
   }
 
   const responder = async (enqueteId: string, texto: string) => {
-    if (!selectedProfile) return
-    const profile = profiles.find((p) => p.slug === selectedProfile)
-    if (!profile?.cota_slug) {
-      setVotoError("Perfil não pertence a uma bolinha.")
+    if (!currentCotaSlug) {
+      setVotoError("Você não pertence a uma bolinha.")
       return
     }
     setVotoError("")
     try {
       await api.post(`/api/enquetes/${enqueteId}/responder`, {
-        cota_slug: profile.cota_slug,
         texto
       })
       load()
@@ -1017,28 +990,9 @@ export default function Enquetes() {
           </p>
         </div>
         <div className="flex items-center gap-3 flex-wrap">
-          <div className="flex flex-col gap-0.5">
-            <select
-              value={selectedProfile}
-              onChange={(e) => {
-                setSelectedProfile(e.target.value)
-                setVotoError("")
-              }}
-              className="px-3 py-2 border border-[#E7E5E4] rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#1F6B3A]/20 focus:border-[#1F6B3A] text-[#1A1A1A]"
-            >
-              <option value="">Quem está votando?</option>
-              {profiles
-                .filter((p) => p.ativo && p.cota_slug)
-                .map((p) => (
-                  <option key={p.slug} value={p.slug}>
-                    {p.nome_curto || p.nome_completo} ({p.cota_slug})
-                  </option>
-                ))}
-            </select>
-            {votoError && (
-              <span className="text-xs text-red-500">{votoError}</span>
-            )}
-          </div>
+          {votoError && (
+            <span className="text-xs text-red-500">{votoError}</span>
+          )}
           <Button
             onClick={() => setShowModal(true)}
             className="flex items-center gap-2 bg-[#1F6B3A] hover:bg-[#155A2A]"
@@ -1287,19 +1241,15 @@ export default function Enquetes() {
                       const pct =
                         e.total_votos > 0 ? (count / e.total_votos) * 100 : 0
                       const width = maxVotos > 0 ? (count / maxVotos) * 100 : 0
-                      const profileVotante = profiles.find(
-                        (p) => p.slug === selectedProfile
-                      )
-                      const cotaSlugVotante = profileVotante?.cota_slug
-                      const jaVotou = cotaSlugVotante
-                        ? Object.keys(e.votantes).includes(cotaSlugVotante)
+                      const jaVotou = currentCotaSlug
+                        ? Object.keys(e.votantes).includes(currentCotaSlug)
                         : false
                       return (
                         <div key={idx}>
                           <div className="flex items-center gap-2">
                             <button
                               onClick={() => votar(e.id, idx)}
-                              disabled={!selectedProfile || jaVotou}
+                              disabled={!currentCotaSlug || jaVotou}
                               className="px-2 py-1 text-xs bg-[#D5E8D4] text-[#1F6B3A] rounded-lg hover:bg-[#88C9A1]/30 disabled:opacity-40 shrink-0 font-medium"
                             >
                               {jaVotou ? "Votado" : "Votar"}
@@ -1395,11 +1345,10 @@ export default function Enquetes() {
         <DetailDialog
           enquete={detailEnquete}
           profiles={profiles}
-          selectedProfile={selectedProfile}
+          currentCotaSlug={currentCotaSlug}
           onVotar={votar}
           onResponder={responder}
           onTransition={transition}
-          onChangeProfile={setSelectedProfile}
           onClose={() => setDetailEnquete(null)}
           votoError={votoError}
           transitioningId={transitioningId}

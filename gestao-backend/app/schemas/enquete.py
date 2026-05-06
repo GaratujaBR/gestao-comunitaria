@@ -32,7 +32,6 @@ class EnqueteUpdate(BaseModel):
 
 class VotoCreate(BaseModel):
     opcao_index: int
-    cota_slug: str
     melhoria: str | None = None
 
 
