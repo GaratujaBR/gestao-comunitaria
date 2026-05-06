@@ -26,3 +26,12 @@ class ResetPasswordRequest(BaseModel):
 class SetupRequest(BaseModel):
     email: str
     nova_senha: str
+
+
+class RegisterRequest(BaseModel):
+    nome_completo: str
+    email: str
+    senha: str
+    slug: str | None = None
+    nome_curto: str | None = None
+    telefone: str | None = None
