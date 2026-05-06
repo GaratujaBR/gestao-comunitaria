@@ -7,3 +7,11 @@ services:
     envVars:
       - key: DATABASE_URL
         sync: false
+      - key: APP_URL
+        value: https://app.aldeario.org/terradecanaa
+      - key: RESEND_API_KEY
+        sync: false
+      - key: SECRET_KEY
+        sync: false
+      - key: FROM_EMAIL
+        sync: false
