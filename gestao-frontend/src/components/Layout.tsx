@@ -14,7 +14,8 @@ import {
   CalendarRange,
   BarChart3,
   LogOut,
-  UserCircle
+  UserCircle,
+  Users
 } from "lucide-react"
 import { useAuth } from "@/context/AuthContext"
 
@@ -44,7 +45,7 @@ import caliandraLogo from "../../imgs/caliandra-logo.png"
 const navItems = [
   { to: "/", icon: LayoutDashboard, label: "Painel" },
   { to: "/cotas", icon: BallIcon, label: "Bolinhas" },
-  { to: "/perfis", icon: Package, label: "Perfis" },
+  { to: "/perfis", icon: Users, label: "Perfis" },
   { to: "/enquetes", icon: BarChart3, label: "Enquetes" },
   { to: "/eventos", icon: CalendarRange, label: "Eventos" },
   { to: "/reservas", icon: CalendarDays, label: "Reservas" },

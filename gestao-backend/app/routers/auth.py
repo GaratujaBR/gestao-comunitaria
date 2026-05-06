@@ -3,7 +3,7 @@ from datetime import datetime, timedelta, timezone
 
 import bcrypt
 import httpx
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from jose import JWTError, jwt
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -143,3 +143,28 @@ async def setup(data: SetupRequest, db: AsyncSession = Depends(get_db)):
         raise HTTPException(status_code=422, detail="Senha deve ter no mínimo 6 caracteres.")
     profile.senha_hash = _hash(data.nova_senha)
     await db.commit()
+
+
+async def get_current_user(
+    request: Request, db: AsyncSession = Depends(get_db)
+) -> Profile:
+    auth_header = request.headers.get("Authorization", "")
+    if not auth_header.startswith("Bearer "):
+        raise HTTPException(status_code=401, detail="Token não fornecido.")
+
+    token = auth_header[7:]
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+    except JWTError:
+        raise HTTPException(status_code=401, detail="Token inválido ou expirado.")
+
+    slug = payload.get("sub")
+    if not slug:
+        raise HTTPException(status_code=401, detail="Token inválido.")
+
+    result = await db.execute(select(Profile).where(Profile.slug == slug))
+    profile = result.scalar_one_or_none()
+    if not profile or not profile.ativo:
+        raise HTTPException(status_code=401, detail="Usuário não encontrado ou inativo.")
+
+    return profile

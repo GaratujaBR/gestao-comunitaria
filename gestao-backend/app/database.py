@@ -8,7 +8,9 @@ DATABASE_URL = os.getenv("DATABASE_URL", "sqlite+aiosqlite:///./app.db")
 if DATABASE_URL.startswith("postgresql://") or DATABASE_URL.startswith("postgres://"):
     DATABASE_URL = DATABASE_URL.replace("postgresql://", "postgresql+psycopg_async://", 1)
     DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql+psycopg_async://", 1)
-elif os.path.exists("/data"):
+
+# Fallback seguro: apenas se variavel USE_PERSISTENT_DISK estiver definida explicitamente
+elif os.getenv("USE_PERSISTENT_DISK") == "true" and os.path.exists("/data"):
     DATABASE_URL = "sqlite+aiosqlite:////data/app.db"
 
 engine = create_async_engine(DATABASE_URL, echo=False)
