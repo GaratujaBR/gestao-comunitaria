@@ -109,15 +109,23 @@ export default function Login() {
                   {loading ? "Entrando..." : "Entrar"}
                 </Button>
               </form>
-              <button
-                onClick={() => {
-                  setShowReset(true)
-                  setError("")
-                }}
-                className="mt-4 w-full text-center text-sm text-[#1F6B3A] hover:underline"
-              >
-                Esqueci minha senha
-              </button>
+              <div className="mt-4 space-y-2">
+                <button
+                  onClick={() => navigate("/cadastro", { replace: true })}
+                  className="w-full text-center text-sm text-[#1F6B3A] hover:underline"
+                >
+                  Criar uma conta
+                </button>
+                <button
+                  onClick={() => {
+                    setShowReset(true)
+                    setError("")
+                  }}
+                  className="w-full text-center text-sm text-[#8A8A8A] hover:underline"
+                >
+                  Esqueci minha senha
+                </button>
+              </div>
             </>
           ) : resetSent ? (
             <div className="text-center space-y-4">

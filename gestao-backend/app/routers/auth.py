@@ -1,4 +1,5 @@
 import os
+import re
 from datetime import datetime, timedelta, timezone
 
 import bcrypt
@@ -12,6 +13,7 @@ from app.database import get_db
 from app.models.profile import Profile
 from app.schemas.auth import (
     LoginRequest,
+    RegisterRequest,
     RequestResetRequest,
     ResetPasswordRequest,
     SetupRequest,
@@ -128,6 +130,43 @@ async def reset_password(data: ResetPasswordRequest, db: AsyncSession = Depends(
 
     profile.senha_hash = _hash(data.nova_senha)
     await db.commit()
+
+
+@router.post("/register", status_code=201)
+async def register(data: RegisterRequest, db: AsyncSession = Depends(get_db)):
+    """Cadastro público de novo usuário. Cria perfil com senha já definida."""
+    if len(data.senha) < 6:
+        raise HTTPException(status_code=422, detail="Senha deve ter no mínimo 6 caracteres.")
+
+    # Verificar se email já existe
+    result = await db.execute(select(Profile).where(Profile.email == data.email))
+    if result.scalar_one_or_none():
+        raise HTTPException(status_code=409, detail="Email já cadastrado.")
+
+    # Gerar slug
+    base_slug = re.sub(r"[^a-z0-9-]+", "", (data.slug or data.nome_completo).lower().strip().replace(" ", "-"))
+    slug = base_slug
+    counter = 2
+    while True:
+        result = await db.execute(select(Profile).where(Profile.slug == slug))
+        if not result.scalar_one_or_none():
+            break
+        slug = f"{base_slug}-{counter}"
+        counter += 1
+
+    profile = Profile(
+        slug=slug,
+        nome_completo=data.nome_completo,
+        nome_curto=data.nome_curto,
+        email=data.email,
+        telefone=data.telefone,
+        senha_hash=_hash(data.senha),
+        ativo=True,
+        is_admin=False,
+    )
+    db.add(profile)
+    await db.commit()
+    await db.refresh(profile)
 
 
 @router.post("/setup", status_code=204)

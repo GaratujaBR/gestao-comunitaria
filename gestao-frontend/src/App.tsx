@@ -3,6 +3,7 @@ import { AuthProvider } from "@/context/AuthContext"
 import Layout from "@/components/Layout"
 import ProtectedRoute from "@/components/ProtectedRoute"
 import Login from "@/pages/Login"
+import Cadastro from "@/pages/Cadastro"
 import DefinirSenha from "@/pages/DefinirSenha"
 import Dashboard from "@/pages/Dashboard"
 import Spaces from "@/pages/Spaces"
@@ -24,6 +25,7 @@ function App() {
       <BrowserRouter basename="/terradecanaa">
         <Routes>
           <Route path="/login" element={<Login />} />
+          <Route path="/cadastro" element={<Cadastro />} />
           <Route path="/definir-senha" element={<DefinirSenha />} />
           <Route element={<ProtectedRoute />}>
             <Route element={<Layout />}>
