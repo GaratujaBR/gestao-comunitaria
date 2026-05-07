@@ -7,6 +7,7 @@ import {
   type ReactNode
 } from "react"
 import { supabase } from "@/lib/supabase"
+import { api } from "@/api/client"
 
 interface AuthState {
   token: string | null
@@ -23,6 +24,33 @@ interface AuthContextValue extends AuthState {
 
 const AuthContext = createContext<AuthContextValue | null>(null)
 
+async function syncStateFromDb(sessionToken: string | null, meta: Record<string, unknown>): Promise<AuthState> {
+  const baseState: AuthState = {
+    token: sessionToken,
+    slug: (meta.slug as string) ?? null,
+    nome: (meta.nome as string) ?? (meta.nome_completo as string) ?? null,
+    role: (meta.role as string) ?? null,
+    is_admin: meta.is_admin === true,
+  }
+
+  if (!sessionToken) return baseState
+
+  try {
+    const me = await api.get<{ slug: string; nome: string; role: string | null; is_admin: boolean }>(
+      "/api/auth/me"
+    )
+    return {
+      ...baseState,
+      slug: me.slug ?? baseState.slug,
+      nome: me.nome ?? baseState.nome,
+      role: me.role ?? baseState.role,
+      is_admin: me.is_admin ?? baseState.is_admin,
+    }
+  } catch {
+    return baseState
+  }
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<AuthState>({
     token: null,
@@ -33,29 +61,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   })
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
       if (session) {
-        const meta = session.user.user_metadata
-        setState({
-          token: session.access_token,
-          slug: meta.slug ?? null,
-          nome: meta.nome ?? meta.nome_completo ?? null,
-          role: meta.role ?? null,
-          is_admin: meta.is_admin === true,
-        })
+        const synced = await syncStateFromDb(session.access_token, session.user.user_metadata)
+        setState(synced)
       }
     })
 
-    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: listener } = supabase.auth.onAuthStateChange(async (_event, session) => {
       if (session) {
-        const meta = session.user.user_metadata
-        setState({
-          token: session.access_token,
-          slug: meta.slug ?? null,
-          nome: meta.nome ?? meta.nome_completo ?? null,
-          role: meta.role ?? null,
-          is_admin: meta.is_admin === true,
-        })
+        const synced = await syncStateFromDb(session.access_token, session.user.user_metadata)
+        setState(synced)
       } else {
         setState({ token: null, slug: null, nome: null, role: null, is_admin: false })
       }
@@ -73,14 +89,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     })
     if (error) throw new Error(error.message)
 
-    const meta = data.user.user_metadata
-    setState({
-      token: data.session.access_token,
-      slug: meta.slug ?? null,
-      nome: meta.nome ?? meta.nome_completo ?? null,
-      role: meta.role ?? null,
-      is_admin: meta.is_admin === true,
-    })
+    const synced = await syncStateFromDb(data.session.access_token, data.user.user_metadata)
+    setState(synced)
   }, [])
 
   const logout = useCallback(async () => {
