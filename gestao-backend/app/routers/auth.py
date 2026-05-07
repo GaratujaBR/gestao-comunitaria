@@ -31,6 +31,9 @@ APP_URL = os.getenv("APP_URL", "http://localhost:5173/terradecanaa")
 RESEND_API_KEY = os.getenv("RESEND_API_KEY", "")
 FROM_EMAIL = os.getenv("FROM_EMAIL", "noreply@terradecanaa.org")
 
+SUPABASE_URL = os.getenv("SUPABASE_URL", "")
+SUPABASE_ANON_KEY = os.getenv("SUPABASE_ANON_KEY", "")
+
 def _hash(password: str) -> str:
     return bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
 
@@ -192,6 +195,31 @@ async def get_current_user(
         raise HTTPException(status_code=401, detail="Token não fornecido.")
 
     token = auth_header[7:]
+
+    # Tentar verificar como token Supabase primeiro
+    if SUPABASE_URL and SUPABASE_ANON_KEY:
+        try:
+            async with httpx.AsyncClient() as client:
+                res = await client.get(
+                    f"{SUPABASE_URL}/auth/v1/user",
+                    headers={
+                        "Authorization": f"Bearer {token}",
+                        "apikey": SUPABASE_ANON_KEY,
+                    },
+                    timeout=10,
+                )
+                if res.status_code == 200:
+                    user_data = res.json()
+                    email = user_data.get("email")
+                    if email:
+                        result = await db.execute(select(Profile).where(Profile.email == email))
+                        profile = result.scalar_one_or_none()
+                        if profile and profile.ativo:
+                            return profile
+        except Exception:
+            pass
+
+    # Fallback: verificar como token JWT local legado
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
     except JWTError:

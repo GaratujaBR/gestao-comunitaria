@@ -2,10 +2,11 @@ import {
   createContext,
   useContext,
   useState,
+  useEffect,
   useCallback,
   type ReactNode
 } from "react"
-import { api } from "@/api/client"
+import { supabase } from "@/lib/supabase"
 
 interface AuthState {
   token: string | null
@@ -17,44 +18,73 @@ interface AuthState {
 
 interface AuthContextValue extends AuthState {
   login: (email: string, senha: string) => Promise<void>
-  logout: () => void
+  logout: () => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null)
 
-function readStorage(): AuthState {
-  return {
-    token: localStorage.getItem("auth_token"),
-    slug: localStorage.getItem("auth_slug"),
-    nome: localStorage.getItem("auth_nome"),
-    role: localStorage.getItem("auth_role"),
-    is_admin: localStorage.getItem("auth_is_admin") === "true"
-  }
-}
-
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [state, setState] = useState<AuthState>(readStorage)
+  const [state, setState] = useState<AuthState>({
+    token: null,
+    slug: null,
+    nome: null,
+    role: null,
+    is_admin: false,
+  })
 
-  const login = useCallback(async (email: string, senha: string) => {
-    const res = await api.post<{ access_token: string; nome: string; slug: string; role: string | null; is_admin: boolean }>(
-      "/api/auth/login",
-      { email, senha }
-    )
-    localStorage.setItem("auth_token", res.access_token)
-    localStorage.setItem("auth_slug", res.slug)
-    localStorage.setItem("auth_nome", res.nome)
-    if (res.role) localStorage.setItem("auth_role", res.role)
-    else localStorage.removeItem("auth_role")
-    localStorage.setItem("auth_is_admin", String(res.is_admin ?? false))
-    setState({ token: res.access_token, slug: res.slug, nome: res.nome, role: res.role ?? null, is_admin: res.is_admin ?? false })
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
+        const meta = session.user.user_metadata
+        setState({
+          token: session.access_token,
+          slug: meta.slug ?? null,
+          nome: meta.nome ?? meta.nome_completo ?? null,
+          role: meta.role ?? null,
+          is_admin: meta.is_admin === true,
+        })
+      }
+    })
+
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session) {
+        const meta = session.user.user_metadata
+        setState({
+          token: session.access_token,
+          slug: meta.slug ?? null,
+          nome: meta.nome ?? meta.nome_completo ?? null,
+          role: meta.role ?? null,
+          is_admin: meta.is_admin === true,
+        })
+      } else {
+        setState({ token: null, slug: null, nome: null, role: null, is_admin: false })
+      }
+    })
+
+    return () => {
+      listener.subscription.unsubscribe()
+    }
   }, [])
 
-  const logout = useCallback(() => {
-    localStorage.removeItem("auth_token")
-    localStorage.removeItem("auth_slug")
-    localStorage.removeItem("auth_nome")
-    localStorage.removeItem("auth_role")
-    localStorage.removeItem("auth_is_admin")
+  const login = useCallback(async (email: string, senha: string) => {
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password: senha,
+    })
+    if (error) throw new Error(error.message)
+
+    const meta = data.user.user_metadata
+    setState({
+      token: data.session.access_token,
+      slug: meta.slug ?? null,
+      nome: meta.nome ?? meta.nome_completo ?? null,
+      role: meta.role ?? null,
+      is_admin: meta.is_admin === true,
+    })
+  }, [])
+
+  const logout = useCallback(async () => {
+    await supabase.auth.signOut()
     setState({ token: null, slug: null, nome: null, role: null, is_admin: false })
   }, [])
 

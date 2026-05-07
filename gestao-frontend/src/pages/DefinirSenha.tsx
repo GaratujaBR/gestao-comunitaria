@@ -1,13 +1,11 @@
-import { useState } from "react"
-import { useNavigate, useSearchParams } from "react-router-dom"
-import { api } from "@/api/client"
+import { useState, useEffect } from "react"
+import { useNavigate } from "react-router-dom"
+import { supabase } from "@/lib/supabase"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import caliandraLogo from "../../imgs/caliandra-logo.png"
 
 export default function DefinirSenha() {
-  const [searchParams] = useSearchParams()
-  const token = searchParams.get("token") ?? ""
   const navigate = useNavigate()
 
   const [senha, setSenha] = useState("")
@@ -15,6 +13,15 @@ export default function DefinirSenha() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
   const [done, setDone] = useState(false)
+  const [hasSession, setHasSession] = useState(false)
+  const [checking, setChecking] = useState(true)
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setHasSession(!!session)
+      setChecking(false)
+    })
+  }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -29,7 +36,8 @@ export default function DefinirSenha() {
     setError("")
     setLoading(true)
     try {
-      await api.post("/api/auth/reset-password", { token, nova_senha: senha })
+      const { error } = await supabase.auth.updateUser({ password: senha })
+      if (error) throw error
       setDone(true)
     } catch (err: unknown) {
       setError(
@@ -61,8 +69,10 @@ export default function DefinirSenha() {
         </div>
 
         <div className="px-8 py-6">
-          {!token ? (
-            <p className="text-sm text-red-500">Link inválido.</p>
+          {checking ? (
+            <p className="text-sm text-gray-500">Verificando link...</p>
+          ) : !hasSession ? (
+            <p className="text-sm text-red-500">Link inválido ou expirado.</p>
           ) : done ? (
             <div className="text-center space-y-4">
               <p className="text-[#1F6B3A] font-medium">

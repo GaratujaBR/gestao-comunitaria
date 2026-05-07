@@ -1,7 +1,7 @@
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { useAuth } from "@/context/AuthContext"
-import { api } from "@/api/client"
+import { supabase } from "@/lib/supabase"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import caliandraLogo from "../../imgs/caliandra-logo.png"
@@ -38,7 +38,7 @@ export default function Login() {
     e.preventDefault()
     setResetLoading(true)
     try {
-      await api.post("/api/auth/request-reset", { email: resetEmail })
+      await supabase.auth.resetPasswordForEmail(resetEmail)
     } catch {
       /* silencia — mesmo comportamento para email inválido */
     } finally {
