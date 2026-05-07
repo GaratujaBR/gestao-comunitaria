@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback } from "react"
 import { api } from "@/api/client"
+import { supabase } from "@/lib/supabase"
 import type { Profile, Cota } from "@/api/types"
 import { Button } from "@/components/ui/button"
 import Avatar from "@/components/Avatar"
@@ -86,7 +87,7 @@ export default function Profiles() {
     if (!p.email) return
     setInvitingSlugs((s) => new Set(s).add(p.slug))
     try {
-      await api.post("/api/auth/request-reset", { email: p.email })
+      await supabase.auth.resetPasswordForEmail(p.email)
       setInvitedSlugs((s) => new Set(s).add(p.slug))
     } catch {
       /* silencia */

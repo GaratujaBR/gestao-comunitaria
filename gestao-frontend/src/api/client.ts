@@ -1,7 +1,10 @@
+import { supabase } from "@/lib/supabase"
+
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000"
 
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
-  const token = localStorage.getItem("auth_token")
+  const { data: { session } } = await supabase.auth.getSession()
+  const token = session?.access_token
   const headers: Record<string, string> = { "Content-Type": "application/json" }
   if (token) headers["Authorization"] = `Bearer ${token}`
 
@@ -13,9 +16,7 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
   if (res.status === 401) {
     const err = await res.json().catch(() => ({ detail: "Não autorizado" }))
     if (token) {
-      localStorage.removeItem("auth_token")
-      localStorage.removeItem("auth_slug")
-      localStorage.removeItem("auth_nome")
+      await supabase.auth.signOut()
       window.location.href = "/terradecanaa/login"
     }
     throw new Error(err.detail || "Credenciais inválidas.")

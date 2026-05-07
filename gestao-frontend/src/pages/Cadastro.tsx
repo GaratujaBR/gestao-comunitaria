@@ -1,6 +1,6 @@
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"
-import { api } from "@/api/client"
+import { supabase } from "@/lib/supabase"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import caliandraLogo from "../../imgs/caliandra-logo.png"
@@ -31,15 +31,20 @@ export default function Cadastro() {
 
     setLoading(true)
     try {
-      await api.post("/api/auth/register", {
-        nome_completo: nomeCompleto,
-        email: email,
-        senha: senha,
+      const { error } = await supabase.auth.signUp({
+        email,
+        password: senha,
+        options: {
+          data: {
+            nome_completo: nomeCompleto,
+          },
+        },
       })
+      if (error) throw error
       setSuccess(true)
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Erro ao criar conta."
-      if (msg.includes("409")) {
+      if (msg.includes("already registered")) {
         setError("Email já cadastrado.")
       } else {
         setError(msg)
