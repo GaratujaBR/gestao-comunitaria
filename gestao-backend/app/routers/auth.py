@@ -235,3 +235,15 @@ async def get_current_user(
         raise HTTPException(status_code=401, detail="Usuário não encontrado ou inativo.")
 
     return profile
+
+
+@router.get("/me", response_model=TokenResponse)
+async def me(profile: Profile = Depends(get_current_user)):
+    """Retorna os dados do perfil autenticado, sincronizando is_admin com o Supabase."""
+    return TokenResponse(
+        access_token="",  # não precisa retornar token
+        nome=profile.nome_curto or profile.nome_completo,
+        slug=profile.slug,
+        role=profile.role,
+        is_admin=profile.is_admin,
+    )
