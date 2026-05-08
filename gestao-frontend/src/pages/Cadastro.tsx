@@ -1,6 +1,7 @@
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { supabase } from "@/lib/supabase"
+import { api } from "@/api/client"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import caliandraLogo from "../../imgs/caliandra-logo.png"
@@ -15,6 +16,9 @@ export default function Cadastro() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
   const [success, setSuccess] = useState(false)
+  const [needsConfirmation, setNeedsConfirmation] = useState(false)
+  const [resending, setResending] = useState(false)
+  const [resent, setResent] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -31,7 +35,7 @@ export default function Cadastro() {
 
     setLoading(true)
     try {
-      const { error } = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signUp({
         email,
         password: senha,
         options: {
@@ -41,16 +45,48 @@ export default function Cadastro() {
         },
       })
       if (error) throw error
+
+      try {
+        await api.post("/api/auth/register", {
+          email,
+          senha,
+          nome_completo: nomeCompleto,
+        })
+      } catch {
+        // Perfil já existe ou backend indisponível — não bloquear o fluxo
+      }
+
+      // Verificar se precisa confirmar email
+      const isConfirmed = data.user?.email_confirmed_at != null
+      setNeedsConfirmation(!isConfirmed)
       setSuccess(true)
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Erro ao criar conta."
-      if (msg.includes("already registered")) {
+      if (msg.includes("already registered") || msg.includes("User already registered")) {
         setError("Email já cadastrado.")
       } else {
         setError(msg)
       }
     } finally {
       setLoading(false)
+    }
+  }
+
+  const handleResendConfirmation = async () => {
+    setResending(true)
+    setResent(false)
+    try {
+      const { error } = await supabase.auth.resend({
+        type: "signup",
+        email,
+      })
+      if (error) throw error
+      setResent(true)
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Erro ao reenviar email."
+      setError(msg)
+    } finally {
+      setResending(false)
     }
   }
 
@@ -78,18 +114,54 @@ export default function Cadastro() {
         <div className="px-8 py-6">
           {success ? (
             <div className="text-center space-y-4">
-              <p className="text-sm text-[#1F6B3A] font-medium">
-                Conta criada com sucesso!
-              </p>
-              <p className="text-sm text-[#4D4D4D]">
-                Agora você pode fazer login com seu email e senha.
-              </p>
-              <Button
-                className="w-full bg-[#1F6B3A] hover:bg-[#155A2A]"
-                onClick={() => navigate("/login", { replace: true })}
-              >
-                Ir para o login
-              </Button>
+              {needsConfirmation ? (
+                <>
+                  <p className="text-sm text-[#1F6B3A] font-medium">
+                    Conta criada com sucesso!
+                  </p>
+                  <p className="text-sm text-[#4D4D4D]">
+                    Enviamos um link de confirmação para seu email.
+                  </p>
+                  <p className="text-sm text-[#4D4D4D]">
+                    Clique no link antes de fazer login.
+                  </p>
+                  {resent ? (
+                    <p className="text-sm text-[#1F6B3A]">
+                      Email reenviado! Verifique sua caixa de entrada.
+                    </p>
+                  ) : (
+                    <Button
+                      variant="outline"
+                      className="w-full"
+                      onClick={handleResendConfirmation}
+                      disabled={resending}
+                    >
+                      {resending ? "Reenviando..." : "Reenviar email de confirmação"}
+                    </Button>
+                  )}
+                  <Button
+                    className="w-full bg-[#1F6B3A] hover:bg-[#155A2A]"
+                    onClick={() => navigate("/login", { replace: true })}
+                  >
+                    Ir para o login
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <p className="text-sm text-[#1F6B3A] font-medium">
+                    Conta criada com sucesso!
+                  </p>
+                  <p className="text-sm text-[#4D4D4D]">
+                    Agora você pode fazer login com seu email e senha.
+                  </p>
+                  <Button
+                    className="w-full bg-[#1F6B3A] hover:bg-[#155A2A]"
+                    onClick={() => navigate("/login", { replace: true })}
+                  >
+                    Ir para o login
+                  </Button>
+                </>
+              )}
             </div>
           ) : (
             <>

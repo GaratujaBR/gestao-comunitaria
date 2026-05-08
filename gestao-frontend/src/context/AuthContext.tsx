@@ -7,7 +7,6 @@ import {
   type ReactNode
 } from "react"
 import { supabase } from "@/lib/supabase"
-import { api } from "@/api/client"
 
 interface AuthState {
   token: string | null
@@ -24,6 +23,20 @@ interface AuthContextValue extends AuthState {
 
 const AuthContext = createContext<AuthContextValue | null>(null)
 
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000"
+
+async function fetchMe(token: string): Promise<{ slug: string; nome: string; role: string | null; is_admin: boolean } | null> {
+  try {
+    const res = await fetch(`${API_URL}/api/auth/me`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+    if (!res.ok) return null
+    return res.json()
+  } catch {
+    return null
+  }
+}
+
 async function syncStateFromDb(sessionToken: string | null, meta: Record<string, unknown>): Promise<AuthState> {
   const baseState: AuthState = {
     token: sessionToken,
@@ -35,19 +48,15 @@ async function syncStateFromDb(sessionToken: string | null, meta: Record<string,
 
   if (!sessionToken) return baseState
 
-  try {
-    const me = await api.get<{ slug: string; nome: string; role: string | null; is_admin: boolean }>(
-      "/api/auth/me"
-    )
-    return {
-      ...baseState,
-      slug: me.slug ?? baseState.slug,
-      nome: me.nome ?? baseState.nome,
-      role: me.role ?? baseState.role,
-      is_admin: me.is_admin ?? baseState.is_admin,
-    }
-  } catch {
-    return baseState
+  const me = await fetchMe(sessionToken)
+  if (!me) return baseState
+
+  return {
+    ...baseState,
+    slug: me.slug ?? baseState.slug,
+    nome: me.nome ?? baseState.nome,
+    role: me.role ?? baseState.role,
+    is_admin: me.is_admin ?? baseState.is_admin,
   }
 }
 
