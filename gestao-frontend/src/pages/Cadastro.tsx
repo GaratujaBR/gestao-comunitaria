@@ -5,6 +5,7 @@ import { api } from "@/api/client"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import caliandraLogo from "../../imgs/caliandra-logo.png"
+import fundoApp from "../../imgs/fundo-appB.png"
 
 export default function Cadastro() {
   const navigate = useNavigate()
@@ -91,7 +92,7 @@ export default function Cadastro() {
   }
 
   return (
-    <div className="min-h-screen bg-[#F8F7F4] flex items-center justify-center p-4">
+    <div className="min-h-screen flex items-center justify-center p-4" style={{ backgroundImage: `url(${fundoApp})`, backgroundSize: "550px", backgroundRepeat: "repeat" }}>
       <div className="w-full max-w-sm bg-white rounded-2xl shadow-xl overflow-hidden">
         {/* Header verde */}
         <div className="bg-[#D5E8D4] px-8 py-6 flex flex-col items-center gap-2 border-b border-[#88C9A1]/40">
