@@ -38,6 +38,7 @@ export default function DefinirSenha() {
     try {
       const { error } = await supabase.auth.updateUser({ password: senha })
       if (error) throw error
+      await supabase.auth.signOut()
       setDone(true)
     } catch (err: unknown) {
       setError(

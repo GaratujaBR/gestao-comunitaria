@@ -14,6 +14,9 @@ export default function Login() {
   const [senha, setSenha] = useState("")
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
+  const [showConfirmationHint, setShowConfirmationHint] = useState(false)
+  const [resending, setResending] = useState(false)
+  const [resent, setResent] = useState(false)
 
   const [showReset, setShowReset] = useState(false)
   const [resetEmail, setResetEmail] = useState("")
@@ -23,14 +26,40 @@ export default function Login() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
     setError("")
+    setShowConfirmationHint(false)
+    setResent(false)
     setLoading(true)
     try {
       await login(email, senha)
       navigate("/", { replace: true })
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Erro ao entrar.")
+      let msg = err instanceof Error ? err.message : "Erro ao entrar."
+      if (msg.toLowerCase().includes("invalid login credentials")) {
+        msg = "Email ou senha inválidos."
+        setShowConfirmationHint(true)
+      }
+      setError(msg)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const handleResendConfirmation = async () => {
+    setResending(true)
+    setResent(false)
+    try {
+      const { error } = await supabase.auth.resend({
+        type: "signup",
+        email,
+      })
+      if (error) throw error
+      setResent(true)
+      setError("")
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Erro ao reenviar."
+      setError(msg)
+    } finally {
+      setResending(false)
     }
   }
 
@@ -101,6 +130,25 @@ export default function Login() {
                 {error && (
                   <p className="text-sm text-red-500 font-medium">{error}</p>
                 )}
+                {showConfirmationHint && (
+                  <div className="text-sm space-y-2">
+                    <p className="text-[#8A5C00]">
+                      Se você acabou de se cadastrar, talvez precise confirmar seu email primeiro.
+                    </p>
+                    {resent ? (
+                      <p className="text-[#1F6B3A]">Email reenviado! Verifique sua caixa de entrada.</p>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={handleResendConfirmation}
+                        disabled={resending}
+                        className="text-[#1F6B3A] underline disabled:opacity-50"
+                      >
+                        {resending ? "Reenviando..." : "Reenviar email de confirmação"}
+                      </button>
+                    )}
+                  </div>
+                )}
                 <Button
                   type="submit"
                   disabled={loading}
@@ -120,6 +168,7 @@ export default function Login() {
                   onClick={() => {
                     setShowReset(true)
                     setError("")
+                    setShowConfirmationHint(false)
                   }}
                   className="w-full text-center text-sm text-[#8A8A8A] hover:underline"
                 >
