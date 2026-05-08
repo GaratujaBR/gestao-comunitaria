@@ -7,6 +7,7 @@ import {
   type ReactNode
 } from "react"
 import { supabase } from "@/lib/supabase"
+import { api } from "@/api/client"
 
 interface AuthState {
   token: string | null
@@ -23,20 +24,6 @@ interface AuthContextValue extends AuthState {
 
 const AuthContext = createContext<AuthContextValue | null>(null)
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000"
-
-async function fetchMe(token: string): Promise<{ slug: string; nome: string; role: string | null; is_admin: boolean } | null> {
-  try {
-    const res = await fetch(`${API_URL}/api/auth/me`, {
-      headers: { Authorization: `Bearer ${token}` },
-    })
-    if (!res.ok) return null
-    return res.json()
-  } catch {
-    return null
-  }
-}
-
 async function syncStateFromDb(sessionToken: string | null, meta: Record<string, unknown>): Promise<AuthState> {
   const baseState: AuthState = {
     token: sessionToken,
@@ -48,15 +35,19 @@ async function syncStateFromDb(sessionToken: string | null, meta: Record<string,
 
   if (!sessionToken) return baseState
 
-  const me = await fetchMe(sessionToken)
-  if (!me) return baseState
-
-  return {
-    ...baseState,
-    slug: me.slug ?? baseState.slug,
-    nome: me.nome ?? baseState.nome,
-    role: me.role ?? baseState.role,
-    is_admin: me.is_admin ?? baseState.is_admin,
+  try {
+    const me = await api.get<{ slug: string; nome: string; role: string | null; is_admin: boolean }>(
+      "/api/auth/me"
+    )
+    return {
+      ...baseState,
+      slug: me.slug ?? baseState.slug,
+      nome: me.nome ?? baseState.nome,
+      role: me.role ?? baseState.role,
+      is_admin: me.is_admin ?? baseState.is_admin,
+    }
+  } catch {
+    return baseState
   }
 }
 
@@ -92,14 +83,45 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const login = useCallback(async (email: string, senha: string) => {
-    const { data, error } = await supabase.auth.signInWithPassword({
+    // Tentar login via Supabase primeiro
+    const { data: supabaseData, error: supabaseError } = await supabase.auth.signInWithPassword({
       email,
       password: senha,
     })
-    if (error) throw new Error(error.message)
 
-    const synced = await syncStateFromDb(data.session.access_token, data.user.user_metadata)
-    setState(synced)
+    if (!supabaseError && supabaseData.session) {
+      // Login Supabase funcionou
+      const synced = await syncStateFromDb(supabaseData.session.access_token, supabaseData.user.user_metadata)
+      setState(synced)
+      return
+    }
+
+    // Fallback: tentar login pelo backend (para usuários criados via backend)
+    try {
+      const backendRes = await api.post<{
+        access_token: string
+        nome: string
+        slug: string
+        role: string | null
+        is_admin: boolean
+      }>("/api/auth/login", { email, senha })
+
+      if (backendRes.access_token) {
+        setState({
+          token: backendRes.access_token,
+          slug: backendRes.slug,
+          nome: backendRes.nome,
+          role: backendRes.role,
+          is_admin: backendRes.is_admin,
+        })
+        return
+      }
+    } catch (backendErr) {
+      console.error("Backend login fallback failed:", backendErr)
+    }
+
+    // Se ambos falharam, propagar erro do Supabase (mais informativo)
+    throw new Error(supabaseError?.message || "Email ou senha inválidos.")
   }, [])
 
   const logout = useCallback(async () => {
