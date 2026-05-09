@@ -4,7 +4,8 @@ import {
   useState,
   useEffect,
   useCallback,
-  type ReactNode
+  type ReactNode,
+  useRef,
 } from "react"
 import { supabase } from "@/lib/supabase"
 import { api } from "@/api/client"
@@ -24,20 +25,6 @@ interface AuthContextValue extends AuthState {
 
 const AuthContext = createContext<AuthContextValue | null>(null)
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000"
-
-async function fetchMe(token: string): Promise<{ slug: string; nome: string; role: string | null; is_admin: boolean } | null> {
-  try {
-    const res = await fetch(`${API_URL}/api/auth/me`, {
-      headers: { Authorization: `Bearer ${token}` },
-    })
-    if (!res.ok) return null
-    return res.json()
-  } catch {
-    return null
-  }
-}
-
 async function syncStateFromDb(sessionToken: string | null, meta: Record<string, unknown>): Promise<AuthState> {
   const baseState: AuthState = {
     token: sessionToken,
@@ -49,15 +36,19 @@ async function syncStateFromDb(sessionToken: string | null, meta: Record<string,
 
   if (!sessionToken) return baseState
 
-  const me = await fetchMe(sessionToken)
-  if (!me) return baseState
-
-  return {
-    ...baseState,
-    slug: me.slug ?? baseState.slug,
-    nome: me.nome ?? baseState.nome,
-    role: me.role ?? baseState.role,
-    is_admin: me.is_admin ?? baseState.is_admin,
+  try {
+    const me = await api.get<{ slug: string; nome: string; role: string | null; is_admin: boolean }>(
+      "/api/auth/me"
+    )
+    return {
+      ...baseState,
+      slug: me.slug ?? baseState.slug,
+      nome: me.nome ?? baseState.nome,
+      role: me.role ?? baseState.role,
+      is_admin: me.is_admin ?? baseState.is_admin,
+    }
+  } catch {
+    return baseState
   }
 }
 
@@ -69,14 +60,32 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     role: null,
     is_admin: false,
   })
+  const initDoneRef = useRef(false)
 
   useEffect(() => {
-    // Tentar restaurar sessão Supabase
+    let isMounted = true
+
+    // Restauração inicial: sempre usa getSession() como fonte primária
     supabase.auth.getSession().then(async ({ data: { session } }) => {
+      if (!isMounted) return
+
       if (session) {
         localStorage.removeItem("backend_auth_token")
-        const synced = await syncStateFromDb(session.access_token, session.user.user_metadata)
-        setState(synced)
+        try {
+          const synced = await syncStateFromDb(session.access_token, session.user.user_metadata)
+          if (isMounted) setState(synced)
+        } catch {
+          if (isMounted) {
+            setState({
+              token: session.access_token,
+              slug: (session.user.user_metadata.slug as string) ?? null,
+              nome: (session.user.user_metadata.nome as string) ?? (session.user.user_metadata.nome_completo as string) ?? null,
+              role: (session.user.user_metadata.role as string) ?? null,
+              is_admin: session.user.user_metadata.is_admin === true,
+            })
+          }
+        }
+        initDoneRef.current = true
         return
       }
 
@@ -85,32 +94,54 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (backendToken) {
         try {
           const me = await api.get<{ slug: string; nome: string; role: string | null; is_admin: boolean }>("/api/auth/me")
-          setState({
-            token: backendToken,
-            slug: me.slug,
-            nome: me.nome,
-            role: me.role,
-            is_admin: me.is_admin,
-          })
+          if (isMounted) {
+            setState({
+              token: backendToken,
+              slug: me.slug,
+              nome: me.nome,
+              role: me.role,
+              is_admin: me.is_admin,
+            })
+          }
         } catch {
-          localStorage.removeItem("backend_auth_token")
-          setState({ token: null, slug: null, nome: null, role: null, is_admin: false })
+          if (isMounted) {
+            localStorage.removeItem("backend_auth_token")
+            setState({ token: null, slug: null, nome: null, role: null, is_admin: false })
+          }
         }
       }
+
+      initDoneRef.current = true
     })
 
     const { data: listener } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      if (!isMounted) return
+      if (!initDoneRef.current) return // Ignora eventos antes da restauração inicial
+
       if (session) {
         localStorage.removeItem("backend_auth_token")
-        const synced = await syncStateFromDb(session.access_token, session.user.user_metadata)
-        setState(synced)
+        try {
+          const synced = await syncStateFromDb(session.access_token, session.user.user_metadata)
+          if (isMounted) setState(synced)
+        } catch {
+          if (isMounted) {
+            setState({
+              token: session.access_token,
+              slug: (session.user.user_metadata.slug as string) ?? null,
+              nome: (session.user.user_metadata.nome as string) ?? (session.user.user_metadata.nome_completo as string) ?? null,
+              role: (session.user.user_metadata.role as string) ?? null,
+              is_admin: session.user.user_metadata.is_admin === true,
+            })
+          }
+        }
       } else {
         localStorage.removeItem("backend_auth_token")
-        setState({ token: null, slug: null, nome: null, role: null, is_admin: false })
+        if (isMounted) setState({ token: null, slug: null, nome: null, role: null, is_admin: false })
       }
     })
 
     return () => {
+      isMounted = false
       listener.subscription.unsubscribe()
     }
   }, [])
@@ -123,9 +154,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     })
 
     if (!supabaseError && supabaseData.session) {
-      // Login Supabase funcionou
-      const synced = await syncStateFromDb(supabaseData.session.access_token, supabaseData.user.user_metadata)
-      setState(synced)
+      // Libera a UI imediatamente — não bloqueia esperando o backend
+      setState({
+        token: supabaseData.session.access_token,
+        slug: (supabaseData.user.user_metadata.slug as string) ?? null,
+        nome: (supabaseData.user.user_metadata.nome as string) ?? (supabaseData.user.user_metadata.nome_completo as string) ?? null,
+        role: (supabaseData.user.user_metadata.role as string) ?? null,
+        is_admin: supabaseData.user.user_metadata.is_admin === true,
+      })
+
+      // Sincroniza com backend em background (fire-and-forget)
+      syncStateFromDb(supabaseData.session.access_token, supabaseData.user.user_metadata)
+        .then((synced) => setState(synced))
+        .catch(() => {
+          // Silencioso: o usuário já tem acesso com os dados do Supabase
+        })
+
       return
     }
 
