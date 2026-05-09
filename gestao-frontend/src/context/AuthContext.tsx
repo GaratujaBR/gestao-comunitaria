@@ -61,18 +61,41 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   })
 
   useEffect(() => {
+    // Tentar restaurar sessão Supabase
     supabase.auth.getSession().then(async ({ data: { session } }) => {
       if (session) {
+        localStorage.removeItem("backend_auth_token")
         const synced = await syncStateFromDb(session.access_token, session.user.user_metadata)
         setState(synced)
+        return
+      }
+
+      // Fallback: sessão via backend JWT
+      const backendToken = localStorage.getItem("backend_auth_token")
+      if (backendToken) {
+        try {
+          const me = await api.get<{ slug: string; nome: string; role: string | null; is_admin: boolean }>("/api/auth/me")
+          setState({
+            token: backendToken,
+            slug: me.slug,
+            nome: me.nome,
+            role: me.role,
+            is_admin: me.is_admin,
+          })
+        } catch {
+          localStorage.removeItem("backend_auth_token")
+          setState({ token: null, slug: null, nome: null, role: null, is_admin: false })
+        }
       }
     })
 
     const { data: listener } = supabase.auth.onAuthStateChange(async (_event, session) => {
       if (session) {
+        localStorage.removeItem("backend_auth_token")
         const synced = await syncStateFromDb(session.access_token, session.user.user_metadata)
         setState(synced)
       } else {
+        localStorage.removeItem("backend_auth_token")
         setState({ token: null, slug: null, nome: null, role: null, is_admin: false })
       }
     })
@@ -107,6 +130,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }>("/api/auth/login", { email, senha })
 
       if (backendRes.access_token) {
+        localStorage.setItem("backend_auth_token", backendRes.access_token)
         setState({
           token: backendRes.access_token,
           slug: backendRes.slug,
@@ -126,6 +150,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = useCallback(async () => {
     await supabase.auth.signOut()
+    localStorage.removeItem("backend_auth_token")
     setState({ token: null, slug: null, nome: null, role: null, is_admin: false })
   }, [])
 
