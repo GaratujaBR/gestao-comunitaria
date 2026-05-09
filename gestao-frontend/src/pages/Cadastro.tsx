@@ -47,6 +47,10 @@ export default function Cadastro() {
       })
       if (error) throw error
 
+      if (!data.user?.identities || data.user.identities.length === 0) {
+        throw new Error("Email já cadastrado.")
+      }
+
       try {
         await api.post("/api/auth/register", {
           email,
