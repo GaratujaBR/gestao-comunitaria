@@ -15,10 +15,6 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
 
   if (res.status === 401) {
     const err = await res.json().catch(() => ({ detail: "Não autorizado" }))
-    if (token) {
-      await supabase.auth.signOut()
-      window.location.href = "/terradecanaa/login"
-    }
     throw new Error(err.detail || "Credenciais inválidas.")
   }
 
