@@ -64,6 +64,7 @@ export default function Dashboard() {
   const [alerts, setAlerts] = useState<Alert[]>([])
   const [upcomingEvents, setUpcomingEvents] = useState<Evento[]>([])
   const [loading, setLoading] = useState(true)
+  const [loadError, setLoadError] = useState<string | null>(null)
 
   useEffect(() => {
     async function load() {
@@ -114,8 +115,8 @@ export default function Dashboard() {
             )
             .slice(0, 3)
         )
-      } catch {
-        /* ignore */
+      } catch (err) {
+        setLoadError(err instanceof Error ? err.message : "Erro ao carregar dados.")
       } finally {
         setLoading(false)
       }
@@ -193,6 +194,20 @@ export default function Dashboard() {
     em_andamento: "bg-blue-100 text-blue-800",
     concluida: "bg-gray-100 text-gray-800",
     cancelada: "bg-red-100 text-red-800"
+  }
+
+  if (loadError) {
+    return (
+      <div className="flex flex-col items-center justify-center h-64 gap-4">
+        <div className="text-red-500 font-medium">{loadError}</div>
+        <button
+          onClick={() => window.location.reload()}
+          className="text-sm text-[#1F6B3A] underline hover:text-[#155A2A]"
+        >
+          Tentar novamente
+        </button>
+      </div>
+    )
   }
 
   return (
