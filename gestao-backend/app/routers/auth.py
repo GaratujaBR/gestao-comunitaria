@@ -1,5 +1,6 @@
 import os
 import re
+import uuid
 from datetime import datetime, timedelta, timezone
 
 import bcrypt
@@ -215,6 +216,30 @@ async def get_current_user(
                         result = await db.execute(select(Profile).where(Profile.email == email))
                         profile = result.scalar_one_or_none()
                         if profile and profile.ativo:
+                            return profile
+                        # Auto-criar perfil se existe no Supabase mas não no backend
+                        if not profile:
+                            nome_completo = user_data.get("user_metadata", {}).get("nome_completo") or email.split("@")[0]
+                            base_slug = re.sub(r"[^a-z0-9-]+", "", nome_completo.lower().strip().replace(" ", "-"))
+                            slug = base_slug
+                            counter = 2
+                            while True:
+                                result = await db.execute(select(Profile).where(Profile.slug == slug))
+                                if not result.scalar_one_or_none():
+                                    break
+                                slug = f"{base_slug}-{counter}"
+                                counter += 1
+                            profile = Profile(
+                                id=str(uuid.uuid4()),
+                                slug=slug,
+                                nome_completo=nome_completo,
+                                email=email,
+                                ativo=True,
+                                is_admin=False,
+                            )
+                            db.add(profile)
+                            await db.commit()
+                            await db.refresh(profile)
                             return profile
         except Exception:
             pass

@@ -40,6 +40,7 @@ export default function Cadastro() {
         email,
         password: senha,
         options: {
+          emailRedirectTo: `${window.location.origin}/terradecanaa/login`,
           data: {
             nome_completo: nomeCompleto,
           },
@@ -57,8 +58,10 @@ export default function Cadastro() {
           senha,
           nome_completo: nomeCompleto,
         })
-      } catch {
-        // Perfil já existe ou backend indisponível — não bloquear o fluxo
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : "Erro ao sincronizar com o servidor."
+        console.warn("Backend register warning:", msg)
+        // Não bloqueia o fluxo, mas loga o erro
       }
 
       // Verificar se precisa confirmar email
@@ -84,6 +87,9 @@ export default function Cadastro() {
       const { error } = await supabase.auth.resend({
         type: "signup",
         email,
+        options: {
+          emailRedirectTo: `${window.location.origin}/terradecanaa/login`,
+        },
       })
       if (error) throw error
       setResent(true)

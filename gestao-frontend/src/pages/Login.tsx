@@ -52,6 +52,9 @@ export default function Login() {
       const { error } = await supabase.auth.resend({
         type: "signup",
         email,
+        options: {
+          emailRedirectTo: `${window.location.origin}/terradecanaa/login`,
+        },
       })
       if (error) throw error
       setResent(true)
