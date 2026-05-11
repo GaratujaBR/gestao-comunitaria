@@ -13,7 +13,11 @@ if DATABASE_URL.startswith("postgresql://") or DATABASE_URL.startswith("postgres
 elif os.getenv("USE_PERSISTENT_DISK") == "true" and os.path.exists("/data"):
     DATABASE_URL = "sqlite+aiosqlite:////data/app.db"
 
-engine = create_async_engine(DATABASE_URL, echo=False)
+engine = create_async_engine(
+    DATABASE_URL, 
+    echo=False,
+    connect_args={"prepare_threshold": None}
+)
 async_session = async_sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
 
 
