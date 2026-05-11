@@ -10,6 +10,7 @@ export default function Spaces() {
   useEffect(() => {
     api.get<Space[]>("/api/spaces")
       .then(setSpaces)
+      .catch((e) => console.error(e instanceof Error ? e.message : "Erro ao carregar espaços."))
       .finally(() => setLoading(false));
   }, []);
 

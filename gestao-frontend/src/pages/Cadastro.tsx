@@ -46,10 +46,15 @@ export default function Cadastro() {
           },
         },
       })
-      if (error) throw error
-
-      if (!data.user?.identities || data.user.identities.length === 0) {
-        throw new Error("Email já cadastrado.")
+      if (error) {
+        if (
+          error.message.includes("User already registered") ||
+          error.message.includes("already registered")
+        ) {
+          setError("Email já cadastrado.")
+          return
+        }
+        throw error
       }
 
       try {
@@ -70,11 +75,7 @@ export default function Cadastro() {
       setSuccess(true)
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Erro ao criar conta."
-      if (msg.includes("already registered") || msg.includes("User already registered")) {
-        setError("Email já cadastrado.")
-      } else {
-        setError(msg)
-      }
+      setError(msg)
     } finally {
       setLoading(false)
     }

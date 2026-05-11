@@ -12,10 +12,11 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
   const timeoutId = setTimeout(() => controller.abort(), 30000)
 
   try {
+    const { signal: userSignal, ...restOptions } = options || {}
     const res = await fetch(`${API_URL}${path}`, {
       headers,
-      signal: controller.signal,
-      ...options,
+      signal: userSignal || controller.signal,
+      ...restOptions,
     })
     clearTimeout(timeoutId)
 

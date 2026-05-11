@@ -16,7 +16,8 @@ import {
   ChevronUp,
   CheckCircle2,
   XCircle,
-  AlertCircle
+  AlertCircle,
+  Filter
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -797,6 +798,7 @@ export default function Enquetes() {
   const [saving, setSaving] = useState(false)
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const [transitioningId, setTransitioningId] = useState<string | null>(null)
+  const [showFilters, setShowFilters] = useState(false)
 
   const [form, setForm] = useState({
     titulo: "",
@@ -1015,49 +1017,63 @@ export default function Enquetes() {
         </div>
       )}
 
-      {/* filters */}
-      <div className="flex flex-wrap gap-2">
+      {/* filters — mobile: collapsed button; desktop: inline */}
+      <div className="sm:hidden">
+        <button
+          onClick={() => setShowFilters((v) => !v)}
+          className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+            categoriaFilter || statusFilter
+              ? "bg-[#1F6B3A] text-white"
+              : "bg-[#F8F7F4] text-[#4D4D4D] hover:bg-[#E7E5E4]"
+          }`}
+        >
+          <Filter className="w-4 h-4" />
+          {categoriaFilter
+            ? categoriaLabels[categoriaFilter]
+            : statusFilter
+              ? statusLabels[statusFilter as EnqueteStatus]
+              : "Todos"}
+          {showFilters ? (
+            <ChevronUp className="w-3.5 h-3.5" />
+          ) : (
+            <ChevronDown className="w-3.5 h-3.5" />
+          )}
+        </button>
+        {showFilters && (
+          <div className="mt-2 p-3 bg-white rounded-xl border border-[#E7E5E4] space-y-3">
+            <div>
+              <p className="text-xs font-semibold text-[#8A8A8A] uppercase tracking-wide mb-2">Categoria</p>
+              <div className="flex flex-wrap gap-2">
+                <button onClick={() => setCategoriaFilter("")} className={filterBtn(!categoriaFilter)}>Todas</button>
+                {Object.entries(categoriaLabels).map(([key, label]) => (
+                  <button key={key} onClick={() => setCategoriaFilter(key)} className={filterBtn(categoriaFilter === key)}>{label}</button>
+                ))}
+              </div>
+            </div>
+            <div>
+              <p className="text-xs font-semibold text-[#8A8A8A] uppercase tracking-wide mb-2">Status</p>
+              <div className="flex flex-wrap gap-2">
+                <button onClick={() => setStatusFilter("")} className={filterBtn(!statusFilter)}>Todos</button>
+                {(["rascunho","aberta","votacao","encerrada","implementada","arquivada"] as EnqueteStatus[]).map((s) => (
+                  <button key={s} onClick={() => setStatusFilter(s)} className={filterBtn(statusFilter === s)}>{statusLabels[s]}</button>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      <div className="hidden sm:flex flex-wrap gap-2">
         <div className="flex gap-2 flex-wrap">
-          <button
-            onClick={() => setCategoriaFilter("")}
-            className={filterBtn(!categoriaFilter)}
-          >
-            Todas
-          </button>
+          <button onClick={() => setCategoriaFilter("")} className={filterBtn(!categoriaFilter)}>Todas</button>
           {Object.entries(categoriaLabels).map(([key, label]) => (
-            <button
-              key={key}
-              onClick={() => setCategoriaFilter(key)}
-              className={filterBtn(categoriaFilter === key)}
-            >
-              {label}
-            </button>
+            <button key={key} onClick={() => setCategoriaFilter(key)} className={filterBtn(categoriaFilter === key)}>{label}</button>
           ))}
         </div>
         <div className="flex gap-2 ml-4 flex-wrap">
-          <button
-            onClick={() => setStatusFilter("")}
-            className={filterBtn(!statusFilter)}
-          >
-            Todos status
-          </button>
-          {(
-            [
-              "rascunho",
-              "aberta",
-              "votacao",
-              "encerrada",
-              "implementada",
-              "arquivada"
-            ] as EnqueteStatus[]
-          ).map((s) => (
-            <button
-              key={s}
-              onClick={() => setStatusFilter(s)}
-              className={filterBtn(statusFilter === s)}
-            >
-              {statusLabels[s]}
-            </button>
+          <button onClick={() => setStatusFilter("")} className={filterBtn(!statusFilter)}>Todos status</button>
+          {(["rascunho","aberta","votacao","encerrada","implementada","arquivada"] as EnqueteStatus[]).map((s) => (
+            <button key={s} onClick={() => setStatusFilter(s)} className={filterBtn(statusFilter === s)}>{statusLabels[s]}</button>
           ))}
         </div>
       </div>

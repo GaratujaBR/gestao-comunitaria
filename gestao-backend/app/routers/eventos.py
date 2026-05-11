@@ -27,8 +27,6 @@ async def list_eventos(
 async def create_evento(data: EventoCreate, db: AsyncSession = Depends(get_db)):
     evento = Evento(**data.model_dump())
     db.add(evento)
-    await db.flush()
-    await db.refresh(evento)
 
     if data.local_slug:
         overlap_query = select(Booking).where(
@@ -46,6 +44,9 @@ async def create_evento(data: EventoCreate, db: AsyncSession = Depends(get_db)):
                 detail="Conflito de agenda: este espaco ja esta reservado neste periodo",
             )
 
+        await db.flush()
+        await db.refresh(evento)
+
         booking = Booking(
             space_slug=data.local_slug,
             profile_slug=data.criador_slug or "sistema",
@@ -56,6 +57,8 @@ async def create_evento(data: EventoCreate, db: AsyncSession = Depends(get_db)):
             evento_id=evento.id,
         )
         db.add(booking)
+        await db.flush()
+        await db.refresh(booking)
         db.add(
             Alert(
                 tipo="reserva",
