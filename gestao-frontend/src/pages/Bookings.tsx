@@ -89,11 +89,11 @@ export default function Bookings() {
     api
       .get<Space[]>("/api/spaces")
       .then(setSpaces)
-      .catch(() => {})
+      .catch((e) => setError(e instanceof Error ? e.message : "Erro ao carregar espaços."))
     api
       .get<Profile[]>("/api/profiles")
       .then(setProfiles)
-      .catch(() => {})
+      .catch((e) => setError(e instanceof Error ? e.message : "Erro ao carregar perfis."))
   }, [])
 
   useEffect(() => {
@@ -220,7 +220,7 @@ export default function Bookings() {
     api
       .get<Space[]>("/api/spaces")
       .then(setSpaces)
-      .catch(() => {})
+      .catch((e) => setError(e instanceof Error ? e.message : "Erro ao carregar espaços."))
   }
 
   const statusColors: Record<string, string> = {

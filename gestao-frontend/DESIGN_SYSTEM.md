@@ -226,5 +226,5 @@ Ao aplicar este design system:
 1. **Não altere lógica, rotas ou estrutura de dados** — apenas estilos.
 2. Use os tokens via `var(--nome-do-token)` em CSS, ou as classes Tailwind equivalentes se o projeto usar Tailwind.
 3. Priorize a ordem: **fundo da página → cards → tipografia → botões → badges**.
-4. Importe a fonte Nunito via Google Fonts no `index.html` ou no CSS global antes de aplicar.
+4. Importe a fonte Montserrat via Google Fonts no `index.html` ou no CSS global antes de aplicar.
 5. Mantenha responsividade — adapte o grid de 3 colunas para 1 coluna em mobile (`max-width: 768px`).

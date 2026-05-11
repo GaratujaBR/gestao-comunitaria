@@ -25,4 +25,4 @@ gestao-frontend/dist/
 Thumbs.db
 
 # Poetry
-*.lock
+# poetry.lock
