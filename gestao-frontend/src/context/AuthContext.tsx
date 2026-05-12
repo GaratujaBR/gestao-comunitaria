@@ -28,13 +28,18 @@ const AuthContext = createContext<AuthContextValue | null>(null)
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000"
 
 async function fetchMe(token: string): Promise<{ slug: string; nome: string; role: string | null; is_admin: boolean } | null> {
+  const controller = new AbortController()
+  const timeoutId = setTimeout(() => controller.abort(), 10000)
   try {
     const res = await fetch(`${API_URL}/api/auth/me`, {
       headers: { Authorization: `Bearer ${token}` },
+      signal: controller.signal,
     })
+    clearTimeout(timeoutId)
     if (!res.ok) return null
     return res.json()
   } catch {
+    clearTimeout(timeoutId)
     return null
   }
 }
