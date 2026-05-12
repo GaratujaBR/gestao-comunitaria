@@ -36,7 +36,7 @@ export default function Avatar({
       <button
         type="button"
         onClick={onClick}
-        className={`hover:ring-2 hover:ring-[#88C9A1] hover:scale-105 transition-all ${sizeClasses[size].includes("rounded") ? "" : ""}`}
+        className={`${sizeClasses[size]} hover:ring-2 hover:ring-[#88C9A1] hover:scale-105 transition-all overflow-hidden`}
         title={nome}
       >
         {inner}

@@ -11,15 +11,20 @@ import {
   DialogTitle,
   DialogDescription
 } from "@/components/ui/dialog"
-import { Plus, Pencil, Trash2, Landmark, ChevronDown } from "lucide-react"
+import { Plus, Pencil, Trash2, Landmark, ChevronDown, Mail, Phone } from "lucide-react"
 import Avatar from "@/components/Avatar"
 import ProfileForm from "@/components/ProfileForm"
+import { useAdmin } from "@/hooks/useAdmin"
+import { useAuth } from "@/context/AuthContext"
 
 export default function Cotas() {
+  const isAdmin = useAdmin()
+  const { slug: currentSlug } = useAuth()
   const [cotas, setCotas] = useState<Cota[]>([])
   const [profiles, setProfiles] = useState<Profile[]>([])
   const [loading, setLoading] = useState(true)
   const [expandedSlug, setExpandedSlug] = useState<string | null>(null)
+  const [viewingProfile, setViewingProfile] = useState<Profile | null>(null)
 
   // Cota dialog
   const [cotaOpen, setCotaOpen] = useState(false)
@@ -210,7 +215,11 @@ export default function Cotas() {
                           key={p.slug}
                           onClick={(e) => {
                             e.stopPropagation()
-                            openEditMember(p)
+                            if (isAdmin || currentSlug === p.slug) {
+                              openEditMember(p)
+                            } else {
+                              setViewingProfile(p)
+                            }
                           }}
                           className="flex flex-col items-center gap-1 p-2 rounded-xl hover:bg-[#ECF7EE] transition-colors"
                         >
@@ -248,6 +257,51 @@ export default function Cotas() {
           })}
         </div>
       )}
+
+      {/* Profile view dialog (read-only) */}
+      <Dialog open={!!viewingProfile} onOpenChange={(o) => { if (!o) setViewingProfile(null) }}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Perfil</DialogTitle>
+          </DialogHeader>
+          {viewingProfile && (
+            <div className="flex flex-col items-center gap-4 pt-2">
+              <Avatar slug={viewingProfile.slug} nome={viewingProfile.nome_completo} foto_url={viewingProfile.foto_url} size="lg" />
+              <div className="text-center">
+                <p className="text-lg font-bold text-[#1A1A1A]">{viewingProfile.nome_completo}</p>
+                {viewingProfile.nome_curto && <p className="text-sm text-[#8A8A8A]">{viewingProfile.nome_curto}</p>}
+                <p className="text-xs text-[#8A8A8A] mt-0.5">@{viewingProfile.slug}</p>
+              </div>
+              <div className="flex flex-wrap gap-2 justify-center">
+                {viewingProfile.role && (
+                  <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-[#D5E8D4] text-[#1F6B3A]">
+                    {viewingProfile.role}
+                  </span>
+                )}
+                {viewingProfile.lote && (
+                  <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
+                    bolinha {viewingProfile.lote}
+                  </span>
+                )}
+              </div>
+              {(viewingProfile.email || viewingProfile.telefone) && (
+                <div className="w-full border-t border-[#F5F5F4] pt-3 space-y-1.5">
+                  {viewingProfile.email && (
+                    <a href={`mailto:${viewingProfile.email}`} className="flex items-center gap-2 text-sm text-[#4D4D4D] hover:text-[#1F6B3A]">
+                      <Mail className="w-4 h-4 shrink-0" />{viewingProfile.email}
+                    </a>
+                  )}
+                  {viewingProfile.telefone && (
+                    <a href={`tel:${viewingProfile.telefone}`} className="flex items-center gap-2 text-sm text-[#4D4D4D] hover:text-[#1F6B3A]">
+                      <Phone className="w-4 h-4 shrink-0" />{viewingProfile.telefone}
+                    </a>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
 
       {/* Cota edit dialog */}
       <Dialog open={cotaOpen} onOpenChange={setCotaOpen}>
