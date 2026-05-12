@@ -24,14 +24,18 @@ export default function Login() {
   const [resetSent, setResetSent] = useState(false)
   const [resetLoading, setResetLoading] = useState(false)
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
+    const formData = new FormData(e.currentTarget)
+    const emailVal = (formData.get("email") as string) || email
+    const senhaVal = (formData.get("password") as string) || senha
+    if (emailVal !== email) setEmail(emailVal)
     setError("")
     setShowConfirmationHint(false)
     setResent(false)
     setLoading(true)
     try {
-      await login(email, senha)
+      await login(emailVal, senhaVal)
       navigate("/", { replace: true })
     } catch (err: unknown) {
       let msg = err instanceof Error ? err.message : "Erro ao entrar."
@@ -113,6 +117,7 @@ export default function Login() {
                   </label>
                   <Input
                     type="email"
+                    name="email"
                     autoComplete="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
@@ -126,6 +131,7 @@ export default function Login() {
                   </label>
                   <Input
                     type="password"
+                    name="password"
                     autoComplete="current-password"
                     value={senha}
                     onChange={(e) => setSenha(e.target.value)}
