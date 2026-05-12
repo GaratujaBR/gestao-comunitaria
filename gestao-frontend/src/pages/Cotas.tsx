@@ -179,24 +179,28 @@ export default function Cotas() {
                     <p className="text-xs text-[#8A8A8A]">@{c.slug}</p>
                   </div>
                   <div className="flex items-center gap-1 ml-2 shrink-0">
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        openEditCota(c)
-                      }}
-                      className="p-1.5 rounded-lg hover:bg-[#F5F5F4]"
-                    >
-                      <Pencil className="w-3.5 h-3.5 text-[#4D4D4D]" />
-                    </button>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        removeCota(c.slug)
-                      }}
-                      className="p-1.5 rounded-lg hover:bg-[#F5F5F4]"
-                    >
-                      <Trash2 className="w-3.5 h-3.5 text-red-400" />
-                    </button>
+                    {isAdmin && (
+                      <>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            openEditCota(c)
+                          }}
+                          className="p-1.5 rounded-lg hover:bg-[#F5F5F4]"
+                        >
+                          <Pencil className="w-3.5 h-3.5 text-[#4D4D4D]" />
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            removeCota(c.slug)
+                          }}
+                          className="p-1.5 rounded-lg hover:bg-[#F5F5F4]"
+                        >
+                          <Trash2 className="w-3.5 h-3.5 text-red-400" />
+                        </button>
+                      </>
+                    )}
                     <ChevronDown
                       className={`w-4 h-4 text-[#8A8A8A] ml-1 transition-transform duration-200 lg:hidden ${isExpanded ? "rotate-180" : ""}`}
                     />
@@ -242,15 +246,17 @@ export default function Cotas() {
                       ))}
                     </div>
                   )}
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      openNewMember()
-                    }}
-                    className="mt-3 flex items-center gap-1 text-xs text-[#1F6B3A] hover:text-[#2D5A27] font-medium"
-                  >
-                    <Plus className="w-3.5 h-3.5" /> Adicionar Membro
-                  </button>
+                  {isAdmin && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        openNewMember()
+                      }}
+                      className="mt-3 flex items-center gap-1 text-xs text-[#1F6B3A] hover:text-[#2D5A27] font-medium"
+                    >
+                      <Plus className="w-3.5 h-3.5" /> Adicionar Membro
+                    </button>
+                  )}
                 </div>
               </div>
             )
