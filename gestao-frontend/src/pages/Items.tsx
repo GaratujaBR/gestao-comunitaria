@@ -21,7 +21,11 @@ import {
 } from "@/components/ui/select"
 import { Plus, Pencil, Trash2, Package } from "lucide-react"
 
-const categorias = ["cozinha", "jardim", "construcao", "limpeza", "lazer"]
+const categorias = [
+  "cozinha", "banheiro", "lazer", "jardim", "infraestrutura",
+  "ferramentas", "eletronicos", "saude", "mobilia", "limpeza",
+  "construcao", "outros"
+]
 const estados = ["novo", "bom", "regular", "manutencao", "indisponivel"]
 
 const emptyForm = {
@@ -34,7 +38,12 @@ const emptyForm = {
   estado: "bom",
   manual_cuidados: "",
   ciclo_manutencao: "",
-  tags: ""
+  tags: "",
+  quantidade: "",
+  valor_estimado: "",
+  responsavel: "",
+  disponibilidade: "",
+  origem: ""
 }
 
 export default function Items() {
@@ -80,7 +89,12 @@ export default function Items() {
       estado: item.estado,
       manual_cuidados: item.manual_cuidados || "",
       ciclo_manutencao: item.ciclo_manutencao || "",
-      tags: item.tags?.join(", ") || ""
+      tags: item.tags?.join(", ") || "",
+      quantidade: item.quantidade != null ? String(item.quantidade) : "",
+      valor_estimado: item.valor_estimado != null ? String(item.valor_estimado) : "",
+      responsavel: item.responsavel || "",
+      disponibilidade: item.disponibilidade || "",
+      origem: item.origem || ""
     })
     setEditing(item.codigo)
     setError("")
@@ -99,11 +113,13 @@ export default function Items() {
         ciclo_manutencao: form.ciclo_manutencao || null,
         tipo: "comum",
         tags: form.tags
-          ? form.tags
-              .split(",")
-              .map((t) => t.trim())
-              .filter(Boolean)
-          : null
+          ? form.tags.split(",").map((t) => t.trim()).filter(Boolean)
+          : null,
+        quantidade: form.quantidade ? parseInt(form.quantidade) : null,
+        valor_estimado: form.valor_estimado ? parseFloat(form.valor_estimado) : null,
+        responsavel: form.responsavel || null,
+        disponibilidade: form.disponibilidade || null,
+        origem: form.origem || null
       }
       if (editing) {
         const { codigo: _codigo, ...update } = payload
@@ -334,6 +350,53 @@ export default function Items() {
                 value={form.tags}
                 onChange={(e) => setForm({ ...form, tags: e.target.value })}
                 placeholder="ferro_fundido, pesado"
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label>Quantidade</Label>
+                <Input
+                  type="number"
+                  value={form.quantidade}
+                  onChange={(e) => setForm({ ...form, quantidade: e.target.value })}
+                  placeholder="1"
+                />
+              </div>
+              <div>
+                <Label>Valor Estimado (R$)</Label>
+                <Input
+                  type="number"
+                  step="0.01"
+                  value={form.valor_estimado}
+                  onChange={(e) => setForm({ ...form, valor_estimado: e.target.value })}
+                  placeholder="0.00"
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label>Responsável</Label>
+                <Input
+                  value={form.responsavel}
+                  onChange={(e) => setForm({ ...form, responsavel: e.target.value })}
+                  placeholder="Nome ou comunidade"
+                />
+              </div>
+              <div>
+                <Label>Disponibilidade</Label>
+                <Input
+                  value={form.disponibilidade}
+                  onChange={(e) => setForm({ ...form, disponibilidade: e.target.value })}
+                  placeholder="Disponível, Em uso..."
+                />
+              </div>
+            </div>
+            <div>
+              <Label>Origem</Label>
+              <Input
+                value={form.origem}
+                onChange={(e) => setForm({ ...form, origem: e.target.value })}
+                placeholder="Compra coletiva, Doação..."
               />
             </div>
             <div className="flex justify-end gap-2 pt-2">

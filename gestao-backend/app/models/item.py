@@ -1,6 +1,6 @@
 import uuid
 from datetime import datetime, timezone, date
-from sqlalchemy import String, Integer, DateTime, Date, JSON
+from sqlalchemy import String, Integer, Float, DateTime, Date, JSON
 from sqlalchemy.orm import Mapped, mapped_column
 from app.database import Base
 
@@ -27,6 +27,11 @@ class Item(Base):
     tags: Mapped[list | None] = mapped_column(JSON, default=list)
     fotos: Mapped[list | None] = mapped_column(JSON, default=list)
     qr_code_url: Mapped[str | None] = mapped_column(String, nullable=True)
+    quantidade: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    valor_estimado: Mapped[float | None] = mapped_column(Float, nullable=True)
+    responsavel: Mapped[str | None] = mapped_column(String, nullable=True)
+    disponibilidade: Mapped[str | None] = mapped_column(String, nullable=True)
+    origem: Mapped[str | None] = mapped_column(String, nullable=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime, default=lambda: datetime.now(timezone.utc)
     )
