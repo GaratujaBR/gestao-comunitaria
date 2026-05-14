@@ -221,8 +221,8 @@ export default function Items() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b bg-gray-50 text-left text-gray-500">
-                <th className="px-4 py-3 font-medium">Código</th>
                 <th className="px-4 py-3 font-medium">Nome</th>
+                <th className="px-4 py-3 font-medium text-center">Qtd</th>
                 <th className="px-4 py-3 font-medium">Categoria</th>
                 <th className="px-4 py-3 font-medium">Local</th>
                 <th className="px-4 py-3 font-medium">Estado</th>
@@ -235,8 +235,8 @@ export default function Items() {
                   key={item.id}
                   className="border-b last:border-0 hover:bg-gray-50"
                 >
-                  <td className="px-4 py-3 font-mono text-xs">{item.codigo}</td>
                   <td className="px-4 py-3 font-medium">{item.nome}</td>
+                  <td className="px-4 py-3 text-center text-gray-600">{item.quantidade ?? "-"}</td>
                   <td className="px-4 py-3">{item.categoria || "-"}</td>
                   <td className="px-4 py-3">{item.space_slug || "-"}</td>
                   <td className="px-4 py-3">
