@@ -8,4 +8,4 @@ from app.schemas.alert import AlertCreate, AlertUpdate, AlertResponse
 from app.schemas.chamado import ChamadoCreate, ChamadoUpdate, ChamadoResponse
 from app.schemas.prestador import PrestadorCreate, PrestadorResponse
 from app.schemas.enquete import EnqueteCreate, EnqueteUpdate, VotoCreate, EnqueteResponse
-from app.schemas.sheet_row import SheetRowCreate, SheetRowResponse, SheetDataResponse
+from app.schemas.sheet_row import SheetRowResponse, SheetDataResponse

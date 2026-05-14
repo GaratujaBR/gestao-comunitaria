@@ -19,7 +19,7 @@ import {
   SelectTrigger,
   SelectValue
 } from "@/components/ui/select"
-import { Plus, Pencil, Trash2, Package } from "lucide-react"
+import { Plus, Pencil, Trash2, Package, RefreshCw } from "lucide-react"
 
 const categorias = [
   "cozinha", "banheiro", "lazer", "jardim", "infraestrutura",
@@ -54,6 +54,8 @@ export default function Items() {
   const [form, setForm] = useState(emptyForm)
   const [error, setError] = useState("")
   const [filter, setFilter] = useState("")
+  const [syncing, setSyncing] = useState(false)
+  const [syncResult, setSyncResult] = useState<string | null>(null)
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -135,6 +137,23 @@ export default function Items() {
     }
   }
 
+  const syncSheet = async () => {
+    setSyncing(true)
+    setSyncResult(null)
+    try {
+      const r = await api.post<{ created: number; updated: number; skipped: number }>(
+        "/api/items/sync-sheet",
+        {}
+      )
+      setSyncResult(`Sync concluído: ${r.created} criados, ${r.updated} atualizados`)
+      load()
+    } catch (e: unknown) {
+      setSyncResult(e instanceof Error ? e.message : "Erro ao sincronizar")
+    } finally {
+      setSyncing(false)
+    }
+  }
+
   const remove = async (codigo: string) => {
     if (!confirm("Remover este item?")) return
     await api.del(`/api/items/${codigo}`)
@@ -153,10 +172,22 @@ export default function Items() {
     <div>
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold text-gray-800">Acervo</h1>
-        <Button onClick={openNew}>
-          <Plus className="w-4 h-4 mr-2" /> Novo Item
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={syncSheet} disabled={syncing}>
+            <RefreshCw className={`w-4 h-4 mr-2 ${syncing ? "animate-spin" : ""}`} />
+            {syncing ? "Sincronizando..." : "Sincronizar Planilha"}
+          </Button>
+          <Button onClick={openNew}>
+            <Plus className="w-4 h-4 mr-2" /> Novo Item
+          </Button>
+        </div>
       </div>
+
+      {syncResult && (
+        <div className={`mb-4 px-4 py-2 rounded-lg text-sm ${syncResult.startsWith("Sync") ? "bg-green-50 text-green-800 border border-green-200" : "bg-red-50 text-red-700 border border-red-200"}`}>
+          {syncResult}
+        </div>
+      )}
 
       <div className="flex gap-2 mb-4 flex-wrap">
         <button
