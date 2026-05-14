@@ -18,6 +18,11 @@ class ItemCreate(BaseModel):
     tags: list[str] | None = None
     fotos: list[str] | None = None
     qr_code_url: str | None = None
+    quantidade: int | None = None
+    valor_estimado: float | None = None
+    responsavel: str | None = None
+    disponibilidade: str | None = None
+    origem: str | None = None
 
 
 class ItemUpdate(BaseModel):
@@ -36,6 +41,11 @@ class ItemUpdate(BaseModel):
     tags: list[str] | None = None
     fotos: list[str] | None = None
     qr_code_url: str | None = None
+    quantidade: int | None = None
+    valor_estimado: float | None = None
+    responsavel: str | None = None
+    disponibilidade: str | None = None
+    origem: str | None = None
 
 
 class ItemResponse(BaseModel):
@@ -56,6 +66,11 @@ class ItemResponse(BaseModel):
     tags: list[str] | None = None
     fotos: list[str] | None = None
     qr_code_url: str | None = None
+    quantidade: int | None = None
+    valor_estimado: float | None = None
+    responsavel: str | None = None
+    disponibilidade: str | None = None
+    origem: str | None = None
     created_at: datetime
 
     model_config = {"from_attributes": True}

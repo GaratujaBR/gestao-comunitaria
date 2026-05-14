@@ -57,6 +57,11 @@ export interface Item {
   tags: string[] | null
   fotos: string[] | null
   qr_code_url: string | null
+  quantidade: number | null
+  valor_estimado: number | null
+  responsavel: string | null
+  disponibilidade: string | null
+  origem: string | null
   created_at: string
 }
 
@@ -128,22 +133,22 @@ export interface Alert {
 
 export interface SheetRow {
   id: string
-  area: string
-  status: string
-  responsavel: string | null
-  item: string
+  data: string | null
   descricao: string | null
-  quantidade: number | null
+  categoria: string | null
   valor: number | null
-  total: number | null
-  created_at: string
+  tipo: string | null
+  comprovante: string | null
 }
 
 export interface SheetData {
   rows: SheetRow[]
   count: number
-  total_compras: number
-  saldo_atual: number | null
+  saldo_atual: number
+  total_entradas: number
+  total_saidas: number
+  total_entradas_mes: number
+  total_saidas_mes: number
 }
 
 export interface Chamado {

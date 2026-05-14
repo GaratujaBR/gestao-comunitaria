@@ -1,30 +1,15 @@
 from pydantic import BaseModel
-from datetime import datetime
 from typing import Optional
-
-
-class SheetRowCreate(BaseModel):
-    area: str
-    status: str
-    responsavel: str | None = None
-    item: str
-    descricao: str | None = None
-    quantidade: int | None = None
-    valor: float | None = None
-    total: float | None = None
 
 
 class SheetRowResponse(BaseModel):
     id: str
-    area: str
-    status: str
-    responsavel: str | None = None
-    item: str
-    descricao: str | None = None
-    quantidade: int | None = None
-    valor: float | None = None
-    total: float | None = None
-    created_at: Optional[datetime] = None
+    data: Optional[str] = None
+    descricao: Optional[str] = None
+    categoria: Optional[str] = None
+    valor: Optional[float] = None
+    tipo: Optional[str] = None
+    comprovante: Optional[str] = None
 
     model_config = {"from_attributes": True}
 
@@ -32,5 +17,8 @@ class SheetRowResponse(BaseModel):
 class SheetDataResponse(BaseModel):
     rows: list[SheetRowResponse]
     count: int
-    total_compras: float
-    saldo_atual: float | None = None
+    saldo_atual: float
+    total_entradas: float
+    total_saidas: float
+    total_entradas_mes: float
+    total_saidas_mes: float
