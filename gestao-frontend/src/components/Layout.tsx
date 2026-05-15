@@ -193,8 +193,13 @@ export default function Layout() {
               <div className="text-[10px] font-extrabold tracking-[0.2em] uppercase text-[#2D5A27]">
                 Vilarejo Ecológico
               </div>
-              <div className="text-base font-extrabold text-[#1A1A1A] tracking-[0.02em]">
-                Terra de Canaã
+              <div className="relative inline-block">
+                <div className="text-base font-extrabold text-[#1A1A1A] tracking-[0.02em]">
+                  Terra de Canaã
+                </div>
+                <span className="absolute -bottom-3 right-0 text-[9px] font-bold tracking-widest uppercase text-[#88C9A1]">
+                  beta
+                </span>
               </div>
             </div>
           </div>
