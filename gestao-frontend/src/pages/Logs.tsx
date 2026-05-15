@@ -34,8 +34,6 @@ const acaoColors: Record<string, string> = {
 export default function Logs() {
   const [logs, setLogs] = useState<Log[]>([])
   const [loading, setLoading] = useState(true)
-  const [syncing, setSyncing] = useState(false)
-  const [syncError, setSyncError] = useState("")
   const [acaoFilter, setAcaoFilter] = useState("")
 
   const load = useCallback(async () => {
@@ -52,23 +50,6 @@ export default function Logs() {
     load()
   }, [load, acaoFilter])
 
-  useEffect(() => {
-    async function syncAndLoad() {
-      setSyncing(true)
-      setSyncError("")
-      try {
-        await api.post("/api/logs/sync-sheet", {})
-      } catch (e) {
-        setSyncError(e instanceof Error ? e.message : "Erro ao sincronizar")
-      } finally {
-        setSyncing(false)
-        load()
-      }
-    }
-    syncAndLoad()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
-
   return (
     <div>
       <div className="mb-6">
@@ -77,22 +58,6 @@ export default function Logs() {
           Registros gerados automaticamente pelas ações no sistema.
         </p>
       </div>
-
-      {syncing && (
-        <div className="flex items-center gap-3 mb-4 px-4 py-3 bg-blue-50 text-blue-700 rounded-xl border border-blue-100">
-          <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600" />
-          <span className="text-sm font-medium">
-            Sincronizando registros da planilha...
-          </span>
-        </div>
-      )}
-
-      {syncError && !syncing && (
-        <div className="mb-4 px-4 py-3 bg-amber-50 text-amber-700 rounded-xl border border-amber-100 text-sm">
-          <span className="font-medium">⚠️ Sincronização não concluída:</span>{" "}
-          {syncError}
-        </div>
-      )}
 
       <div className="flex gap-2 mb-4 flex-wrap">
         <button
