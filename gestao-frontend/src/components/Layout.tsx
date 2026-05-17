@@ -60,10 +60,12 @@ function BellMenu() {
   const [alerts, setAlerts] = useState<Alert[]>([])
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
+  const { slug } = useAuth()
 
   const loadAlerts = async () => {
     try {
-      setAlerts(await api.get<Alert[]>("/api/alerts?lido=false"))
+      const qs = slug ? `?lido=false&profile_slug=${slug}` : "?lido=false"
+      setAlerts(await api.get<Alert[]>(`/api/alerts${qs}`))
     } catch {
       /* ignore */
     }
