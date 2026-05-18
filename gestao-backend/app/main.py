@@ -1,4 +1,5 @@
 from contextlib import asynccontextmanager
+import os
 from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import text
@@ -72,13 +73,15 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="Gestao Comunitaria API", lifespan=lifespan)
 
-# Disable CORS. Do not remove this for full-stack development.
+_raw_origins = os.getenv("ALLOWED_ORIGINS", "http://localhost:5173,http://localhost:4173")
+allowed_origins = [o.strip() for o in _raw_origins.split(",") if o.strip()]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Allows all origins
+    allow_origins=allowed_origins,
     allow_credentials=False,
-    allow_methods=["*"],  # Allows all methods
-    allow_headers=["*"],  # Allows all headers
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 app.include_router(auth.router)

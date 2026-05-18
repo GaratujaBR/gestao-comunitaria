@@ -23,7 +23,9 @@ from app.schemas.auth import (
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
 
-SECRET_KEY = os.getenv("SECRET_KEY", "change-me")
+SECRET_KEY = os.getenv("SECRET_KEY", "")
+if not SECRET_KEY:
+    raise RuntimeError("SECRET_KEY env var não definida — defina antes de iniciar o servidor.")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_DAYS = 30
 RESET_TOKEN_EXPIRE_HOURS = 1
