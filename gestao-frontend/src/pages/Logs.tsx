@@ -4,6 +4,7 @@ import type { Log } from "@/api/types"
 import { ClipboardList } from "lucide-react"
 
 const acoes = [
+  "enquete_criada",
   "reserva_criada",
   "chamado_aberto",
   "compra_realizada",

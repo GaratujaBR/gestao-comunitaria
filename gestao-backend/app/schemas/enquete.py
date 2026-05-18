@@ -17,6 +17,7 @@ class EnqueteCreate(BaseModel):
     closes_at: datetime | None = None
     voting_starts_at: datetime | None = None
     result_action: str | None = None
+    status: str | None = None
 
 
 class EnqueteUpdate(BaseModel):

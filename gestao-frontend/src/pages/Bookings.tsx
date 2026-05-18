@@ -31,6 +31,7 @@ import {
 import SpaceMap from "@/components/SpaceMap"
 import BookingCalendar from "@/components/BookingCalendar"
 import { useAdmin } from "@/hooks/useAdmin"
+import { useAuth } from "@/context/AuthContext"
 
 const tiposUso = ["hospedagem", "evento", "mutirao", "manutencao"]
 const statusList = [
@@ -57,6 +58,7 @@ const emptyForm = {
 
 export default function Bookings() {
   const isAdmin = useAdmin()
+  const { slug: currentSlug } = useAuth()
   const [bookings, setBookings] = useState<Booking[]>([])
   const [spaces, setSpaces] = useState<Space[]>([])
   const [profiles, setProfiles] = useState<Profile[]>([])
@@ -316,20 +318,22 @@ export default function Bookings() {
                     >
                       {b.status}
                     </span>
-                    <div className="flex gap-1">
-                      <button
-                        onClick={() => openEdit(b)}
-                        className="p-1.5 rounded-lg hover:bg-[#F5F5F4]"
-                      >
-                        <Pencil className="w-3.5 h-3.5 text-[#4D4D4D]" />
-                      </button>
-                      <button
-                        onClick={() => remove(b.id)}
-                        className="p-1.5 rounded-lg hover:bg-[#F5F5F4]"
-                      >
-                        <Trash2 className="w-3.5 h-3.5 text-red-400" />
-                      </button>
-                    </div>
+                    {(isAdmin || b.profile_slug === currentSlug) && (
+                      <div className="flex gap-1">
+                        <button
+                          onClick={() => openEdit(b)}
+                          className="p-1.5 rounded-lg hover:bg-[#F5F5F4]"
+                        >
+                          <Pencil className="w-3.5 h-3.5 text-[#4D4D4D]" />
+                        </button>
+                        <button
+                          onClick={() => remove(b.id)}
+                          className="p-1.5 rounded-lg hover:bg-[#F5F5F4]"
+                        >
+                          <Trash2 className="w-3.5 h-3.5 text-red-400" />
+                        </button>
+                      </div>
+                    )}
                   </div>
                   <p className="text-sm font-semibold text-[#1A1A1A] leading-snug">
                     {spaceName}
@@ -421,20 +425,22 @@ export default function Bookings() {
                       </span>
                     </td>
                     <td className="px-4 py-3">
-                      <div className="flex gap-1">
-                        <button
-                          onClick={() => openEdit(b)}
-                          className="p-1 rounded hover:bg-[#F5F5F4]"
-                        >
-                          <Pencil className="w-4 h-4 text-[#4D4D4D]" />
-                        </button>
-                        <button
-                          onClick={() => remove(b.id)}
-                          className="p-1 rounded hover:bg-[#F5F5F4]"
-                        >
-                          <Trash2 className="w-4 h-4 text-red-400" />
-                        </button>
-                      </div>
+                      {(isAdmin || b.profile_slug === currentSlug) && (
+                        <div className="flex gap-1">
+                          <button
+                            onClick={() => openEdit(b)}
+                            className="p-1 rounded hover:bg-[#F5F5F4]"
+                          >
+                            <Pencil className="w-4 h-4 text-[#4D4D4D]" />
+                          </button>
+                          <button
+                            onClick={() => remove(b.id)}
+                            className="p-1 rounded hover:bg-[#F5F5F4]"
+                          >
+                            <Trash2 className="w-4 h-4 text-red-400" />
+                          </button>
+                        </div>
+                      )}
                     </td>
                   </tr>
                 ))}

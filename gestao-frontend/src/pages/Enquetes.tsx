@@ -5,12 +5,14 @@ import type {
   EnqueteComentario,
   EnqueteStatus,
   EnqueteTipo,
-  Profile
+  Profile,
+  Cota
 } from "@/api/types"
 import {
   Plus,
   X,
   Trash2,
+  Pencil,
   MessageCircle,
   ChevronDown,
   ChevronUp,
@@ -414,6 +416,78 @@ function RespostaAbertaPanel({
   )
 }
 
+// ── edit dialog ──────────────────────────────────────────────────────────────
+
+function EditEnqueteDialog({
+  enquete,
+  onSave,
+  onClose
+}: {
+  enquete: Enquete
+  onSave: (id: string, payload: { titulo?: string; descricao?: string | null; closes_at?: string | null }) => void
+  onClose: () => void
+}) {
+  const [titulo, setTitulo] = useState(enquete.titulo)
+  const [descricao, setDescricao] = useState(enquete.descricao ?? "")
+  const [closesAt, setClosesAt] = useState(
+    enquete.closes_at ? enquete.closes_at.split("T")[0] : ""
+  )
+
+  return (
+    <Dialog open onOpenChange={onClose}>
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <DialogTitle>Editar Enquete</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-4">
+          <div>
+            <p className="text-xs font-semibold text-[#4D4D4D] uppercase tracking-wide mb-1.5">Pergunta</p>
+            <Input
+              value={titulo}
+              onChange={(e) => setTitulo(e.target.value)}
+              className="rounded-xl"
+            />
+          </div>
+          <div>
+            <p className="text-xs font-semibold text-[#4D4D4D] uppercase tracking-wide mb-1.5">Descrição (opcional)</p>
+            <Textarea
+              value={descricao}
+              onChange={(e) => setDescricao(e.target.value)}
+              rows={3}
+              className="rounded-xl"
+            />
+          </div>
+          <div>
+            <p className="text-xs font-semibold text-[#4D4D4D] uppercase tracking-wide mb-1.5">Data limite</p>
+            <Input
+              type="date"
+              value={closesAt}
+              onChange={(e) => setClosesAt(e.target.value)}
+              min={new Date().toISOString().split("T")[0]}
+              className="rounded-xl"
+            />
+          </div>
+          <div className="flex justify-end gap-2 pt-2">
+            <Button variant="outline" onClick={onClose}>Cancelar</Button>
+            <Button
+              onClick={() =>
+                onSave(enquete.id, {
+                  titulo: titulo.trim() || enquete.titulo,
+                  descricao: descricao.trim() || null,
+                  closes_at: closesAt ? new Date(closesAt).toISOString() : null
+                })
+              }
+              className="bg-[#1F6B3A] hover:bg-[#155A2A]"
+            >
+              Salvar
+            </Button>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  )
+}
+
 // ── detail dialog ─────────────────────────────────────────────────────────────
 
 type Tab = "proposta" | "discussao" | "votar" | "resultado"
@@ -422,6 +496,8 @@ function DetailDialog({
   enquete,
   profiles,
   currentCotaSlug,
+  isAdmin,
+  currentSlug,
   onVotar,
   onResponder,
   onTransition,
@@ -432,6 +508,8 @@ function DetailDialog({
   enquete: Enquete
   profiles: Profile[]
   currentCotaSlug: string | null
+  isAdmin: boolean
+  currentSlug: string | null
   onVotar: (enqueteId: string, opcaoIndex: number, melhoria?: string) => void
   onResponder: (enqueteId: string, texto: string) => void
   onTransition: (enqueteId: string, status: EnqueteStatus) => void
@@ -451,6 +529,7 @@ function DetailDialog({
   const [tab, setTab] = useState<Tab>(defaultTab)
 
   const transitions = nextTransitions(enquete.status as EnqueteStatus)
+  const canManage = isAdmin || enquete.criador === currentSlug
   const maxVotos = Math.max(...Object.values(enquete.votos).map(Number), 1)
   const votantesCount = Object.keys(enquete.votantes).length
 
@@ -664,7 +743,7 @@ function DetailDialog({
         </div>
 
         {/* state machine actions */}
-        {transitions.length > 0 && (
+        {canManage && transitions.length > 0 && (
           <div className="flex gap-2 pt-2 border-t border-[#F5F5F4] flex-wrap">
             {transitions.map((t) => (
               <Button
@@ -696,9 +775,11 @@ export default function Enquetes() {
   const { slug: currentSlug } = useAuth()
   const [enquetes, setEnquetes] = useState<Enquete[]>([])
   const [profiles, setProfiles] = useState<Profile[]>([])
+  const [cotas, setCotas] = useState<Cota[]>([])
   const [loading, setLoading] = useState(true)
   const [showModal, setShowModal] = useState(false)
   const [detailEnquete, setDetailEnquete] = useState<Enquete | null>(null)
+  const [editingEnquete, setEditingEnquete] = useState<Enquete | null>(null)
   const [categoriaFilter, setCategoriaFilter] = useState("")
   const [statusFilter, setStatusFilter] = useState("")
   const [votoError, setVotoError] = useState("")
@@ -717,18 +798,21 @@ export default function Enquetes() {
     multipla_escolha: false,
     opcoes: ["", ""] as string[],
     anonima: false,
-    prazo_dias: "" as number | ""
+    prazo_dias: "" as number | "",
+    iniciarVotacao: false
   })
 
   const load = async () => {
     setLoading(true)
     try {
-      const [es, ps] = await Promise.all([
+      const [es, ps, cs] = await Promise.all([
         api.get<Enquete[]>("/api/enquetes"),
-        api.get<Profile[]>("/api/profiles")
+        api.get<Profile[]>("/api/profiles"),
+        api.get<Cota[]>("/api/cotas")
       ])
       setEnquetes(es)
       setProfiles(ps)
+      setCotas(cs)
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : "Erro ao carregar enquetes."
       setGlobalError(msg)
@@ -777,10 +861,12 @@ export default function Enquetes() {
         opcoes,
         multipla_escolha: form.tipo === "multipla" && form.multipla_escolha,
         anonima: form.anonima,
-        closes_at
+        closes_at,
+        criador: currentSlug,
+        status: form.iniciarVotacao ? "votacao" : "aberta"
       })
       setShowModal(false)
-      setForm({ titulo: "", tipo: "", multipla_escolha: false, opcoes: ["", ""], anonima: false, prazo_dias: "" })
+      setForm({ titulo: "", tipo: "", multipla_escolha: false, opcoes: ["", ""], anonima: false, prazo_dias: "", iniciarVotacao: false })
       load()
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : "Erro ao criar enquete."
@@ -864,6 +950,20 @@ export default function Enquetes() {
       setGlobalError(msg)
     } finally {
       setDeletingId(null)
+    }
+  }
+
+  const updateEnquete = async (
+    id: string,
+    payload: { titulo?: string; descricao?: string | null; closes_at?: string | null }
+  ) => {
+    try {
+      await api.put(`/api/enquetes/${id}`, payload)
+      setEditingEnquete(null)
+      load()
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : "Erro ao editar enquete."
+      setGlobalError(msg)
     }
   }
 
@@ -996,10 +1096,10 @@ export default function Enquetes() {
           const votantesCount = Object.keys(e.votantes).length
           const showComments = expandedComments.has(e.id)
           const criadorProfile = profiles.find((p) => p.slug === e.criador) ?? null
-          const participantCotaSlugs = new Set(Object.keys(e.votantes ?? {}))
-          const participantProfiles = profiles.filter(
-            (p) => p.cota_slug && participantCotaSlugs.has(p.cota_slug)
-          )
+          const voterCotaSlugs = Object.keys(e.votantes ?? {})
+          const voterCotas = voterCotaSlugs
+            .map((s) => cotas.find((c) => c.slug === s))
+            .filter(Boolean) as Cota[]
 
           return (
             <div
@@ -1049,30 +1149,24 @@ export default function Enquetes() {
                     <h3 className="font-semibold text-[#1A1A1A] hover:text-[#1F6B3A] transition-colors flex-1 min-w-0">
                       {e.titulo}
                     </h3>
-                    {participantProfiles.length > 0 && (
+                    {voterCotas.length > 0 && (
                       <div className="flex items-center shrink-0">
-                        {participantProfiles.slice(0, 6).map((p, i) => (
+                        {voterCotas.slice(0, 6).map((c, i) => (
                           <div
-                            key={p.slug}
-                            className={i > 0 ? "-ml-2" : ""}
+                            key={c.slug}
+                            className={`w-8 h-8 rounded-full bg-[#1F6B3A] text-white text-xs font-bold flex items-center justify-center ring-2 ring-white shrink-0 ${i > 0 ? "-ml-2" : ""}`}
                             style={{ zIndex: 10 - i }}
-                            title={p.nome_curto || p.nome_completo}
+                            title={`Bolinha ${c.numero}`}
                           >
-                            <Avatar
-                              slug={p.slug}
-                              nome={p.nome_completo}
-                              foto_url={p.foto_url}
-                              size="sm"
-                              className="ring-2 ring-white"
-                            />
+                            {c.numero}
                           </div>
                         ))}
-                        {participantProfiles.length > 6 && (
+                        {voterCotas.length > 6 && (
                           <div
                             className="-ml-2 w-8 h-8 rounded-xl bg-[#E7E5E4] text-[#4D4D4D] text-xs font-semibold flex items-center justify-center ring-2 ring-white"
                             style={{ zIndex: 1 }}
                           >
-                            +{participantProfiles.length - 6}
+                            +{voterCotas.length - 6}
                           </div>
                         )}
                       </div>
@@ -1086,21 +1180,28 @@ export default function Enquetes() {
                   )}
                 </div>
 
-                {isAdmin && (
-                  <button
-                    onClick={() => {
-                      if (
-                        window.confirm("Deseja realmente excluir esta enquete?")
-                      ) {
-                        deletar(e.id)
-                      }
-                    }}
-                    disabled={deletingId === e.id}
-                    className="p-1.5 text-[#8A8A8A] hover:text-red-600 rounded-lg hover:bg-[#F8F7F4] shrink-0 ml-2 disabled:opacity-40"
-                    title="Excluir"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
+                {(isAdmin || e.criador === currentSlug) && (
+                  <div className="flex items-center gap-1 shrink-0 ml-2">
+                    <button
+                      onClick={() => setEditingEnquete(e)}
+                      className="p-1.5 text-[#8A8A8A] hover:text-[#1F6B3A] rounded-lg hover:bg-[#F8F7F4]"
+                      title="Editar"
+                    >
+                      <Pencil className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => {
+                        if (window.confirm("Deseja realmente excluir esta enquete?")) {
+                          deletar(e.id)
+                        }
+                      }}
+                      disabled={deletingId === e.id}
+                      className="p-1.5 text-[#8A8A8A] hover:text-red-600 rounded-lg hover:bg-[#F8F7F4] disabled:opacity-40"
+                      title="Excluir"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
                 )}
               </div>
 
@@ -1251,6 +1352,8 @@ export default function Enquetes() {
           enquete={detailEnquete}
           profiles={profiles}
           currentCotaSlug={currentCotaSlug}
+          isAdmin={isAdmin}
+          currentSlug={currentSlug}
           onVotar={votar}
           onResponder={responder}
           onTransition={transition}
@@ -1359,6 +1462,16 @@ export default function Enquetes() {
               </label>
             </div>
 
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={form.iniciarVotacao}
+                onChange={(e) => setForm({ ...form, iniciarVotacao: e.target.checked })}
+                className="w-4 h-4 rounded border-[#E7E5E4] text-[#1F6B3A] focus:ring-[#1F6B3A]"
+              />
+              <span className="text-sm text-[#1A1A1A]">Abrir direto para votação (sem período de discussão)</span>
+            </label>
+
             <Button
               onClick={createEnquete}
               disabled={
@@ -1374,6 +1487,15 @@ export default function Enquetes() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* edit dialog */}
+      {editingEnquete && (
+        <EditEnqueteDialog
+          enquete={editingEnquete}
+          onSave={updateEnquete}
+          onClose={() => setEditingEnquete(null)}
+        />
+      )}
     </div>
   )
 }

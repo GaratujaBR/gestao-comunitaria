@@ -5,6 +5,8 @@ from app.database import get_db
 from app.models.enquete import Enquete
 from app.models.enquete_comentario import EnqueteComentario
 from app.models.cota import Cota
+from app.models.log import Log
+from app.models.alert import Alert
 from app.schemas.enquete import (
     EnqueteCreate, EnqueteUpdate, VotoCreate, EnqueteResponse,
     ComentarioCreate, ComentarioResponse,
@@ -91,7 +93,7 @@ async def create_enquete(data: EnqueteCreate, db: AsyncSession = Depends(get_db)
     if data.tipo == "multipla" and len(opcoes) < 2:
         raise HTTPException(status_code=422, detail="Mínimo 2 opções")
     votos = {str(i): 0 for i in range(len(opcoes))}
-    _exclude = {"opcoes", "multipla_escolha"}
+    _exclude = {"opcoes", "multipla_escolha", "status"}
     enquete = Enquete(
         **{k: v for k, v in data.model_dump().items() if k not in _exclude},
         opcoes=opcoes,
@@ -99,10 +101,26 @@ async def create_enquete(data: EnqueteCreate, db: AsyncSession = Depends(get_db)
         votantes={},
         total_votos=0,
         multipla_escolha=(data.tipo == "multipla" and data.multipla_escolha),
+        status=data.status or "aberta",
     )
     db.add(enquete)
     await db.commit()
     await db.refresh(enquete)
+
+    db.add(Log(
+        acao="enquete_criada",
+        profile_slug=data.criador,
+        descricao_incidente=f"Enquete criada: {enquete.titulo}",
+    ))
+    profiles_result = await db.execute(select(Profile).where(Profile.ativo == True))
+    for p in profiles_result.scalars().all():
+        db.add(Alert(
+            tipo="enquete",
+            profile_slug=p.slug,
+            titulo=f"Nova enquete: {enquete.titulo}",
+            mensagem="Uma nova enquete foi criada e aguarda sua participação.",
+        ))
+    await db.commit()
 
     active_cotas = await _active_cotas_count(db)
     response = EnqueteResponse.model_validate(enquete)
