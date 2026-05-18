@@ -3,6 +3,7 @@ export interface ObraInfo {
   tecnica?: string
   operarios?: string
   notas?: string
+  estagio?: string
 }
 
 export interface Cota {
