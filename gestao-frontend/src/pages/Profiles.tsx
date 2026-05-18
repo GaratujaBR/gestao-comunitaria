@@ -166,7 +166,7 @@ export default function Profiles() {
                   </div>
                 </div>
                 <div className="flex gap-1">
-                  {p.email && (
+                  {isAdmin && p.email && (
                     <button
                       onClick={() => sendInvite(p)}
                       disabled={invitingSlugs.has(p.slug)}
