@@ -222,11 +222,18 @@ async def responder(
 
 
 @router.put("/{enquete_id}", response_model=EnqueteResponse)
-async def update_enquete(enquete_id: str, data: EnqueteUpdate, db: AsyncSession = Depends(get_db)):
+async def update_enquete(
+    enquete_id: str,
+    data: EnqueteUpdate,
+    db: AsyncSession = Depends(get_db),
+    current_user: Profile = Depends(get_current_user),
+):
     result = await db.execute(select(Enquete).where(Enquete.id == enquete_id))
     enquete = result.scalar_one_or_none()
     if not enquete:
         raise HTTPException(status_code=404, detail="Enquete not found")
+    if not current_user.is_admin and enquete.criador != current_user.slug:
+        raise HTTPException(status_code=403, detail="Apenas o criador ou um administrador pode editar esta enquete.")
     for key, value in data.model_dump(exclude_unset=True).items():
         setattr(enquete, key, value)
     await db.commit()
@@ -240,11 +247,17 @@ async def update_enquete(enquete_id: str, data: EnqueteUpdate, db: AsyncSession 
 
 
 @router.delete("/{enquete_id}", status_code=204)
-async def delete_enquete(enquete_id: str, db: AsyncSession = Depends(get_db)):
+async def delete_enquete(
+    enquete_id: str,
+    db: AsyncSession = Depends(get_db),
+    current_user: Profile = Depends(get_current_user),
+):
     result = await db.execute(select(Enquete).where(Enquete.id == enquete_id))
     enquete = result.scalar_one_or_none()
     if not enquete:
         raise HTTPException(status_code=404, detail="Enquete not found")
+    if not current_user.is_admin and enquete.criador != current_user.slug:
+        raise HTTPException(status_code=403, detail="Apenas o criador ou um administrador pode excluir esta enquete.")
     await db.delete(enquete)
     await db.commit()
 
