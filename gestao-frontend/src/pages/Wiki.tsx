@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/select"
 import { Plus, Pencil, Trash2, BookOpen, Eye } from "lucide-react"
 import { useAdmin } from "@/hooks/useAdmin"
+import { useAuth } from "@/context/AuthContext"
 import ReactMarkdown from "react-markdown"
 import remarkGfm from "remark-gfm"
 
@@ -46,6 +47,8 @@ const emptyForm = {
 
 export default function Wiki() {
   const isAdmin = useAdmin()
+  const { slug: currentSlug } = useAuth()
+  const canEdit = (a: WikiArticle) => isAdmin || a.autor_slug === currentSlug
   const [articles, setArticles] = useState<WikiArticle[]>([])
   const [loading, setLoading] = useState(true)
   const [open, setOpen] = useState(false)
@@ -71,7 +74,7 @@ export default function Wiki() {
   }, [load, catFilter])
 
   const openNew = () => {
-    setForm(emptyForm)
+    setForm({ ...emptyForm, autor_slug: currentSlug || "" })
     setEditing(null)
     setError("")
     setPreview(false)
@@ -196,13 +199,15 @@ export default function Wiki() {
                   >
                     <Eye className="w-4 h-4 text-gray-500" />
                   </button>
-                  <button
-                    onClick={() => openEdit(a)}
-                    className="p-1.5 rounded-lg hover:bg-gray-100"
-                  >
-                    <Pencil className="w-4 h-4 text-gray-500" />
-                  </button>
-                  {isAdmin && (
+                  {canEdit(a) && (
+                    <button
+                      onClick={() => openEdit(a)}
+                      className="p-1.5 rounded-lg hover:bg-gray-100"
+                    >
+                      <Pencil className="w-4 h-4 text-gray-500" />
+                    </button>
+                  )}
+                  {canEdit(a) && (
                     <button
                       onClick={() => remove(a.slug)}
                       className="p-1.5 rounded-lg hover:bg-gray-100"
@@ -381,9 +386,7 @@ export default function Wiki() {
               <Label>Autor (slug)</Label>
               <Input
                 value={form.autor_slug}
-                onChange={(e) =>
-                  setForm({ ...form, autor_slug: e.target.value })
-                }
+                disabled
               />
             </div>
             <div className="flex justify-end gap-2 pt-2">
