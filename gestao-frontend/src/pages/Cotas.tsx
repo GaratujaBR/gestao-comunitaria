@@ -221,20 +221,20 @@ export default function Cotas() {
                         </span>
                       )}
                     </div>
-                    <h3 className="font-semibold text-[#1A1A1A] mt-1 truncate">
-                      {c.nome}
+                    <h3 className="font-semibold text-[#1A1A1A] mt-1 flex items-center gap-2">
+                      <span className="truncate">{c.nome}</span>
+                      {c.em_obra && (
+                        <img
+                          src={iconeConstrucao}
+                          alt="Estamos construindo!"
+                          title="Estamos construindo!"
+                          className="w-10 h-10 object-contain shrink-0"
+                        />
+                      )}
                     </h3>
                     <p className="text-xs text-[#8A8A8A]">@{c.slug}</p>
                   </div>
                   <div className="flex items-center gap-1 ml-2 shrink-0">
-                    {c.em_obra && (
-                      <img
-                        src={iconeConstrucao}
-                        alt="Em construção"
-                        title="Em construção"
-                        className="w-6 h-6 object-contain"
-                      />
-                    )}
                     <button
                       onClick={(e) => {
                         e.stopPropagation()
@@ -397,13 +397,13 @@ export default function Cotas() {
                   onChange={(e) => setObraForm((f) => ({ ...f, em_obra: e.target.checked }))}
                   className="w-4 h-4 accent-[#1F6B3A]"
                 />
-                <Label htmlFor="em_obra">Em construção</Label>
+                <Label htmlFor="em_obra">Estamos construindo!</Label>
               </div>
             )}
             {!isAdmin && (
               <div className="flex items-center gap-2 text-sm">
                 <span className={`w-2.5 h-2.5 rounded-full ${obraCota?.em_obra ? "bg-amber-400" : "bg-gray-300"}`} />
-                <span className="text-[#4D4D4D]">{obraCota?.em_obra ? "Em construção" : "Sem obra ativa"}</span>
+                <span className="text-[#4D4D4D]">{obraCota?.em_obra ? "Estamos construindo!" : "Sem obra ativa"}</span>
               </div>
             )}
             <div>
