@@ -287,17 +287,6 @@ export default function ProfileForm({
           {form.role === "cotista" && (
             <>
               <div>
-                <Label>Nº da Bolinha</Label>
-                <Input
-                  value={form.lote}
-                  onChange={(e) =>
-                    setForm((f) => ({ ...f, lote: e.target.value }))
-                  }
-                  placeholder="ex: 7"
-                />
-              </div>
-
-              <div>
                 <Label>Bolinha</Label>
                 <div className="mt-1.5 flex flex-wrap gap-1.5 max-h-32 overflow-y-auto p-1">
                   {Array.from({ length: 45 }, (_, i) => i).map((num) => {
@@ -308,7 +297,12 @@ export default function ProfileForm({
                         type="button"
                         disabled={!cota}
                         onClick={() =>
-                          cota && setForm((f) => ({ ...f, cota_slug: cota.slug }))
+                          cota &&
+                          setForm((f) => ({
+                            ...f,
+                            cota_slug: cota.slug,
+                            lote: String(cota.numero)
+                          }))
                         }
                         className={`w-8 h-8 rounded-full border text-xs font-semibold transition-colors flex items-center justify-center shrink-0 ${
                           form.cota_slug === cota?.slug
