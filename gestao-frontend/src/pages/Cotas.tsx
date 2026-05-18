@@ -226,15 +226,13 @@ export default function Cotas() {
                       {c.em_obra && (
                         <button
                           onClick={(e) => { e.stopPropagation(); openObraDialog(c) }}
-                          className="shrink-0 hover:opacity-80 transition-opacity"
+                          className="shrink-0 flex items-center gap-1.5 hover:opacity-80 transition-opacity"
                         >
-                          <img src={iconeConstrucao} alt="Estamos construindo!" className="w-16 h-16 object-contain" />
+                          <img src={iconeConstrucao} alt="Estamos construindo!" className="w-[102px] h-[102px] object-contain" />
+                          <span className="text-xs font-semibold text-amber-600">Estamos construindo!</span>
                         </button>
                       )}
                     </h3>
-                    {c.em_obra && (
-                      <span className="text-xs font-semibold text-amber-600 block mt-0.5">Estamos construindo!</span>
-                    )}
                     <p className="text-xs text-[#8A8A8A]">@{c.slug}</p>
                   </div>
                   <div className="flex items-center gap-1 ml-2 shrink-0">
