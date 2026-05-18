@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/select"
 import { Plus, Bell, Check, Trash2 } from "lucide-react"
 import { useAdmin } from "@/hooks/useAdmin"
+import { useAuth } from "@/context/AuthContext"
 
 const tipos = ["manutencao", "reserva", "sistema"]
 
@@ -34,6 +35,7 @@ const emptyForm = {
 
 export default function Alerts() {
   const isAdmin = useAdmin()
+  const { slug } = useAuth()
   const [alerts, setAlerts] = useState<Alert[]>([])
   const [loading, setLoading] = useState(true)
   const [open, setOpen] = useState(false)
@@ -44,7 +46,8 @@ export default function Alerts() {
   const load = useCallback(async () => {
     setLoading(true)
     try {
-      const url = showRead ? "/api/alerts" : "/api/alerts?lido=false"
+      const base = showRead ? "/api/alerts" : "/api/alerts?lido=false"
+      const url = isAdmin ? base : `${base}${showRead ? "?" : "&"}profile_slug=${slug}`
       setAlerts(await api.get<Alert[]>(url))
     } finally {
       setLoading(false)
