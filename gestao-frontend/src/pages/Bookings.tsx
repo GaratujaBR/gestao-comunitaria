@@ -30,6 +30,7 @@ import {
 } from "lucide-react"
 import SpaceMap from "@/components/SpaceMap"
 import BookingCalendar from "@/components/BookingCalendar"
+import { useAdmin } from "@/hooks/useAdmin"
 
 const tiposUso = ["hospedagem", "evento", "mutirao", "manutencao"]
 const statusList = [
@@ -55,6 +56,7 @@ const emptyForm = {
 }
 
 export default function Bookings() {
+  const isAdmin = useAdmin()
   const [bookings, setBookings] = useState<Booking[]>([])
   const [spaces, setSpaces] = useState<Space[]>([])
   const [profiles, setProfiles] = useState<Profile[]>([])
@@ -248,7 +250,10 @@ export default function Bookings() {
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-gray-800">Reservas</h1>
+        <div>
+          <h1 className="text-2xl font-bold text-gray-800">Reservas</h1>
+          <p className="text-sm text-gray-500 mt-1">Clique no espaço desejado</p>
+        </div>
         <Button onClick={() => openNew()}>
           <Plus className="w-4 h-4 mr-2" /> Nova Reserva
         </Button>
@@ -695,7 +700,7 @@ export default function Bookings() {
         </DialogContent>
       </Dialog>
 
-      <div className="mt-8 border border-[#E7E5E4] rounded-xl overflow-hidden">
+      {isAdmin && (<div className="mt-8 border border-[#E7E5E4] rounded-xl overflow-hidden">
         <button
           onClick={() => setSpacesOpen((o) => !o)}
           className="w-full flex items-center justify-between px-5 py-4 bg-white hover:bg-[#F8F7F4] transition-colors"
@@ -771,7 +776,7 @@ export default function Bookings() {
             )}
           </div>
         )}
-      </div>
+      </div>)}
 
       <Dialog open={spaceEditOpen} onOpenChange={setSpaceEditOpen}>
         <DialogContent>
