@@ -222,9 +222,9 @@ export default function Profiles() {
                     {p.role}
                   </span>
                 )}
-                {p.lote && (
+                {(p.lote || cotas.find(c => c.slug === p.cota_slug)?.numero?.toString()) && (
                   <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
-                    bolinha {p.lote}
+                    bolinha {p.lote || cotas.find(c => c.slug === p.cota_slug)?.numero}
                   </span>
                 )}
               </div>
@@ -286,9 +286,9 @@ export default function Profiles() {
                     {viewingProfile.role}
                   </span>
                 )}
-                {viewingProfile.lote && (
+                {(viewingProfile.lote || cotas.find(c => c.slug === viewingProfile.cota_slug)?.numero?.toString()) && (
                   <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
-                    bolinha {viewingProfile.lote}
+                    bolinha {viewingProfile.lote || cotas.find(c => c.slug === viewingProfile.cota_slug)?.numero}
                   </span>
                 )}
               </div>
