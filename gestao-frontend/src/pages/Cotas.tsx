@@ -84,8 +84,9 @@ export default function Cotas() {
   }
 
   const removeCota = async (slug: string) => {
-    if (!confirm("Remover esta bolinha?")) return
-    await api.del(`/api/cotas/${slug}`)
+    if (!confirm("Desvincular esta bolinha? Os perfis associados ficarão sem bolinha, mas a bolinha continuará disponível.")) return
+    const linked = profiles.filter((p) => p.cota_slug === slug)
+    await Promise.all(linked.map((p) => api.put(`/api/profiles/${p.slug}`, { cota_slug: null })))
     load()
   }
 
