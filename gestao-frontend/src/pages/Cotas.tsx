@@ -36,7 +36,8 @@ export default function Cotas() {
     arquiteto: "",
     tecnica: "",
     operarios: "",
-    notas: ""
+    notas: "",
+    estagio: ""
   })
 
   const openObraDialog = (c: Cota) => {
@@ -47,7 +48,8 @@ export default function Cotas() {
       arquiteto: c.obra_info?.arquiteto || "",
       tecnica: c.obra_info?.tecnica || "",
       operarios: c.obra_info?.operarios || "",
-      notas: c.obra_info?.notas || ""
+      notas: c.obra_info?.notas || "",
+      estagio: c.obra_info?.estagio || ""
     })
     setObraOpen(true)
   }
@@ -62,7 +64,8 @@ export default function Cotas() {
             arquiteto: info.arquiteto || null,
             tecnica: info.tecnica || null,
             operarios: info.operarios || null,
-            notas: info.notas || null
+            notas: info.notas || null,
+            estagio: info.estagio || null
           }
         : null
       await api.put(`/api/cotas/${obraCota.slug}`, { em_obra, obra_info })
@@ -383,7 +386,7 @@ export default function Cotas() {
             </DialogDescription>
           </DialogHeader>
           {obraCota?.em_obra && (
-            <div className="flex justify-center">
+            <div className="flex justify-start">
               <img src={iconeConstrucao} alt="Estamos construindo!" className="w-[102px] h-[102px] object-contain" />
             </div>
           )}
@@ -407,6 +410,23 @@ export default function Cotas() {
                 <span className="text-[#4D4D4D]">{obraCota?.em_obra ? "Estamos construindo!" : "Sem obra ativa"}</span>
               </div>
             )}
+            <div>
+              <Label>Estágio da obra</Label>
+              {isAdmin ? (
+                <select
+                  value={obraForm.estagio}
+                  onChange={(e) => setObraForm((f) => ({ ...f, estagio: e.target.value }))}
+                  className="mt-1 w-full text-sm px-3 py-2 border border-input rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-[#1F6B3A]"
+                >
+                  <option value="">— Selecione —</option>
+                  {["Planejamento", "Fundação", "Estrutura", "Fechamento", "Acabamento"].map((s) => (
+                    <option key={s} value={s}>{s}</option>
+                  ))}
+                </select>
+              ) : (
+                <p className="mt-1 text-sm text-[#4D4D4D]">{obraCota?.obra_info?.estagio || <span className="text-[#8A8A8A]">—</span>}</p>
+              )}
+            </div>
             <div>
               <Label>Arquiteto responsável</Label>
               {isAdmin ? (
