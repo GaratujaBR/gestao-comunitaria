@@ -222,14 +222,6 @@ export default function Cotas() {
                       )}
                     </div>
                     <h3 className="font-semibold text-[#1A1A1A] mt-1 truncate">{c.nome}</h3>
-                    {c.em_obra && (
-                      <button
-                        onClick={(e) => { e.stopPropagation(); openObraDialog(c) }}
-                        className="flex items-center gap-1.5 mt-0.5 hover:opacity-80 transition-opacity"
-                      >
-                        <img src={iconeConstrucao} alt="Estamos construindo!" className="w-[102px] h-[102px] object-contain shrink-0" />
-                      </button>
-                    )}
                     <p className="text-xs text-[#8A8A8A]">@{c.slug}</p>
                   </div>
                   <div className="flex items-center gap-1 ml-2 shrink-0">
@@ -390,6 +382,11 @@ export default function Cotas() {
               {isAdmin ? "Informações sobre a construção desta bolinha." : "Informações sobre a construção desta bolinha (somente leitura)."}
             </DialogDescription>
           </DialogHeader>
+          {obraCota?.em_obra && (
+            <div className="flex justify-center">
+              <img src={iconeConstrucao} alt="Estamos construindo!" className="w-[102px] h-[102px] object-contain" />
+            </div>
+          )}
           {obraError && <p className="text-sm text-red-600">{obraError}</p>}
           <div className="space-y-4">
             {isAdmin && (
