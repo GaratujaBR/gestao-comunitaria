@@ -228,7 +228,7 @@ export default function Cotas() {
                           onClick={(e) => { e.stopPropagation(); openObraDialog(c) }}
                           className="shrink-0 hover:opacity-80 transition-opacity"
                         >
-                          <img src={iconeConstrucao} alt="Estamos construindo!" className="w-16 h-16 object-contain" />
+                          <img src={iconeConstrucao} alt="Estamos construindo!" className="w-[102px] h-[102px] object-contain" />
                         </button>
                       )}
                     </h3>
