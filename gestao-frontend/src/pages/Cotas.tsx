@@ -11,7 +11,8 @@ import {
   DialogTitle,
   DialogDescription
 } from "@/components/ui/dialog"
-import { Plus, Pencil, Trash2, Landmark, ChevronDown, Mail, Phone, HardHat, Info } from "lucide-react"
+import { Plus, Pencil, Trash2, Landmark, ChevronDown, Mail, Phone, Home } from "lucide-react"
+import iconeConstrucao from "../../imgs/icone-construção.png"
 import Avatar from "@/components/Avatar"
 import ProfileForm from "@/components/ProfileForm"
 import { useAdmin } from "@/hooks/useAdmin"
@@ -29,6 +30,7 @@ export default function Cotas() {
   // Obra dialog
   const [obraOpen, setObraOpen] = useState(false)
   const [obraCota, setObraCota] = useState<Cota | null>(null)
+  const [obraError, setObraError] = useState("")
   const [obraForm, setObraForm] = useState<ObraInfo & { em_obra: boolean }>({
     em_obra: false,
     arquiteto: "",
@@ -39,6 +41,7 @@ export default function Cotas() {
 
   const openObraDialog = (c: Cota) => {
     setObraCota(c)
+    setObraError("")
     setObraForm({
       em_obra: c.em_obra,
       arquiteto: c.obra_info?.arquiteto || "",
@@ -51,13 +54,23 @@ export default function Cotas() {
 
   const saveObra = async () => {
     if (!obraCota) return
-    const { em_obra, ...info } = obraForm
-    const obra_info = Object.values(info).some(Boolean)
-      ? { arquiteto: info.arquiteto || undefined, tecnica: info.tecnica || undefined, operarios: info.operarios || undefined, notas: info.notas || undefined }
-      : null
-    await api.put(`/api/cotas/${obraCota.slug}`, { em_obra, obra_info })
-    setObraOpen(false)
-    load()
+    setObraError("")
+    try {
+      const { em_obra, ...info } = obraForm
+      const obra_info = Object.values(info).some(Boolean)
+        ? {
+            arquiteto: info.arquiteto || null,
+            tecnica: info.tecnica || null,
+            operarios: info.operarios || null,
+            notas: info.notas || null
+          }
+        : null
+      await api.put(`/api/cotas/${obraCota.slug}`, { em_obra, obra_info })
+      setObraOpen(false)
+      load()
+    } catch (e: unknown) {
+      setObraError(e instanceof Error ? e.message : "Erro ao salvar")
+    }
   }
 
   // Cota dialog
@@ -215,9 +228,12 @@ export default function Cotas() {
                   </div>
                   <div className="flex items-center gap-1 ml-2 shrink-0">
                     {c.em_obra && (
-                      <span title="Em construção">
-                        <HardHat className="w-4 h-4 text-amber-500" />
-                      </span>
+                      <img
+                        src={iconeConstrucao}
+                        alt="Em construção"
+                        title="Em construção"
+                        className="w-6 h-6 object-contain"
+                      />
                     )}
                     <button
                       onClick={(e) => {
@@ -227,7 +243,7 @@ export default function Cotas() {
                       className="p-1.5 rounded-lg hover:bg-[#F5F5F4]"
                       title="Informações da obra"
                     >
-                      <Info className="w-3.5 h-3.5 text-[#8A8A8A]" />
+                      <Home className="w-3.5 h-3.5 text-[#8A8A8A]" />
                     </button>
                     {isAdmin && (
                       <>
@@ -370,6 +386,7 @@ export default function Cotas() {
               {isAdmin ? "Informações sobre a construção desta bolinha." : "Informações sobre a construção desta bolinha (somente leitura)."}
             </DialogDescription>
           </DialogHeader>
+          {obraError && <p className="text-sm text-red-600">{obraError}</p>}
           <div className="space-y-4">
             {isAdmin && (
               <div className="flex items-center gap-2">
