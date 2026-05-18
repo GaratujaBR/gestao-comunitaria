@@ -559,6 +559,7 @@ export default function Bookings() {
                 <Label>Data Início *</Label>
                 <Input
                   type="date"
+                  min={new Date().toISOString().split("T")[0]}
                   value={form.data_inicio}
                   onChange={(e) =>
                     setForm({ ...form, data_inicio: e.target.value })
@@ -569,6 +570,7 @@ export default function Bookings() {
                 <Label>Data Fim *</Label>
                 <Input
                   type="date"
+                  min={new Date().toISOString().split("T")[0]}
                   value={form.data_fim}
                   onChange={(e) =>
                     setForm({ ...form, data_fim: e.target.value })

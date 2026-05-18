@@ -243,6 +243,7 @@ export default function Eventos() {
                   }
             }
             locale="pt-br"
+            validRange={{ start: new Date() }}
             events={calendarEvents}
             selectable
             select={handleDateSelect}
@@ -369,6 +370,7 @@ export default function Eventos() {
                 <Label>Início *</Label>
                 <Input
                   type="datetime-local"
+                  min={new Date().toISOString().slice(0, 16)}
                   value={form.data_inicio}
                   onChange={(e) =>
                     setForm({ ...form, data_inicio: e.target.value })
@@ -380,6 +382,7 @@ export default function Eventos() {
                 <Label>Fim *</Label>
                 <Input
                   type="datetime-local"
+                  min={new Date().toISOString().slice(0, 16)}
                   value={form.data_fim}
                   onChange={(e) =>
                     setForm({ ...form, data_fim: e.target.value })
