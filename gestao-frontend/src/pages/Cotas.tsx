@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from "react"
 import { api } from "@/api/client"
-import type { Cota, Profile } from "@/api/types"
+import type { Cota, ObraInfo, Profile } from "@/api/types"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -11,7 +11,7 @@ import {
   DialogTitle,
   DialogDescription
 } from "@/components/ui/dialog"
-import { Plus, Pencil, Trash2, Landmark, ChevronDown, Mail, Phone } from "lucide-react"
+import { Plus, Pencil, Trash2, Landmark, ChevronDown, Mail, Phone, HardHat, Info } from "lucide-react"
 import Avatar from "@/components/Avatar"
 import ProfileForm from "@/components/ProfileForm"
 import { useAdmin } from "@/hooks/useAdmin"
@@ -25,6 +25,40 @@ export default function Cotas() {
   const [loading, setLoading] = useState(true)
   const [expandedSlug, setExpandedSlug] = useState<string | null>(null)
   const [viewingProfile, setViewingProfile] = useState<Profile | null>(null)
+
+  // Obra dialog
+  const [obraOpen, setObraOpen] = useState(false)
+  const [obraCota, setObraCota] = useState<Cota | null>(null)
+  const [obraForm, setObraForm] = useState<ObraInfo & { em_obra: boolean }>({
+    em_obra: false,
+    arquiteto: "",
+    tecnica: "",
+    operarios: "",
+    notas: ""
+  })
+
+  const openObraDialog = (c: Cota) => {
+    setObraCota(c)
+    setObraForm({
+      em_obra: c.em_obra,
+      arquiteto: c.obra_info?.arquiteto || "",
+      tecnica: c.obra_info?.tecnica || "",
+      operarios: c.obra_info?.operarios || "",
+      notas: c.obra_info?.notas || ""
+    })
+    setObraOpen(true)
+  }
+
+  const saveObra = async () => {
+    if (!obraCota) return
+    const { em_obra, ...info } = obraForm
+    const obra_info = Object.values(info).some(Boolean)
+      ? { arquiteto: info.arquiteto || undefined, tecnica: info.tecnica || undefined, operarios: info.operarios || undefined, notas: info.notas || undefined }
+      : null
+    await api.put(`/api/cotas/${obraCota.slug}`, { em_obra, obra_info })
+    setObraOpen(false)
+    load()
+  }
 
   // Cota dialog
   const [cotaOpen, setCotaOpen] = useState(false)
@@ -84,8 +118,9 @@ export default function Cotas() {
   }
 
   const removeCota = async (slug: string) => {
-    if (!confirm("Remover esta bolinha?")) return
-    await api.del(`/api/cotas/${slug}`)
+    if (!confirm("Desvincular esta bolinha? Os perfis associados ficarão sem bolinha, mas a bolinha continuará disponível.")) return
+    const linked = profiles.filter((p) => p.cota_slug === slug)
+    await Promise.all(linked.map((p) => api.put(`/api/profiles/${p.slug}`, { cota_slug: null })))
     load()
   }
 
@@ -179,6 +214,21 @@ export default function Cotas() {
                     <p className="text-xs text-[#8A8A8A]">@{c.slug}</p>
                   </div>
                   <div className="flex items-center gap-1 ml-2 shrink-0">
+                    {c.em_obra && (
+                      <span title="Em construção">
+                        <HardHat className="w-4 h-4 text-amber-500" />
+                      </span>
+                    )}
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        openObraDialog(c)
+                      }}
+                      className="p-1.5 rounded-lg hover:bg-[#F5F5F4]"
+                      title="Informações da obra"
+                    >
+                      <Info className="w-3.5 h-3.5 text-[#8A8A8A]" />
+                    </button>
                     {isAdmin && (
                       <>
                         <button
@@ -306,6 +356,98 @@ export default function Cotas() {
               )}
             </div>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Obra dialog */}
+      <Dialog open={obraOpen} onOpenChange={setObraOpen}>
+        <DialogContent className="max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>
+              Obra — {obraCota?.nome}
+            </DialogTitle>
+            <DialogDescription>
+              {isAdmin ? "Informações sobre a construção desta bolinha." : "Informações sobre a construção desta bolinha (somente leitura)."}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            {isAdmin && (
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  id="em_obra"
+                  checked={obraForm.em_obra}
+                  onChange={(e) => setObraForm((f) => ({ ...f, em_obra: e.target.checked }))}
+                  className="w-4 h-4 accent-[#1F6B3A]"
+                />
+                <Label htmlFor="em_obra">Em construção</Label>
+              </div>
+            )}
+            {!isAdmin && (
+              <div className="flex items-center gap-2 text-sm">
+                <span className={`w-2.5 h-2.5 rounded-full ${obraCota?.em_obra ? "bg-amber-400" : "bg-gray-300"}`} />
+                <span className="text-[#4D4D4D]">{obraCota?.em_obra ? "Em construção" : "Sem obra ativa"}</span>
+              </div>
+            )}
+            <div>
+              <Label>Arquiteto responsável</Label>
+              {isAdmin ? (
+                <Input
+                  value={obraForm.arquiteto}
+                  onChange={(e) => setObraForm((f) => ({ ...f, arquiteto: e.target.value }))}
+                  placeholder="Nome do arquiteto"
+                />
+              ) : (
+                <p className="mt-1 text-sm text-[#4D4D4D]">{obraCota?.obra_info?.arquiteto || <span className="text-[#8A8A8A]">—</span>}</p>
+              )}
+            </div>
+            <div>
+              <Label>Técnica construtiva</Label>
+              {isAdmin ? (
+                <Input
+                  value={obraForm.tecnica}
+                  onChange={(e) => setObraForm((f) => ({ ...f, tecnica: e.target.value }))}
+                  placeholder="Ex: taipa de pilão, adobe, madeira..."
+                />
+              ) : (
+                <p className="mt-1 text-sm text-[#4D4D4D]">{obraCota?.obra_info?.tecnica || <span className="text-[#8A8A8A]">—</span>}</p>
+              )}
+            </div>
+            <div>
+              <Label>Operários / equipe</Label>
+              {isAdmin ? (
+                <textarea
+                  value={obraForm.operarios}
+                  onChange={(e) => setObraForm((f) => ({ ...f, operarios: e.target.value }))}
+                  placeholder="Nomes, contatos..."
+                  rows={3}
+                  className="w-full mt-1 px-3 py-2 text-sm border border-input rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-[#1F6B3A] resize-none"
+                />
+              ) : (
+                <p className="mt-1 text-sm text-[#4D4D4D] whitespace-pre-line">{obraCota?.obra_info?.operarios || <span className="text-[#8A8A8A]">—</span>}</p>
+              )}
+            </div>
+            <div>
+              <Label>Notas</Label>
+              {isAdmin ? (
+                <textarea
+                  value={obraForm.notas}
+                  onChange={(e) => setObraForm((f) => ({ ...f, notas: e.target.value }))}
+                  placeholder="Outras informações relevantes..."
+                  rows={3}
+                  className="w-full mt-1 px-3 py-2 text-sm border border-input rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-[#1F6B3A] resize-none"
+                />
+              ) : (
+                <p className="mt-1 text-sm text-[#4D4D4D] whitespace-pre-line">{obraCota?.obra_info?.notas || <span className="text-[#8A8A8A]">—</span>}</p>
+              )}
+            </div>
+            <div className="flex justify-end gap-2 pt-2">
+              <Button variant="outline" onClick={() => setObraOpen(false)}>
+                {isAdmin ? "Cancelar" : "Fechar"}
+              </Button>
+              {isAdmin && <Button onClick={saveObra}>Salvar</Button>}
+            </div>
+          </div>
         </DialogContent>
       </Dialog>
 

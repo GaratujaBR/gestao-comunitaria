@@ -1,9 +1,18 @@
+export interface ObraInfo {
+  arquiteto?: string
+  tecnica?: string
+  operarios?: string
+  notas?: string
+}
+
 export interface Cota {
   id: string
   slug: string
   numero: number
   nome: string
   ativo: boolean
+  em_obra: boolean
+  obra_info: ObraInfo | null
   created_at: string
 }
 

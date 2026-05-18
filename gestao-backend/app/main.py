@@ -54,19 +54,19 @@ async def lifespan(app: FastAPI):
         "ALTER TABLE enquetes ADD COLUMN anonima BOOLEAN DEFAULT FALSE",
         "ALTER TABLE profiles ADD COLUMN senha_hash TEXT",
         "ALTER TABLE profiles ADD COLUMN is_admin BOOLEAN DEFAULT FALSE",
+        "ALTER TABLE cotas ADD COLUMN em_obra BOOLEAN DEFAULT FALSE",
+        "ALTER TABLE cotas ADD COLUMN obra_info JSON",
     ]
-    async with engine.begin() as conn:
-        for sql in migrations:
-            try:
+    import logging
+    for sql in migrations:
+        try:
+            async with engine.begin() as conn:
                 await conn.execute(text(sql))
-            except Exception as e:
-                # SQLite "duplicate column" e PostgreSQL "already exists" são esperados
-                err_msg = str(e).lower()
-                if "duplicate column" in err_msg or "already exists" in err_msg or "relation" in err_msg:
-                    continue  # coluna/tabela já existe
-                # Loga erros reais de migração em vez de engolir silenciosamente
-                import logging
-                logging.warning(f"Migration warning: {e}")
+        except Exception as e:
+            err_msg = str(e).lower()
+            if "duplicate column" in err_msg or "already exists" in err_msg or "relation" in err_msg:
+                continue
+            logging.warning(f"Migration warning: {e}")
     await init_db()
     yield
 
