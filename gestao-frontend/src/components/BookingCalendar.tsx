@@ -112,6 +112,7 @@ export default function BookingCalendar({
           right: ""
         }}
         locale="pt-br"
+        validRange={{ start: new Date() }}
         buttonText={{ today: "Hoje" }}
         events={events}
         dateClick={handleDateClick}
