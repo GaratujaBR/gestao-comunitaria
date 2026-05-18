@@ -11,7 +11,7 @@ import {
   DialogTitle,
   DialogDescription
 } from "@/components/ui/dialog"
-import { Plus, Pencil, Trash2, Landmark, ChevronDown, Mail, Phone, Home } from "lucide-react"
+import { Plus, Pencil, Trash2, Landmark, ChevronDown, Mail, Phone, Home, HardHat } from "lucide-react"
 import iconeConstrucao from "../../imgs/icone-construção.png"
 import Avatar from "@/components/Avatar"
 import ProfileForm from "@/components/ProfileForm"
@@ -221,21 +221,21 @@ export default function Cotas() {
                         </span>
                       )}
                     </div>
-                    <h3 className="font-semibold text-[#1A1A1A] mt-1 flex items-center gap-2">
-                      <span className="truncate">{c.nome}</span>
-                      {c.em_obra && (
-                        <button
-                          onClick={(e) => { e.stopPropagation(); openObraDialog(c) }}
-                          className="shrink-0 flex items-center gap-1.5 hover:opacity-80 transition-opacity"
-                        >
-                          <img src={iconeConstrucao} alt="Estamos construindo!" className="w-[102px] h-[102px] object-contain" />
-                          <span className="text-xs font-semibold text-amber-600">Estamos construindo!</span>
-                        </button>
-                      )}
-                    </h3>
+                    <h3 className="font-semibold text-[#1A1A1A] mt-1 truncate">{c.nome}</h3>
+                    {c.em_obra && (
+                      <button
+                        onClick={(e) => { e.stopPropagation(); openObraDialog(c) }}
+                        className="flex items-center gap-1.5 mt-0.5 hover:opacity-80 transition-opacity"
+                      >
+                        <img src={iconeConstrucao} alt="Estamos construindo!" className="w-[102px] h-[102px] object-contain shrink-0" />
+                      </button>
+                    )}
                     <p className="text-xs text-[#8A8A8A]">@{c.slug}</p>
                   </div>
                   <div className="flex items-center gap-1 ml-2 shrink-0">
+                    {c.em_obra && (
+                      <span className="text-xs font-semibold text-amber-600">Estamos construindo!</span>
+                    )}
                     <button
                       onClick={(e) => {
                         e.stopPropagation()
@@ -244,7 +244,10 @@ export default function Cotas() {
                       className="p-1.5 rounded-lg hover:bg-[#F5F5F4]"
                       title="Informações da obra"
                     >
-                      <Home className="w-3.5 h-3.5 text-[#8A8A8A]" />
+                      {c.em_obra
+                        ? <HardHat className="w-3.5 h-3.5 text-amber-500" />
+                        : <Home className="w-3.5 h-3.5 text-[#8A8A8A]" />
+                      }
                     </button>
                     {isAdmin && (
                       <>
