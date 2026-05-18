@@ -16,7 +16,6 @@ import {
   ChevronUp,
   CheckCircle2,
   XCircle,
-  AlertCircle,
   Filter
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -109,59 +108,16 @@ function nextTransitions(
 
 // ── sub-components ────────────────────────────────────────────────────────────
 
-function QuorumBar({
-  quorumPercent,
-  quorumRequired,
-  totalVotantes
-}: {
-  quorumPercent: number
-  quorumRequired: number
-  totalVotantes: number
-}) {
-  const met = quorumPercent >= quorumRequired
-  return (
-    <div className="space-y-1">
-      <div className="flex items-center justify-between text-xs text-[#4D4D4D]">
-        <span>
-          Quorum: {totalVotantes} votantes ({quorumPercent}%)
-        </span>
-        <span className={met ? "text-[#1F6B3A] font-medium" : "text-amber-600"}>
-          mín. {quorumRequired}% {met ? "✓" : ""}
-        </span>
-      </div>
-      <div className="relative w-full bg-[#F8F7F4] rounded-full h-1.5">
-        <div
-          className={`h-1.5 rounded-full transition-all ${met ? "bg-[#1F6B3A]" : "bg-amber-400"}`}
-          style={{ width: `${Math.min(quorumPercent, 100)}%` }}
-        />
-        <div
-          className="absolute top-0 h-1.5 w-0.5 bg-[#4D4D4D] opacity-40"
-          style={{ left: `${quorumRequired}%` }}
-        />
-      </div>
-    </div>
-  )
-}
-
 function ResultBadge({
   approved,
-  quorumMet,
   approvalPercent,
   threshold
 }: {
   approved: boolean | null
-  quorumMet: boolean | null
   approvalPercent: number | null
   threshold: number
 }) {
   if (approved === null) return null
-  if (!quorumMet)
-    return (
-      <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-50 text-amber-700 text-xs font-medium">
-        <AlertCircle className="w-3.5 h-3.5 shrink-0" />
-        Quorum não atingido
-      </div>
-    )
   if (approved)
     return (
       <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#D5E8D4] text-[#1F6B3A] text-xs font-medium">
@@ -601,10 +557,6 @@ function DetailDialog({
               )}
               <div className="grid grid-cols-2 gap-2 text-xs text-[#4D4D4D]">
                 <div>
-                  <span className="font-medium">Quorum mínimo:</span>{" "}
-                  {enquete.quorum_required}%
-                </div>
-                <div>
                   <span className="font-medium">Threshold:</span>{" "}
                   {enquete.approval_threshold}%
                 </div>
@@ -717,7 +669,6 @@ function DetailDialog({
             <div className="space-y-4">
               <ResultBadge
                 approved={enquete.approved}
-                quorumMet={enquete.quorum_met}
                 approvalPercent={enquete.approval_percent}
                 threshold={enquete.approval_threshold}
               />
@@ -1202,7 +1153,6 @@ export default function Enquetes() {
               {showResult && (
                 <ResultBadge
                   approved={e.approved}
-                  quorumMet={e.quorum_met}
                   approvalPercent={e.approval_percent}
                   threshold={e.approval_threshold}
                 />
@@ -1290,13 +1240,6 @@ export default function Enquetes() {
                     })}
                   </div>
                 )}
-
-              {/* quorum bar */}
-              <QuorumBar
-                quorumPercent={e.quorum_percent ?? 0}
-                quorumRequired={e.quorum_required}
-                totalVotantes={votantesCount}
-              />
 
               {/* card footer */}
               <div className="flex items-center justify-between pt-1 border-t border-[#F5F5F4] gap-2">
