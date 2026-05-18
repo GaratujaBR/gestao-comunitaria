@@ -50,7 +50,6 @@ async def update_profile(
     if not current_user.is_admin:
         update_data.pop("is_admin", None)
         update_data.pop("ativo", None)
-        update_data.pop("cota_slug", None)
     for key, value in update_data.items():
         setattr(profile, key, value)
     await db.commit()

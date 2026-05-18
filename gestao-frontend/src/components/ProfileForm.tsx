@@ -300,20 +300,28 @@ export default function ProfileForm({
               <div>
                 <Label>Bolinha</Label>
                 <div className="mt-1.5 flex flex-wrap gap-1.5 max-h-32 overflow-y-auto p-1">
-                  {cotas.map((c) => (
-                    <button
-                      key={c.slug}
-                      type="button"
-                      onClick={() => setForm((f) => ({ ...f, cota_slug: c.slug }))}
-                      className={`w-8 h-8 rounded-full border text-xs font-semibold transition-colors flex items-center justify-center shrink-0 ${
-                        form.cota_slug === c.slug
-                          ? "bg-[#1F6B3A] text-white border-[#1F6B3A]"
-                          : "border-[#E7E5E4] text-[#4D4D4D] hover:border-[#88C9A1] hover:text-[#1F6B3A]"
-                      }`}
-                    >
-                      {c.numero}
-                    </button>
-                  ))}
+                  {Array.from({ length: 45 }, (_, i) => i).map((num) => {
+                    const cota = cotas.find((c) => c.numero === num)
+                    return (
+                      <button
+                        key={num}
+                        type="button"
+                        disabled={!cota}
+                        onClick={() =>
+                          cota && setForm((f) => ({ ...f, cota_slug: cota.slug }))
+                        }
+                        className={`w-8 h-8 rounded-full border text-xs font-semibold transition-colors flex items-center justify-center shrink-0 ${
+                          form.cota_slug === cota?.slug
+                            ? "bg-[#1F6B3A] text-white border-[#1F6B3A]"
+                            : cota
+                            ? "border-[#E7E5E4] text-[#4D4D4D] hover:border-[#88C9A1] hover:text-[#1F6B3A]"
+                            : "border-[#E7E5E4] text-gray-300 cursor-not-allowed opacity-40"
+                        }`}
+                      >
+                        {num}
+                      </button>
+                    )
+                  })}
                 </div>
                 {form.cota_slug && (
                   <p className="text-xs text-[#1F6B3A] mt-1 font-medium">
