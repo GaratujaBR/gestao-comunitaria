@@ -1,5 +1,9 @@
 @import "./styles/tokens.css";
 
+.fc .fc-daygrid-day.day-has-event {
+  background-color: #EEF7EE;
+}
+
 /* Fontes locais Montserrat — pesos em uso no app */
 @font-face {
   font-family: 'Montserrat';
