@@ -12,7 +12,6 @@ import {
   DialogDescription
 } from "@/components/ui/dialog"
 import { Plus, Pencil, Trash2, Landmark, ChevronDown, Mail, Phone, Home, HardHat, Check } from "lucide-react"
-import iconeConstrucao from "../../imgs/icone-construção.png"
 import iconePlanejamento from "../../imgs/planejamento-icon.png"
 import iconeFundacao from "../../imgs/fundação-icon.png"
 import iconeEstrutura from "../../imgs/estrutura-icon.png"
@@ -389,47 +388,53 @@ export default function Cotas() {
       <Dialog open={obraOpen} onOpenChange={setObraOpen}>
         <DialogContent className="p-0 max-h-[90vh] overflow-y-auto gap-0 max-w-md">
           {/* Header verde escuro */}
-          <div className="bg-[#1F6B3A] px-6 pt-5 pb-4 rounded-t-lg">
-            <p className="text-xs text-[#88C9A1] font-semibold uppercase tracking-wider mb-1">
-              OBRA · {obraCota?.nome}
-            </p>
-            <div className="flex items-start justify-between gap-2">
+          <div className="bg-[#1F6B3A] px-6 pt-5 pb-4 rounded-t-lg flex gap-3">
+            {/* Coluna esquerda */}
+            <div className="flex-1 min-w-0">
+              <p className="text-xs text-[#88C9A1] font-semibold uppercase tracking-wider mb-1">
+                OBRA · {obraCota?.nome}
+              </p>
               <DialogTitle className="text-white text-lg font-bold leading-snug">
                 {obraCota?.nome}
               </DialogTitle>
-              {obraCota?.em_obra && (() => {
-                const curEstagio = isAdmin ? obraForm.estagio : obraCota.obra_info?.estagio
-                const idx = ESTAGIOS.indexOf(curEstagio || "")
-                return (
+              <div className="mt-2">
+                {isAdmin ? (
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      id="em_obra"
+                      checked={obraForm.em_obra}
+                      onChange={(e) => setObraForm((f) => ({ ...f, em_obra: e.target.checked }))}
+                      className="w-4 h-4 accent-amber-400"
+                    />
+                    <span className="text-sm text-white">Estamos em obra!</span>
+                  </label>
+                ) : obraCota?.em_obra ? (
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-400 text-amber-900 text-xs font-semibold">
+                    <span className="w-1.5 h-1.5 rounded-full bg-amber-700" />
+                    Estamos em obra!
+                  </span>
+                ) : (
+                  <span className="text-xs text-[#88C9A1]">Sem obra ativa</span>
+                )}
+              </div>
+            </div>
+            {/* Coluna direita — ícone */}
+            {(() => {
+              const curEstagio = isAdmin ? obraForm.estagio : obraCota?.obra_info?.estagio
+              const idx = ESTAGIOS.indexOf(curEstagio || "")
+              const showIcon = isAdmin ? obraForm.em_obra : obraCota?.em_obra
+              if (!showIcon) return null
+              return (
+                <div className="flex items-center justify-center shrink-0">
                   <img
-                    src={idx >= 0 ? ESTAGIO_ICONS[idx] : iconeConstrucao}
-                    className="w-20 h-20 object-contain shrink-0"
+                    src={idx >= 0 ? ESTAGIO_ICONS[idx] : iconePlanejamento}
+                    className="w-28 h-28 object-contain"
                     alt=""
                   />
-                )
-              })()}
-            </div>
-            <div className="mt-2">
-              {isAdmin ? (
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    id="em_obra"
-                    checked={obraForm.em_obra}
-                    onChange={(e) => setObraForm((f) => ({ ...f, em_obra: e.target.checked }))}
-                    className="w-4 h-4 accent-amber-400"
-                  />
-                  <span className="text-sm text-white">Estamos em obra!</span>
-                </label>
-              ) : obraCota?.em_obra ? (
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-400 text-amber-900 text-xs font-semibold">
-                  <span className="w-1.5 h-1.5 rounded-full bg-amber-700" />
-                  Estamos em obra!
-                </span>
-              ) : (
-                <span className="text-xs text-[#88C9A1]">Sem obra ativa</span>
-              )}
-            </div>
+                </div>
+              )
+            })()}
           </div>
 
           {/* Corpo */}
