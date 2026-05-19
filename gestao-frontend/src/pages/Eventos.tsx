@@ -103,6 +103,8 @@ export default function Eventos() {
     load()
   }, [load])
 
+  const eventDates = new Set(eventos.map((e) => e.data_inicio.slice(0, 10)))
+
   const calendarEvents = eventos.map((e) => ({
     id: e.id,
     title: e.titulo,
@@ -248,6 +250,9 @@ export default function Eventos() {
             selectable
             select={handleDateSelect}
             eventClick={handleEventClick}
+            dayCellClassNames={(arg) =>
+              eventDates.has(arg.date.toISOString().slice(0, 10)) ? ["day-has-event"] : []
+            }
             height="auto"
             buttonText={
               isMobile
