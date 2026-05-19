@@ -237,7 +237,7 @@ export default function Cotas() {
                     </div>
                     <h3 className="font-semibold text-[#1A1A1A] mt-1 truncate">{c.nome}</h3>
                     {c.em_obra && (
-                      <p className="text-xs font-semibold text-amber-600">Estamos construindo!</p>
+                      <p className="text-xs font-semibold text-amber-600">Estamos em obra!</p>
                     )}
                     <p className="text-xs text-[#8A8A8A]">@{c.slug}</p>
                   </div>
@@ -411,12 +411,12 @@ export default function Cotas() {
                     onChange={(e) => setObraForm((f) => ({ ...f, em_obra: e.target.checked }))}
                     className="w-4 h-4 accent-amber-400"
                   />
-                  <span className="text-sm text-white">Estamos construindo!</span>
+                  <span className="text-sm text-white">Estamos em obra!</span>
                 </label>
               ) : obraCota?.em_obra ? (
                 <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-400 text-amber-900 text-xs font-semibold">
                   <span className="w-1.5 h-1.5 rounded-full bg-amber-700" />
-                  Estamos construindo!
+                  Estamos em obra!
                 </span>
               ) : (
                 <span className="text-xs text-[#88C9A1]">Sem obra ativa</span>
