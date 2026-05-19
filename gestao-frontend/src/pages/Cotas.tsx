@@ -386,7 +386,7 @@ export default function Cotas() {
 
       {/* Obra dialog */}
       <Dialog open={obraOpen} onOpenChange={setObraOpen}>
-        <DialogContent className="p-0 max-h-[90vh] overflow-y-auto gap-0 max-w-md">
+        <DialogContent className="p-0 max-h-[90vh] overflow-y-auto gap-0 max-w-md border-0">
           {/* Header verde escuro */}
           <div className="bg-[#1F6B3A] px-6 pt-5 pb-4 rounded-t-lg flex gap-3">
             {/* Coluna esquerda */}
