@@ -13,6 +13,8 @@ import {
 } from "@/components/ui/dialog"
 import { Plus, Pencil, Trash2, Landmark, ChevronDown, Mail, Phone, Home, HardHat } from "lucide-react"
 import iconeConstrucao from "../../imgs/icone-construção.png"
+
+const ESTAGIOS = ["Planejamento", "Fundação", "Estrutura", "Fechamento", "Acabamento"]
 import Avatar from "@/components/Avatar"
 import ProfileForm from "@/components/ProfileForm"
 import { useAdmin } from "@/hooks/useAdmin"
@@ -36,8 +38,9 @@ export default function Cotas() {
     arquiteto: "",
     tecnica: "",
     operarios: "",
-    notas: "",
-    estagio: ""
+    estagio: "",
+    inicio: "",
+    previsao: ""
   })
 
   const openObraDialog = (c: Cota) => {
@@ -48,8 +51,9 @@ export default function Cotas() {
       arquiteto: c.obra_info?.arquiteto || "",
       tecnica: c.obra_info?.tecnica || "",
       operarios: c.obra_info?.operarios || "",
-      notas: c.obra_info?.notas || "",
-      estagio: c.obra_info?.estagio || ""
+      estagio: c.obra_info?.estagio || "",
+      inicio: c.obra_info?.inicio || "",
+      previsao: c.obra_info?.previsao || ""
     })
     setObraOpen(true)
   }
@@ -64,8 +68,9 @@ export default function Cotas() {
             arquiteto: info.arquiteto || null,
             tecnica: info.tecnica || null,
             operarios: info.operarios || null,
-            notas: info.notas || null,
-            estagio: info.estagio || null
+            estagio: info.estagio || null,
+            inicio: info.inicio || null,
+            previsao: info.previsao || null
           }
         : null
       await api.put(`/api/cotas/${obraCota.slug}`, { em_obra, obra_info })
@@ -378,107 +383,144 @@ export default function Cotas() {
       <Dialog open={obraOpen} onOpenChange={setObraOpen}>
         <DialogContent className="max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>
-              Obra — {obraCota?.nome}
-            </DialogTitle>
+            <DialogTitle>Obra — {obraCota?.nome}</DialogTitle>
             <DialogDescription>
-              {isAdmin ? "Informações sobre a construção desta bolinha." : "Informações sobre a construção desta bolinha (somente leitura)."}
+              {isAdmin ? "Informações sobre a construção desta bolinha." : "Somente leitura."}
             </DialogDescription>
           </DialogHeader>
-          {obraCota?.em_obra && (
-            <div className="flex justify-start">
-              <img src={iconeConstrucao} alt="Estamos construindo!" className="w-[102px] h-[102px] object-contain" />
-            </div>
-          )}
-          {obraError && <p className="text-sm text-red-600">{obraError}</p>}
-          <div className="space-y-4">
-            {isAdmin && (
-              <div className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  id="em_obra"
-                  checked={obraForm.em_obra}
-                  onChange={(e) => setObraForm((f) => ({ ...f, em_obra: e.target.checked }))}
-                  className="w-4 h-4 accent-[#1F6B3A]"
-                />
-                <Label htmlFor="em_obra">Estamos construindo!</Label>
-              </div>
-            )}
-            {!isAdmin && (
-              <div className="flex items-center gap-2 text-sm">
-                <span className={`w-2.5 h-2.5 rounded-full ${obraCota?.em_obra ? "bg-amber-400" : "bg-gray-300"}`} />
-                <span className="text-[#4D4D4D]">{obraCota?.em_obra ? "Estamos construindo!" : "Sem obra ativa"}</span>
-              </div>
+
+          {/* Ícone + status */}
+          <div className="flex items-center gap-3">
+            {obraCota?.em_obra && (
+              <img src={iconeConstrucao} alt="Estamos construindo!" className="w-16 h-16 object-contain shrink-0" />
             )}
             <div>
-              <Label>Estágio da obra</Label>
               {isAdmin ? (
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    id="em_obra"
+                    checked={obraForm.em_obra}
+                    onChange={(e) => setObraForm((f) => ({ ...f, em_obra: e.target.checked }))}
+                    className="w-4 h-4 accent-[#1F6B3A]"
+                  />
+                  <Label htmlFor="em_obra">Estamos construindo!</Label>
+                </div>
+              ) : (
+                <div className="flex items-center gap-2 text-sm">
+                  <span className={`w-2.5 h-2.5 rounded-full ${obraCota?.em_obra ? "bg-amber-400" : "bg-gray-300"}`} />
+                  <span className="text-[#4D4D4D]">{obraCota?.em_obra ? "Estamos construindo!" : "Sem obra ativa"}</span>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {obraError && <p className="text-sm text-red-600">{obraError}</p>}
+
+          <div className="space-y-4">
+            {/* Select estágio (admin) */}
+            {isAdmin && (
+              <div>
+                <Label>Estágio da obra</Label>
                 <select
                   value={obraForm.estagio}
                   onChange={(e) => setObraForm((f) => ({ ...f, estagio: e.target.value }))}
                   className="mt-1 w-full text-sm px-3 py-2 border border-input rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-[#1F6B3A]"
                 >
                   <option value="">— Selecione —</option>
-                  {["Planejamento", "Fundação", "Estrutura", "Fechamento", "Acabamento"].map((s) => (
-                    <option key={s} value={s}>{s}</option>
-                  ))}
+                  {ESTAGIOS.map((s) => <option key={s} value={s}>{s}</option>)}
                 </select>
-              ) : (
-                <p className="mt-1 text-sm text-[#4D4D4D]">{obraCota?.obra_info?.estagio || <span className="text-[#8A8A8A]">—</span>}</p>
-              )}
+              </div>
+            )}
+
+            {/* Stepper visual */}
+            {(() => {
+              const cur = isAdmin ? obraForm.estagio : obraCota?.obra_info?.estagio
+              const idx = ESTAGIOS.indexOf(cur || "")
+              if (idx < 0 && !isAdmin) return null
+              return (
+                <div>
+                  <p className="text-xs text-[#8A8A8A] mb-2">
+                    {idx >= 0 ? `Estágio ${idx + 1} de ${ESTAGIOS.length}` : "Estágio não definido"}
+                  </p>
+                  <div className="flex gap-1">
+                    {ESTAGIOS.map((s, i) => (
+                      <div key={s} className="flex-1 flex flex-col items-center">
+                        <div className={`w-full h-1.5 rounded-full ${i <= idx ? "bg-amber-400" : "bg-gray-200"}`} />
+                        <span className={`text-[9px] mt-1 text-center leading-tight ${i === idx ? "text-amber-600 font-bold" : "text-gray-400"}`}>
+                          {s}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )
+            })()}
+
+            {/* Grid info */}
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <p className="text-xs text-[#8A8A8A]">Arquiteto</p>
+                {isAdmin ? (
+                  <Input className="mt-1" value={obraForm.arquiteto}
+                    onChange={(e) => setObraForm((f) => ({ ...f, arquiteto: e.target.value }))}
+                    placeholder="Nome do arquiteto"
+                  />
+                ) : (
+                  <p className="text-sm text-[#1A1A1A] mt-0.5">{obraCota?.obra_info?.arquiteto || <span className="text-[#8A8A8A]">—</span>}</p>
+                )}
+              </div>
+              <div>
+                <p className="text-xs text-[#8A8A8A]">Técnica construtiva</p>
+                {isAdmin ? (
+                  <Input className="mt-1" value={obraForm.tecnica}
+                    onChange={(e) => setObraForm((f) => ({ ...f, tecnica: e.target.value }))}
+                    placeholder="Ex: taipa, adobe..."
+                  />
+                ) : (
+                  <p className="text-sm text-[#1A1A1A] mt-0.5">{obraCota?.obra_info?.tecnica || <span className="text-[#8A8A8A]">—</span>}</p>
+                )}
+              </div>
+              <div>
+                <p className="text-xs text-[#8A8A8A]">Início</p>
+                {isAdmin ? (
+                  <Input className="mt-1" value={obraForm.inicio}
+                    onChange={(e) => setObraForm((f) => ({ ...f, inicio: e.target.value }))}
+                    placeholder="Ex: Mar / 2025"
+                  />
+                ) : (
+                  <p className="text-sm text-[#1A1A1A] mt-0.5">{obraCota?.obra_info?.inicio || <span className="text-[#8A8A8A]">—</span>}</p>
+                )}
+              </div>
+              <div>
+                <p className="text-xs text-[#8A8A8A]">Previsão de conclusão</p>
+                {isAdmin ? (
+                  <Input className="mt-1" value={obraForm.previsao}
+                    onChange={(e) => setObraForm((f) => ({ ...f, previsao: e.target.value }))}
+                    placeholder="Ex: Out / 2026"
+                  />
+                ) : (
+                  <p className="text-sm text-[#1A1A1A] mt-0.5">{obraCota?.obra_info?.previsao || <span className="text-[#8A8A8A]">—</span>}</p>
+                )}
+              </div>
             </div>
+
+            {/* Equipe */}
             <div>
-              <Label>Arquiteto responsável</Label>
-              {isAdmin ? (
-                <Input
-                  value={obraForm.arquiteto}
-                  onChange={(e) => setObraForm((f) => ({ ...f, arquiteto: e.target.value }))}
-                  placeholder="Nome do arquiteto"
-                />
-              ) : (
-                <p className="mt-1 text-sm text-[#4D4D4D]">{obraCota?.obra_info?.arquiteto || <span className="text-[#8A8A8A]">—</span>}</p>
-              )}
-            </div>
-            <div>
-              <Label>Técnica construtiva</Label>
-              {isAdmin ? (
-                <Input
-                  value={obraForm.tecnica}
-                  onChange={(e) => setObraForm((f) => ({ ...f, tecnica: e.target.value }))}
-                  placeholder="Ex: taipa de pilão, adobe, madeira..."
-                />
-              ) : (
-                <p className="mt-1 text-sm text-[#4D4D4D]">{obraCota?.obra_info?.tecnica || <span className="text-[#8A8A8A]">—</span>}</p>
-              )}
-            </div>
-            <div>
-              <Label>Operários / equipe</Label>
+              <p className="text-xs text-[#8A8A8A]">Equipe no canteiro</p>
               {isAdmin ? (
                 <textarea
                   value={obraForm.operarios}
                   onChange={(e) => setObraForm((f) => ({ ...f, operarios: e.target.value }))}
-                  placeholder="Nomes, contatos..."
+                  placeholder="Nomes, funções, contatos..."
                   rows={3}
                   className="w-full mt-1 px-3 py-2 text-sm border border-input rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-[#1F6B3A] resize-none"
                 />
               ) : (
-                <p className="mt-1 text-sm text-[#4D4D4D] whitespace-pre-line">{obraCota?.obra_info?.operarios || <span className="text-[#8A8A8A]">—</span>}</p>
+                <p className="mt-0.5 text-sm text-[#4D4D4D] whitespace-pre-line">{obraCota?.obra_info?.operarios || <span className="text-[#8A8A8A]">—</span>}</p>
               )}
             </div>
-            <div>
-              <Label>Notas</Label>
-              {isAdmin ? (
-                <textarea
-                  value={obraForm.notas}
-                  onChange={(e) => setObraForm((f) => ({ ...f, notas: e.target.value }))}
-                  placeholder="Outras informações relevantes..."
-                  rows={3}
-                  className="w-full mt-1 px-3 py-2 text-sm border border-input rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-[#1F6B3A] resize-none"
-                />
-              ) : (
-                <p className="mt-1 text-sm text-[#4D4D4D] whitespace-pre-line">{obraCota?.obra_info?.notas || <span className="text-[#8A8A8A]">—</span>}</p>
-              )}
-            </div>
+
             <div className="flex justify-end gap-2 pt-2">
               <Button variant="outline" onClick={() => setObraOpen(false)}>
                 {isAdmin ? "Cancelar" : "Fechar"}
