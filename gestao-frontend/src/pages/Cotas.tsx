@@ -228,9 +228,6 @@ export default function Cotas() {
                     <p className="text-xs text-[#8A8A8A]">@{c.slug}</p>
                   </div>
                   <div className="flex items-center gap-1 ml-2 shrink-0">
-                    {c.em_obra && (
-                      <span className="text-xs font-semibold text-amber-600">Estamos construindo!</span>
-                    )}
                     <button
                       onClick={(e) => {
                         e.stopPropagation()
