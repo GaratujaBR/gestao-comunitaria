@@ -2,8 +2,10 @@ export interface ObraInfo {
   arquiteto?: string
   tecnica?: string
   operarios?: string
-  notas?: string
   estagio?: string
+  inicio?: string
+  previsao?: string
+  notas?: string
 }
 
 export interface Cota {
