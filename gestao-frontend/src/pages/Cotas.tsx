@@ -11,10 +11,16 @@ import {
   DialogTitle,
   DialogDescription
 } from "@/components/ui/dialog"
-import { Plus, Pencil, Trash2, Landmark, ChevronDown, Mail, Phone, Home, HardHat } from "lucide-react"
+import { Plus, Pencil, Trash2, Landmark, ChevronDown, Mail, Phone, Home, HardHat, Check } from "lucide-react"
 import iconeConstrucao from "../../imgs/icone-construção.png"
+import iconePlanejamento from "../../imgs/planejamento-icon.png"
+import iconeFundacao from "../../imgs/fundação-icon.png"
+import iconeEstrutura from "../../imgs/estrutura-icon.png"
+import iconeFechamento from "../../imgs/fechamento-icon.png"
+import iconeAcabamento from "../../imgs/acabamento-icon.png"
 
 const ESTAGIOS = ["Planejamento", "Fundação", "Estrutura", "Fechamento", "Acabamento"]
+const ESTAGIO_ICONS = [iconePlanejamento, iconeFundacao, iconeEstrutura, iconeFechamento, iconeAcabamento]
 import Avatar from "@/components/Avatar"
 import ProfileForm from "@/components/ProfileForm"
 import { useAdmin } from "@/hooks/useAdmin"
@@ -231,7 +237,7 @@ export default function Cotas() {
                     </div>
                     <h3 className="font-semibold text-[#1A1A1A] mt-1 truncate">{c.nome}</h3>
                     {c.em_obra && (
-                      <p className="text-xs font-semibold text-amber-600">Estamos construindo!</p>
+                      <p className="text-xs font-semibold text-amber-600">Estamos em obra!</p>
                     )}
                     <p className="text-xs text-[#8A8A8A]">@{c.slug}</p>
                   </div>
@@ -381,43 +387,47 @@ export default function Cotas() {
 
       {/* Obra dialog */}
       <Dialog open={obraOpen} onOpenChange={setObraOpen}>
-        <DialogContent className="max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Obra — {obraCota?.nome}</DialogTitle>
-            <DialogDescription>
-              {isAdmin ? "Informações sobre a construção desta bolinha." : "Somente leitura."}
-            </DialogDescription>
-          </DialogHeader>
-
-          {/* Ícone + status */}
-          <div className="flex items-center gap-3">
-            {obraCota?.em_obra && (
-              <img src={iconeConstrucao} alt="Estamos construindo!" className="w-16 h-16 object-contain shrink-0" />
-            )}
-            <div>
+        <DialogContent className="p-0 max-h-[90vh] overflow-y-auto gap-0 max-w-md">
+          {/* Header verde escuro */}
+          <div className="bg-[#1F6B3A] px-6 pt-5 pb-4 rounded-t-lg">
+            <p className="text-xs text-[#88C9A1] font-semibold uppercase tracking-wider mb-1">
+              OBRA · {obraCota?.nome}
+            </p>
+            <div className="flex items-start justify-between gap-2">
+              <DialogTitle className="text-white text-lg font-bold leading-snug">
+                {obraCota?.nome}
+              </DialogTitle>
+              {obraCota?.em_obra && (
+                <img src={iconeConstrucao} className="w-12 h-12 object-contain shrink-0" alt="" />
+              )}
+            </div>
+            <div className="mt-2">
               {isAdmin ? (
-                <div className="flex items-center gap-2">
+                <label className="flex items-center gap-2 cursor-pointer">
                   <input
                     type="checkbox"
                     id="em_obra"
                     checked={obraForm.em_obra}
                     onChange={(e) => setObraForm((f) => ({ ...f, em_obra: e.target.checked }))}
-                    className="w-4 h-4 accent-[#1F6B3A]"
+                    className="w-4 h-4 accent-amber-400"
                   />
-                  <Label htmlFor="em_obra">Estamos construindo!</Label>
-                </div>
+                  <span className="text-sm text-white">Estamos em obra!</span>
+                </label>
+              ) : obraCota?.em_obra ? (
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-400 text-amber-900 text-xs font-semibold">
+                  <span className="w-1.5 h-1.5 rounded-full bg-amber-700" />
+                  Estamos em obra!
+                </span>
               ) : (
-                <div className="flex items-center gap-2 text-sm">
-                  <span className={`w-2.5 h-2.5 rounded-full ${obraCota?.em_obra ? "bg-amber-400" : "bg-gray-300"}`} />
-                  <span className="text-[#4D4D4D]">{obraCota?.em_obra ? "Estamos construindo!" : "Sem obra ativa"}</span>
-                </div>
+                <span className="text-xs text-[#88C9A1]">Sem obra ativa</span>
               )}
             </div>
           </div>
 
-          {obraError && <p className="text-sm text-red-600">{obraError}</p>}
+          {/* Corpo */}
+          <div className="px-6 py-4 space-y-5">
+            {obraError && <p className="text-sm text-red-600">{obraError}</p>}
 
-          <div className="space-y-4">
             {/* Select estágio (admin) */}
             {isAdmin && (
               <div>
@@ -433,23 +443,46 @@ export default function Cotas() {
               </div>
             )}
 
-            {/* Stepper visual */}
+            {/* Stepper com ícones PNG */}
             {(() => {
               const cur = isAdmin ? obraForm.estagio : obraCota?.obra_info?.estagio
               const idx = ESTAGIOS.indexOf(cur || "")
               if (idx < 0 && !isAdmin) return null
               return (
                 <div>
-                  <p className="text-xs text-[#8A8A8A] mb-2">
-                    {idx >= 0 ? `Estágio ${idx + 1} de ${ESTAGIOS.length}` : "Estágio não definido"}
-                  </p>
-                  <div className="flex gap-1">
+                  <div className="flex items-center justify-between mb-3">
+                    <p className="text-xs font-semibold uppercase tracking-wider text-[#8A8A8A]">Estágio da obra</p>
+                    {idx >= 0 && <p className="text-xs text-[#8A8A8A]">{idx + 1} de {ESTAGIOS.length}</p>}
+                  </div>
+                  <div className="flex items-center">
                     {ESTAGIOS.map((s, i) => (
-                      <div key={s} className="flex-1 flex flex-col items-center">
-                        <div className={`w-full h-1.5 rounded-full ${i <= idx ? "bg-amber-400" : "bg-gray-200"}`} />
-                        <span className={`text-[9px] mt-1 text-center leading-tight ${i === idx ? "text-amber-600 font-bold" : "text-gray-400"}`}>
-                          {s}
-                        </span>
+                      <div key={s} className="flex items-center flex-1">
+                        <div className="flex flex-col items-center">
+                          <div className={`relative w-12 h-12 rounded-full flex items-center justify-center border-2 transition-all
+                            ${i < idx ? "border-[#1F6B3A] bg-[#D5E8D4]" : ""}
+                            ${i === idx ? "border-[#1F6B3A] bg-white shadow-md scale-110" : ""}
+                            ${i > idx ? "border-gray-200 bg-gray-50" : ""}
+                          `}>
+                            <img
+                              src={ESTAGIO_ICONS[i]}
+                              alt={s}
+                              className={`w-7 h-7 object-contain ${i > idx ? "opacity-25" : ""}`}
+                            />
+                            {i < idx && (
+                              <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-[#1F6B3A] flex items-center justify-center">
+                                <Check className="w-2.5 h-2.5 text-white" />
+                              </span>
+                            )}
+                          </div>
+                          <span className={`text-[9px] mt-1.5 text-center leading-tight
+                            ${i === idx ? "text-[#1F6B3A] font-bold" : "text-gray-400"}
+                          `}>{s}</span>
+                        </div>
+                        {i < ESTAGIOS.length - 1 && (
+                          <div className={`h-0.5 flex-1 mx-1 mb-4 rounded-full
+                            ${i < idx ? "bg-[#1F6B3A]" : "bg-gray-200"}
+                          `} />
+                        )}
                       </div>
                     ))}
                   </div>
@@ -460,7 +493,7 @@ export default function Cotas() {
             {/* Grid info */}
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <p className="text-xs text-[#8A8A8A]">Arquiteto</p>
+                <p className="text-xs font-semibold uppercase tracking-wider text-[#8A8A8A]">Arquiteto</p>
                 {isAdmin ? (
                   <Input className="mt-1" value={obraForm.arquiteto}
                     onChange={(e) => setObraForm((f) => ({ ...f, arquiteto: e.target.value }))}
@@ -471,7 +504,7 @@ export default function Cotas() {
                 )}
               </div>
               <div>
-                <p className="text-xs text-[#8A8A8A]">Técnica construtiva</p>
+                <p className="text-xs font-semibold uppercase tracking-wider text-[#8A8A8A]">Técnica construtiva</p>
                 {isAdmin ? (
                   <Input className="mt-1" value={obraForm.tecnica}
                     onChange={(e) => setObraForm((f) => ({ ...f, tecnica: e.target.value }))}
@@ -482,7 +515,7 @@ export default function Cotas() {
                 )}
               </div>
               <div>
-                <p className="text-xs text-[#8A8A8A]">Início</p>
+                <p className="text-xs font-semibold uppercase tracking-wider text-[#8A8A8A]">Início</p>
                 {isAdmin ? (
                   <Input className="mt-1" value={obraForm.inicio}
                     onChange={(e) => setObraForm((f) => ({ ...f, inicio: e.target.value }))}
@@ -493,7 +526,7 @@ export default function Cotas() {
                 )}
               </div>
               <div>
-                <p className="text-xs text-[#8A8A8A]">Previsão de conclusão</p>
+                <p className="text-xs font-semibold uppercase tracking-wider text-[#8A8A8A]">Previsão de conclusão</p>
                 {isAdmin ? (
                   <Input className="mt-1" value={obraForm.previsao}
                     onChange={(e) => setObraForm((f) => ({ ...f, previsao: e.target.value }))}
@@ -507,7 +540,7 @@ export default function Cotas() {
 
             {/* Equipe */}
             <div>
-              <p className="text-xs text-[#8A8A8A]">Equipe no canteiro</p>
+              <p className="text-xs font-semibold uppercase tracking-wider text-[#8A8A8A] mb-1">Equipe no canteiro</p>
               {isAdmin ? (
                 <textarea
                   value={obraForm.operarios}
