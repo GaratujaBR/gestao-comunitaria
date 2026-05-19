@@ -225,6 +225,9 @@ export default function Cotas() {
                       )}
                     </div>
                     <h3 className="font-semibold text-[#1A1A1A] mt-1 truncate">{c.nome}</h3>
+                    {c.em_obra && (
+                      <p className="text-xs font-semibold text-amber-600">Estamos construindo!</p>
+                    )}
                     <p className="text-xs text-[#8A8A8A]">@{c.slug}</p>
                   </div>
                   <div className="flex items-center gap-1 ml-2 shrink-0">
