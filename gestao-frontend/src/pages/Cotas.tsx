@@ -397,9 +397,17 @@ export default function Cotas() {
               <DialogTitle className="text-white text-lg font-bold leading-snug">
                 {obraCota?.nome}
               </DialogTitle>
-              {obraCota?.em_obra && (
-                <img src={iconeConstrucao} className="w-12 h-12 object-contain shrink-0" alt="" />
-              )}
+              {obraCota?.em_obra && (() => {
+                const curEstagio = isAdmin ? obraForm.estagio : obraCota.obra_info?.estagio
+                const idx = ESTAGIOS.indexOf(curEstagio || "")
+                return (
+                  <img
+                    src={idx >= 0 ? ESTAGIO_ICONS[idx] : iconeConstrucao}
+                    className="w-20 h-20 object-contain shrink-0"
+                    alt=""
+                  />
+                )
+              })()}
             </div>
             <div className="mt-2">
               {isAdmin ? (
