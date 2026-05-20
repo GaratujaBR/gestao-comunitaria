@@ -402,16 +402,18 @@ export default function Cotas() {
               </DialogTitle>
               <div className="mt-2">
                 {canEditObra ? (
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      id="em_obra"
-                      checked={obraForm.em_obra}
-                      onChange={(e) => setObraForm((f) => ({ ...f, em_obra: e.target.checked }))}
-                      className="w-4 h-4 accent-amber-400"
-                    />
-                    <span className="text-sm text-white">Estamos em obra!</span>
-                  </label>
+                  <button
+                    type="button"
+                    onClick={() => setObraForm((f) => ({ ...f, em_obra: !f.em_obra }))}
+                    className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold transition-colors ${
+                      obraForm.em_obra
+                        ? "bg-amber-400 text-amber-900"
+                        : "border border-amber-300/60 text-amber-200 hover:bg-amber-400/20"
+                    }`}
+                  >
+                    <span className={`w-1.5 h-1.5 rounded-full ${obraForm.em_obra ? "bg-amber-700" : "bg-amber-300/60"}`} />
+                    Estamos em obra!
+                  </button>
                 ) : obraCota?.em_obra ? (
                   <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-400 text-amber-900 text-xs font-semibold">
                     <span className="w-1.5 h-1.5 rounded-full bg-amber-700" />
