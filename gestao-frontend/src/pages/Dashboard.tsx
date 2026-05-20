@@ -18,7 +18,8 @@ import {
   Bell,
   BarChart3,
   Calendar,
-  Wrench
+  Wrench,
+  Tractor
 } from "lucide-react"
 
 function BallIcon({ className }: { className?: string }) {
@@ -63,6 +64,7 @@ export default function Dashboard() {
   const [recentBookings, setRecentBookings] = useState<Booking[]>([])
   const [alerts, setAlerts] = useState<Alert[]>([])
   const [upcomingEvents, setUpcomingEvents] = useState<Evento[]>([])
+  const [cotasEmObra, setCotasEmObra] = useState<Cota[]>([])
   const [loading, setLoading] = useState(true)
   const [loadError, setLoadError] = useState<string | null>(null)
 
@@ -115,6 +117,7 @@ export default function Dashboard() {
             )
             .slice(0, 3)
         )
+        setCotasEmObra(cotas.filter((c) => c.em_obra))
       } catch (err) {
         setLoadError(err instanceof Error ? err.message : "Erro ao carregar dados.")
       } finally {
@@ -287,6 +290,38 @@ export default function Dashboard() {
                     )}
                   </div>
                 </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {cotasEmObra.length > 0 && (
+        <div>
+          <h2 className="text-base font-semibold text-[#1A1A1A] mb-3 flex items-center gap-2">
+            <Tractor className="w-4 h-4 text-amber-500" />
+            Bolinhas em obra
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {cotasEmObra.map((c) => (
+              <Link
+                key={c.id}
+                to="/cotas"
+                className="bg-white rounded-xl border border-[#E7E5E4] p-4 hover:border-amber-300 hover:shadow-sm transition-all"
+              >
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="text-xs font-bold text-[#1F6B3A] bg-[#D5E8D4] px-2 py-0.5 rounded-full">
+                    #{c.numero}
+                  </span>
+                  <Tractor className="w-3.5 h-3.5 text-amber-500 ml-auto" />
+                </div>
+                <p className="font-semibold text-[#1A1A1A]">{c.nome}</p>
+                {c.obra_info?.estagio && (
+                  <p className="text-xs text-[#8A8A8A] mt-1">{c.obra_info.estagio}</p>
+                )}
+                {c.obra_info?.arquiteto && (
+                  <p className="text-xs text-[#8A8A8A]">{c.obra_info.arquiteto}</p>
+                )}
               </Link>
             ))}
           </div>
