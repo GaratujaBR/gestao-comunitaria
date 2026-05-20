@@ -11,7 +11,7 @@ import {
   DialogTitle,
   DialogDescription
 } from "@/components/ui/dialog"
-import { Plus, Pencil, Trash2, Landmark, ChevronDown, Mail, Phone, Home, HardHat, Check } from "lucide-react"
+import { Plus, Pencil, Trash2, Landmark, ChevronDown, Mail, Phone, Home, Tractor, Check } from "lucide-react"
 import iconePlanejamento from "../../imgs/planejamento-icon.svg"
 import iconeFundacao from "../../imgs/fundação-icon.png"
 import iconeEstrutura from "../../imgs/estrutura-icon.png"
@@ -253,7 +253,7 @@ export default function Cotas() {
                       title="Informações da obra"
                     >
                       {c.em_obra
-                        ? <HardHat className="w-3.5 h-3.5 text-amber-500" />
+                        ? <Tractor className="w-3.5 h-3.5 text-amber-500" />
                         : <Home className="w-3.5 h-3.5 text-[#8A8A8A]" />
                       }
                     </button>
