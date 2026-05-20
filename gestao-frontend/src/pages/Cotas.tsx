@@ -12,7 +12,7 @@ import {
   DialogDescription
 } from "@/components/ui/dialog"
 import { Plus, Pencil, Trash2, Landmark, ChevronDown, Mail, Phone, Home, HardHat, Check } from "lucide-react"
-import iconePlanejamento from "../../imgs/planejamento-icon.png"
+import iconePlanejamento from "../../imgs/planejamento-icon.svg"
 import iconeFundacao from "../../imgs/fundação-icon.png"
 import iconeEstrutura from "../../imgs/estrutura-icon.png"
 import iconeFechamento from "../../imgs/fechamento-icon.png"
