@@ -190,6 +190,9 @@ export default function Cotas() {
     return p || null
   }
 
+  const currentCotaSlug = profiles.find((p) => p.slug === currentSlug)?.cota_slug
+  const canEditObra = isAdmin || currentCotaSlug === obraCota?.slug
+
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
@@ -398,7 +401,7 @@ export default function Cotas() {
                 {obraCota?.nome}
               </DialogTitle>
               <div className="mt-2">
-                {isAdmin ? (
+                {canEditObra ? (
                   <label className="flex items-center gap-2 cursor-pointer">
                     <input
                       type="checkbox"
@@ -421,9 +424,9 @@ export default function Cotas() {
             </div>
             {/* Coluna direita — ícone */}
             {(() => {
-              const curEstagio = isAdmin ? obraForm.estagio : obraCota?.obra_info?.estagio
+              const curEstagio = canEditObra ? obraForm.estagio : obraCota?.obra_info?.estagio
               const idx = ESTAGIOS.indexOf(curEstagio || "")
-              const showIcon = isAdmin ? obraForm.em_obra : obraCota?.em_obra
+              const showIcon = canEditObra ? obraForm.em_obra : obraCota?.em_obra
               if (!showIcon) return null
               return (
                 <div className="flex items-center justify-center shrink-0">
@@ -441,8 +444,8 @@ export default function Cotas() {
           <div className="px-6 py-4 space-y-5">
             {obraError && <p className="text-sm text-red-600">{obraError}</p>}
 
-            {/* Select estágio (admin) */}
-            {isAdmin && (
+            {/* Select estágio */}
+            {canEditObra && (
               <div>
                 <Label>Estágio da obra</Label>
                 <select
@@ -458,9 +461,9 @@ export default function Cotas() {
 
             {/* Stepper com ícones PNG */}
             {(() => {
-              const cur = isAdmin ? obraForm.estagio : obraCota?.obra_info?.estagio
+              const cur = canEditObra ? obraForm.estagio : obraCota?.obra_info?.estagio
               const idx = ESTAGIOS.indexOf(cur || "")
-              if (idx < 0 && !isAdmin) return null
+              if (idx < 0 && !canEditObra) return null
               return (
                 <div>
                   <div className="flex items-center justify-between mb-3">
@@ -507,7 +510,7 @@ export default function Cotas() {
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-wider text-[#8A8A8A]">Arquiteto</p>
-                {isAdmin ? (
+                {canEditObra ? (
                   <Input className="mt-1" value={obraForm.arquiteto}
                     onChange={(e) => setObraForm((f) => ({ ...f, arquiteto: e.target.value }))}
                     placeholder="Nome do arquiteto"
@@ -518,7 +521,7 @@ export default function Cotas() {
               </div>
               <div>
                 <p className="text-xs font-semibold uppercase tracking-wider text-[#8A8A8A]">Técnica construtiva</p>
-                {isAdmin ? (
+                {canEditObra ? (
                   <Input className="mt-1" value={obraForm.tecnica}
                     onChange={(e) => setObraForm((f) => ({ ...f, tecnica: e.target.value }))}
                     placeholder="Ex: taipa, adobe..."
@@ -529,7 +532,7 @@ export default function Cotas() {
               </div>
               <div>
                 <p className="text-xs font-semibold uppercase tracking-wider text-[#8A8A8A]">Início</p>
-                {isAdmin ? (
+                {canEditObra ? (
                   <Input className="mt-1" value={obraForm.inicio}
                     onChange={(e) => setObraForm((f) => ({ ...f, inicio: e.target.value }))}
                     placeholder="Ex: Mar / 2025"
@@ -540,7 +543,7 @@ export default function Cotas() {
               </div>
               <div>
                 <p className="text-xs font-semibold uppercase tracking-wider text-[#8A8A8A]">Previsão de conclusão</p>
-                {isAdmin ? (
+                {canEditObra ? (
                   <Input className="mt-1" value={obraForm.previsao}
                     onChange={(e) => setObraForm((f) => ({ ...f, previsao: e.target.value }))}
                     placeholder="Ex: Out / 2026"
@@ -554,7 +557,7 @@ export default function Cotas() {
             {/* Equipe */}
             <div>
               <p className="text-xs font-semibold uppercase tracking-wider text-[#8A8A8A] mb-1">Equipe no canteiro</p>
-              {isAdmin ? (
+              {canEditObra ? (
                 <textarea
                   value={obraForm.operarios}
                   onChange={(e) => setObraForm((f) => ({ ...f, operarios: e.target.value }))}
@@ -569,9 +572,9 @@ export default function Cotas() {
 
             <div className="flex justify-end gap-2 pt-2">
               <Button variant="outline" onClick={() => setObraOpen(false)}>
-                {isAdmin ? "Cancelar" : "Fechar"}
+                {canEditObra ? "Cancelar" : "Fechar"}
               </Button>
-              {isAdmin && <Button onClick={saveObra}>Salvar</Button>}
+              {canEditObra && <Button onClick={saveObra}>Salvar</Button>}
             </div>
           </div>
         </DialogContent>
