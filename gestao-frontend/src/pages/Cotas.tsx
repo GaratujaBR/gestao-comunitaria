@@ -12,7 +12,7 @@ import {
   DialogDescription
 } from "@/components/ui/dialog"
 import { Plus, Pencil, Trash2, Landmark, ChevronDown, Mail, Phone, Home, HardHat, Check } from "lucide-react"
-import iconePlanejamento from "../../imgs/planejamento-icon.png"
+import iconePlanejamento from "../../imgs/planejamento-icon.svg"
 import iconeFundacao from "../../imgs/fundação-icon.png"
 import iconeEstrutura from "../../imgs/estrutura-icon.png"
 import iconeFechamento from "../../imgs/fechamento-icon.png"
@@ -386,7 +386,7 @@ export default function Cotas() {
 
       {/* Obra dialog */}
       <Dialog open={obraOpen} onOpenChange={setObraOpen}>
-        <DialogContent className="p-0 max-h-[90vh] overflow-y-auto gap-0 max-w-md">
+        <DialogContent className="p-0 max-h-[90vh] overflow-y-auto gap-0 max-w-md border-0">
           {/* Header verde escuro */}
           <div className="bg-[#1F6B3A] px-6 pt-5 pb-4 rounded-t-lg flex gap-3">
             {/* Coluna esquerda */}
